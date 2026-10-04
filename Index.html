@@ -64,19 +64,19 @@
     
     <!-- 1. SPLASH SCREEN -->
     <div id="screen-splash" class="absolute inset-0 bg-white flex flex-col items-center justify-center z-50 transition-opacity duration-500">
-        <div class="relative w-full h-full flex flex-col items-center justify-center overflow-hidden">
-            <div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(#08838b 1px, transparent 1px); background-size: 20px 20px;"></div>
+        <div class="relative w-full h-full flex flex-col items-center justify-center overflow-hidden z-10" style="background: inherit;">
+            <div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(#08838b 1px, transparent 1px); background-size: 20px 20px; z-index: -1;"></div>
             
-            <div class="w-32 h-32 rounded-full border-4 border-teal-600 p-2 mb-6 shadow-lg bg-white z-10 flex items-center justify-center">
-                <i class="fas fa-cloud text-5xl text-teal-600"></i>
+            <div class="w-32 h-32 rounded-full border-4 border-teal-600 p-2 mb-6 shadow-lg bg-white z-10 flex items-center justify-center overflow-hidden">
+                <i class="fas fa-cloud text-5xl text-teal-600" id="splash-icon"></i>
             </div>
             <h1 class="text-2xl font-bold text-gray-800 text-center z-10">Aplikasi Presensi<br>Siswa Mandiri</h1>
-            <p class="text-gray-500 mt-2 z-10 font-medium">Terhubung ke Cloud Database</p>
+            <p class="text-gray-600 mt-2 z-10 font-medium">Terhubung ke Cloud Database</p>
             
             <button onclick="showScreen('screen-login')" class="mt-12 bg-teal-600 text-white px-8 py-3 rounded-full font-bold shadow-lg z-10 hover:bg-teal-700 transition-colors">
                 Mulai
             </button>
-            <p class="absolute bottom-8 text-xs text-gray-400 z-10">Versi 3.0 (Supabase & Storage) | 2026</p>
+            <p class="absolute bottom-8 text-xs text-gray-500 z-10 font-bold bg-white/50 px-3 py-1 rounded-full backdrop-blur-sm">Versi 3.0 (Supabase & Storage) | 2026</p>
         </div>
     </div>
 
@@ -204,7 +204,7 @@
                             <label class="block text-xs font-semibold text-gray-600 mb-1">Keterangan / Alasan</label>
                             <textarea id="izin-keterangan" rows="3" class="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm outline-none focus:border-teal-500" placeholder="Tuliskan alasan selengkapnya di sini..."></textarea>
                         </div>
-                        <!-- Upload Lampiran (Selalu dimunculkan) -->
+                        <!-- Upload Lampiran -->
                         <div id="izin-lampiran-container" class="block">
                             <label class="block text-xs font-semibold text-gray-600 mb-1">Lampiran (Surat Dokter/Bukti - Opsional)</label>
                             <input type="file" id="izin-lampiran-file" accept="image/*,.pdf" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100 cursor-pointer">
@@ -261,6 +261,15 @@
                             <label class="block text-xs font-semibold text-gray-600 mb-1">Alamat Lengkap</label>
                             <textarea id="edit-alamat" rows="2" class="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm outline-none focus:border-teal-500" placeholder="Jl. Raya..."></textarea>
                         </div>
+                        
+                        <!-- Tambahan: Ubah Password Siswa -->
+                        <div class="pt-4 border-t border-gray-100 mt-4">
+                            <h3 class="font-bold text-gray-800 mb-3 text-sm">Keamanan Akun</h3>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1">Kata Sandi Baru (Kosongkan jika tidak diubah)</label>
+                            <input type="password" id="edit-password-siswa" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-teal-500" placeholder="••••••••">
+                            <p class="text-[10px] text-orange-500 mt-1 font-medium"><i class="fas fa-info-circle"></i> Jika lupa, admin dapat meresetnya ke "123456".</p>
+                        </div>
+
                         <button id="btn-simpan-profil" onclick="simpanProfilSiswa()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl shadow-md mt-2 hover:bg-blue-700 transition-colors flex justify-center items-center gap-2">
                             <i class="fas fa-save"></i> Simpan Perubahan
                         </button>
@@ -338,8 +347,9 @@
             </div>
             
             <div class="flex flex-col items-center py-6 px-4 border-b border-gray-50 text-center">
-                <div class="w-16 h-16 bg-gray-100 rounded-full mb-3 flex items-center justify-center border-2 border-teal-500">
-                    <i class="fas fa-user-tie text-2xl text-gray-600"></i>
+                <div class="w-16 h-16 bg-gray-100 rounded-full mb-3 flex items-center justify-center border-2 border-teal-500 overflow-hidden relative">
+                    <img id="guru-foto-side" src="" onerror="this.style.display='none'; document.getElementById('guru-icon-side').style.display='block';" class="w-full h-full object-cover hidden">
+                    <i id="guru-icon-side" class="fas fa-user-tie text-2xl text-gray-600"></i>
                 </div>
                 <h3 id="guru-name-side" class="font-bold text-gray-800 text-sm truncate w-full">Nama Guru</h3>
                 <p id="guru-nip-side" class="text-[11px] text-gray-500">NIP: 123</p>
@@ -354,21 +364,23 @@
                 <button onclick="switchGuruMenu('siswa')" class="guru-nav-btn w-full flex items-center gap-3 px-4 py-3 text-gray-500 hover:bg-gray-50 hover:text-gray-800 rounded-xl text-sm font-medium transition-all" data-target="siswa">
                     <i class="fas fa-user-graduate w-5"></i> Data Siswa
                 </button>
-                <button onclick="switchGuruMenu('guru')" class="guru-nav-btn w-full flex items-center gap-3 px-4 py-3 text-gray-500 hover:bg-gray-50 hover:text-gray-800 rounded-xl text-sm font-medium transition-all" data-target="guru">
+                <button onclick="switchGuruMenu('guru')" class="guru-nav-btn admin-only w-full flex items-center gap-3 px-4 py-3 text-gray-500 hover:bg-gray-50 hover:text-gray-800 rounded-xl text-sm font-medium transition-all" data-target="guru">
                     <i class="fas fa-chalkboard-teacher w-5"></i> Data Guru
                 </button>
                 <button onclick="switchGuruMenu('rekap')" class="guru-nav-btn w-full flex items-center gap-3 px-4 py-3 text-gray-500 hover:bg-gray-50 hover:text-gray-800 rounded-xl text-sm font-medium transition-all" data-target="rekap">
                     <i class="fas fa-clipboard-list w-5"></i> Rekap Presensi
                 </button>
-                <!-- Menu Baru: Pengajuan Izin Admin -->
                 <button onclick="switchGuruMenu('izin-admin')" class="guru-nav-btn w-full flex items-center gap-3 px-4 py-3 text-gray-500 hover:bg-gray-50 hover:text-gray-800 rounded-xl text-sm font-medium transition-all" data-target="izin-admin">
                     <i class="fas fa-envelope-open-text w-5"></i> Pengajuan Izin
                 </button>
-                <button onclick="switchGuruMenu('manajemen')" class="guru-nav-btn w-full flex items-center gap-3 px-4 py-3 text-gray-500 hover:bg-gray-50 hover:text-gray-800 rounded-xl text-sm font-medium transition-all" data-target="manajemen">
+                <button onclick="switchGuruMenu('manajemen')" class="guru-nav-btn admin-only w-full flex items-center gap-3 px-4 py-3 text-gray-500 hover:bg-gray-50 hover:text-gray-800 rounded-xl text-sm font-medium transition-all" data-target="manajemen">
                     <i class="fas fa-database w-5"></i> Kelola Data
                 </button>
-                <button onclick="switchGuruMenu('pengaturan')" class="guru-nav-btn w-full flex items-center gap-3 px-4 py-3 text-gray-500 hover:bg-gray-50 hover:text-gray-800 rounded-xl text-sm font-medium transition-all" data-target="pengaturan">
+                <button onclick="switchGuruMenu('pengaturan')" class="guru-nav-btn admin-only w-full flex items-center gap-3 px-4 py-3 text-gray-500 hover:bg-gray-50 hover:text-gray-800 rounded-xl text-sm font-medium transition-all" data-target="pengaturan">
                     <i class="fas fa-cog w-5"></i> Pengaturan
+                </button>
+                <button onclick="switchGuruMenu('profil-guru')" class="guru-nav-btn w-full flex items-center gap-3 px-4 py-3 text-gray-500 hover:bg-gray-50 hover:text-gray-800 rounded-xl text-sm font-medium transition-all" data-target="profil-guru">
+                    <i class="fas fa-user-circle w-5"></i> Akun Saya
                 </button>
             </nav>
 
@@ -386,7 +398,13 @@
                     <h2 class="font-bold text-lg text-gray-800">Panel Admin</h2>
                     <p id="guru-name-mob" class="text-xs text-teal-600 font-bold"><i class="fas fa-circle text-[8px]"></i> Supabase Connected</p>
                 </div>
-                <button onclick="handleLogout()" class="w-8 h-8 rounded-full bg-red-100 text-red-600 flex items-center justify-center"><i class="fas fa-sign-out-alt text-sm"></i></button>
+                <div class="flex gap-2">
+                     <button onclick="switchGuruMenu('profil-guru')" class="w-8 h-8 rounded-full bg-gray-100 text-gray-600 flex items-center justify-center overflow-hidden border border-gray-200">
+                         <img id="guru-foto-topmob" src="" onerror="this.style.display='none'; document.getElementById('guru-icon-topmob').style.display='block';" class="w-full h-full object-cover hidden">
+                         <i id="guru-icon-topmob" class="fas fa-user text-sm"></i>
+                     </button>
+                     <button onclick="handleLogout()" class="w-8 h-8 rounded-full bg-red-100 text-red-600 flex items-center justify-center"><i class="fas fa-sign-out-alt text-sm"></i></button>
+                </div>
             </div>
 
             <div class="flex-1 overflow-y-auto custom-scroll p-4 md:p-8 pb-24 md:pb-8">
@@ -478,7 +496,7 @@
                     </div>
                 </div>
 
-                <!-- GURU: PENGAJUAN IZIN (BARU) -->
+                <!-- GURU: PENGAJUAN IZIN -->
                 <div id="guru-section-izin-admin" class="guru-section hidden animate-fade-in">
                     <div class="flex justify-between items-center mb-6">
                         <h1 class="text-2xl font-bold text-gray-800">Pengajuan Izin / Sakit</h1>
@@ -598,9 +616,9 @@
                     </div>
                 </div>
 
-                <!-- GURU: PENGATURAN ABSENSI -->
+                <!-- GURU: PENGATURAN ABSENSI & TAMPILAN -->
                 <div id="guru-section-pengaturan" class="guru-section hidden animate-fade-in">
-                    <h1 class="text-2xl font-bold text-gray-800 mb-6">Pengaturan Presensi & Lokasi</h1>
+                    <h1 class="text-2xl font-bold text-gray-800 mb-6">Pengaturan Sistem</h1>
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <!-- Pengaturan Jam -->
@@ -648,6 +666,35 @@
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Pengaturan Tampilan Landing/Splash Screen -->
+                        <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden p-6 md:col-span-2">
+                            <h3 class="font-bold text-gray-800 text-lg mb-4"><i class="fas fa-image text-purple-600 mr-2"></i> Tampilan Landing / Splash Screen</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-600 mb-1">Logo Aplikasi</label>
+                                    <div class="flex gap-3 items-center">
+                                        <img id="preview-logo-setting" src="" class="w-12 h-12 rounded-lg border border-gray-200 object-cover hidden">
+                                        <div class="flex-1">
+                                            <input type="file" id="set-logo-file" accept="image/*" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100 cursor-pointer">
+                                            <input type="hidden" id="set-logo-url">
+                                            <p class="text-[10px] text-gray-400 mt-1" id="status-logo-upload">Kosongkan jika ingin memakai logo bawaan (Awan)</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-600 mb-1">Background Landing Page</label>
+                                    <div class="flex gap-3 items-center">
+                                        <img id="preview-bg-setting" src="" class="w-16 h-12 rounded-lg border border-gray-200 object-cover hidden">
+                                        <div class="flex-1">
+                                            <input type="file" id="set-bg-file" accept="image/*" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100 cursor-pointer">
+                                            <input type="hidden" id="set-bg-url">
+                                            <p class="text-[10px] text-gray-400 mt-1" id="status-bg-upload">Kosongkan jika ingin memakai warna bawaan (Putih)</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     
                     <div class="mt-6 flex justify-end">
@@ -656,28 +703,73 @@
                         </button>
                     </div>
                 </div>
+
+                <!-- GURU: PROFIL AKUN (BARU) -->
+                <div id="guru-section-profil-guru" class="guru-section hidden animate-fade-in">
+                    <h1 class="text-2xl font-bold text-gray-800 mb-6">Pengaturan Akun Saya</h1>
+                    <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden p-6 max-w-2xl">
+                        <div class="flex items-center gap-6 mb-8 border-b border-gray-100 pb-6">
+                             <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center border-4 border-teal-100 overflow-hidden relative">
+                                  <img id="edit-preview-foto-guru" src="" onerror="this.style.display='none'; document.getElementById('edit-icon-guru').style.display='block';" class="w-full h-full object-cover hidden">
+                                  <i id="edit-icon-guru" class="fas fa-user-tie text-4xl text-gray-400"></i>
+                             </div>
+                             <div>
+                                 <h2 class="text-xl font-bold text-gray-800" id="lbl-nama-guru">Nama Guru</h2>
+                                 <p class="text-sm text-gray-500" id="lbl-nip-guru">NIP: -</p>
+                             </div>
+                        </div>
+
+                        <div class="space-y-5">
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-1">Ganti Foto Profil</label>
+                                <input type="file" id="edit-foto-guru-file" accept="image/*" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100 cursor-pointer">
+                                <input type="hidden" id="edit-foto-guru-url">
+                                <p class="text-xs text-gray-500 mt-1" id="status-foto-guru-upload"></p>
+                            </div>
+                            <div class="pt-4 border-t border-gray-100">
+                                <h3 class="font-bold text-gray-800 mb-3 text-sm">Keamanan</h3>
+                                <label class="block text-sm font-bold text-gray-700 mb-1">Kata Sandi Baru (Kosongkan jika tidak ingin diubah)</label>
+                                <input type="password" id="edit-password-guru" class="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm outline-none focus:border-teal-500" placeholder="••••••••">
+                            </div>
+                            <div class="pt-4">
+                                <button id="btn-simpan-profil-guru" onclick="simpanProfilGuru()" class="bg-teal-600 hover:bg-teal-700 text-white font-bold py-3 px-6 rounded-xl shadow-md transition-colors flex items-center gap-2">
+                                    <i class="fas fa-save"></i> Simpan Perubahan Akun
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             </div>
 
-            <nav class="md:hidden bg-white border-t border-gray-100 flex justify-around items-center pb-6 pt-3 px-2 shadow-[0_-10px_20px_rgba(0,0,0,0.03)] z-20 absolute bottom-0 w-full overflow-x-auto custom-scroll">
-                <button onclick="switchGuruMenu('dashboard')" class="guru-mobnav-btn flex flex-col items-center text-teal-600 w-14" data-target="dashboard">
+            <nav class="md:hidden bg-white border-t border-gray-100 flex justify-around items-center pb-6 pt-3 px-2 shadow-[0_-10px_20px_rgba(0,0,0,0.03)] z-20 absolute bottom-0 w-full overflow-x-auto custom-scroll gap-2">
+                <button onclick="switchGuruMenu('dashboard')" class="guru-mobnav-btn flex flex-col items-center text-teal-600 min-w-[56px]" data-target="dashboard">
                     <i class="fas fa-border-all text-xl mb-1"></i>
                     <span class="text-[9px] font-bold">Beranda</span>
                 </button>
-                <button onclick="switchGuruMenu('siswa')" class="guru-mobnav-btn flex flex-col items-center text-gray-400 w-14" data-target="siswa">
+                <button onclick="switchGuruMenu('siswa')" class="guru-mobnav-btn flex flex-col items-center text-gray-400 min-w-[56px]" data-target="siswa">
                     <i class="fas fa-user-graduate text-xl mb-1"></i>
                     <span class="text-[9px] font-bold">Siswa</span>
                 </button>
-                <button onclick="switchGuruMenu('guru')" class="guru-mobnav-btn flex flex-col items-center text-gray-400 w-14" data-target="guru">
+                <button onclick="switchGuruMenu('guru')" class="guru-mobnav-btn admin-only flex flex-col items-center text-gray-400 min-w-[56px]" data-target="guru">
                     <i class="fas fa-chalkboard-teacher text-xl mb-1"></i>
                     <span class="text-[9px] font-bold">Guru</span>
                 </button>
-                <button onclick="switchGuruMenu('izin-admin')" class="guru-mobnav-btn flex flex-col items-center text-gray-400 w-14" data-target="izin-admin">
+                <button onclick="switchGuruMenu('izin-admin')" class="guru-mobnav-btn flex flex-col items-center text-gray-400 min-w-[56px]" data-target="izin-admin">
                     <i class="fas fa-envelope-open-text text-xl mb-1"></i>
                     <span class="text-[9px] font-bold">Izin</span>
                 </button>
-                <button onclick="switchGuruMenu('rekap')" class="guru-mobnav-btn flex flex-col items-center text-gray-400 w-14" data-target="rekap">
+                <button onclick="switchGuruMenu('rekap')" class="guru-mobnav-btn flex flex-col items-center text-gray-400 min-w-[56px]" data-target="rekap">
                     <i class="fas fa-clipboard-list text-xl mb-1"></i>
                     <span class="text-[9px] font-bold">Rekap</span>
+                </button>
+                <button onclick="switchGuruMenu('manajemen')" class="guru-mobnav-btn admin-only flex flex-col items-center text-gray-400 min-w-[56px]" data-target="manajemen">
+                    <i class="fas fa-database text-xl mb-1"></i>
+                    <span class="text-[9px] font-bold">Kelola</span>
+                </button>
+                <button onclick="switchGuruMenu('pengaturan')" class="guru-mobnav-btn admin-only flex flex-col items-center text-gray-400 min-w-[56px]" data-target="pengaturan">
+                    <i class="fas fa-cog text-xl mb-1"></i>
+                    <span class="text-[9px] font-bold">Setting</span>
                 </button>
             </nav>
         </div>
@@ -716,11 +808,32 @@
         setTimeout(() => {
             toast.classList.add('hidden');
             toast.classList.remove('flex');
-        }, 3500);
+        }, 4500);
     }
 
     window.onload = async () => {
         const ind = document.getElementById('db-status-indicator');
+        
+        // 1. Terapkan Logo & Background dari tabel_pengaturan
+        try {
+            const { data: peng } = await db.from('tabel_pengaturan').select('logo_url, bg_url').limit(1).single();
+            if (peng) {
+                const splashScreen = document.getElementById('screen-splash');
+                const splashWrap = splashScreen.querySelector('.relative.w-full.h-full');
+                const logoContainer = splashScreen.querySelector('.rounded-full');
+                
+                if (peng.bg_url) {
+                    splashWrap.style.backgroundImage = `linear-gradient(rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.95)), url('${peng.bg_url}')`;
+                    splashWrap.style.backgroundSize = 'cover';
+                    splashWrap.style.backgroundPosition = 'center';
+                }
+                if (peng.logo_url) {
+                    logoContainer.innerHTML = `<img src="${peng.logo_url}" class="w-full h-full object-contain rounded-full">`;
+                }
+            }
+        } catch(e) { console.log("Gagal memuat kustomisasi landing page") }
+
+        // 2. Cek Koneksi DB
         try {
             const { error } = await db.from('tabel_siswa').select('nis').limit(1);
             if(error) throw error;
@@ -732,7 +845,6 @@
             ind.className = 'text-red-500 font-bold';
         }
         
-        // Inisialisasi tanggal hari ini di form izin
         const izinTglInput = document.getElementById('izin-tgl-input');
         if (izinTglInput) {
             izinTglInput.value = new Date().toISOString().split('T')[0];
@@ -761,27 +873,38 @@
         errText.classList.add('hidden');
 
         try {
+            // Cek Master Admin
             if (idInput === '19830410' && passInput === '123456') {
                 currentUser = { role: 'admin', nip: '19830410', nama: 'Admin Super', jabatan: 'Admin', wali_kelas: '' };
                 setupGuruDashboard(currentUser);
                 return;
             }
 
+            // Cek Siswa
             let { data: siswa, error: errSiswa } = await db.from('tabel_siswa').select('*').eq('nis', idInput).single();
             if (siswa) {
-                if (passInput === '123456') {
+                // Gunakan password dari database jika ada, jika tidak gunakan default
+                const pwSiswa = siswa.password || '123456';
+                if (passInput === pwSiswa) {
                     currentUser = { role: 'siswa', ...siswa };
                     setupSiswaDashboard(currentUser);
                     return;
+                } else {
+                     throw new Error("Kata Sandi Salah!");
                 }
             }
 
+            // Cek Guru
             let { data: guru, error: errGuru } = await db.from('tabel_guru').select('*').eq('nip', idInput).single();
             if (guru) {
-                if (passInput === '123456') {
+                 // Gunakan password dari database jika ada, jika tidak gunakan default
+                const pwGuru = guru.password || '123456';
+                if (passInput === pwGuru) {
                     currentUser = { role: 'guru', ...guru };
                     setupGuruDashboard(currentUser);
                     return;
+                } else {
+                     throw new Error("Kata Sandi Salah!");
                 }
             }
 
@@ -828,6 +951,7 @@
         container.classList.add('device-frame');
     }
 
+    // FIX: Membersihkan inline style sisa dari onerror agar tidak membuat efek ganda
     function updateFotoUI(url) {
         const dImg = document.getElementById('dashboard-foto');
         const dIco = document.getElementById('dashboard-icon');
@@ -835,11 +959,17 @@
         const pIco = document.getElementById('profil-icon');
         
         if(url && url.trim() !== '') {
-            dImg.src = url; dImg.classList.remove('hidden'); dIco.classList.add('hidden');
-            pImg.src = url; pImg.classList.remove('hidden'); pIco.classList.add('hidden');
+            dImg.style.display = ''; dImg.src = url; dImg.classList.remove('hidden'); 
+            dIco.style.display = ''; dIco.classList.add('hidden'); // Clear inline style
+            
+            pImg.style.display = ''; pImg.src = url; pImg.classList.remove('hidden'); 
+            pIco.style.display = ''; pIco.classList.add('hidden'); // Clear inline style
         } else {
-            dImg.classList.add('hidden'); dIco.classList.remove('hidden');
-            pImg.classList.add('hidden'); pIco.classList.remove('hidden');
+            dImg.classList.add('hidden'); 
+            dIco.style.display = ''; dIco.classList.remove('hidden');
+            
+            pImg.classList.add('hidden'); 
+            pIco.style.display = ''; pIco.classList.remove('hidden');
         }
     }
 
@@ -859,7 +989,6 @@
         if(tabId === 'profil') loadProfilForm();
     }
 
-    // --- Logika Baru Upload File ke Supabase Storage ---
     async function uploadFileToSupabase(file, bucketName, filePath) {
         if(!file) throw new Error("File tidak ditemukan");
 
@@ -875,12 +1004,6 @@
         return publicUrl;
     }
 
-    function toggleLampiran() {
-        // Fungsi ini dinonaktifkan karena lampiran selalu muncul, 
-        // namun dibiarkan agar tidak error jika dipanggil
-    }
-
-    // Listener Upload Bukti Izin
     document.getElementById('izin-lampiran-file').addEventListener('change', async function(e) {
         const file = e.target.files[0];
         if (!file || !currentUser) return;
@@ -900,7 +1023,7 @@
         } catch (error) {
             let errorMsg = 'Gagal unggah file.';
             if(error.message && error.message.includes('row-level security')) {
-               errorMsg = 'Akses ditolak. RLS Policy di Storage belum Tepat.';
+               errorMsg = 'Akses ditolak. Cek RLS Policy Storage.';
             }
             statusEl.innerHTML = `<i class="fas fa-times-circle"></i> ${errorMsg}`;
             statusEl.className = 'text-[10px] text-red-500 mt-1 font-bold';
@@ -909,13 +1032,12 @@
         }
     });
 
-    // --- Logika Baru Izin Siswa ---
     async function submitIzin() {
         if(!currentUser) return;
         const jenis = document.getElementById('izin-jenis').value;
         const ket = document.getElementById('izin-keterangan').value.trim();
         const lampiran = document.getElementById('izin-lampiran').value.trim();
-        const tglPengajuan = document.getElementById('izin-tgl-input').value; // Mengambil dari input kalender
+        const tglPengajuan = document.getElementById('izin-tgl-input').value; 
         const btn = document.getElementById('btn-submit-izin');
 
         if(!ket) return showToast('Keterangan tidak boleh kosong!', true);
@@ -943,7 +1065,7 @@
             document.getElementById('izin-lampiran').value = '';
             document.getElementById('lampiran-upload-status').innerText = '';
             
-            loadIzinSiswa(); // Refresh history izin
+            loadIzinSiswa(); 
 
         } catch (error) {
             showToast('Gagal mengirim pengajuan.', true);
@@ -990,8 +1112,7 @@
         });
     }
 
-    // --- Logika Baru Profil Siswa ---
-    // Listener Upload Foto Profil
+    // FIX: Memastikan inline-style display dikosongkan agar icon tidak tumpang tindih
     document.getElementById('edit-foto-file').addEventListener('change', async function(e) {
         const file = e.target.files[0];
         if (!file || !currentUser) return;
@@ -1006,16 +1127,25 @@
             const publicUrl = await uploadFileToSupabase(file, 'foto_profil', fileName);
             
             document.getElementById('edit-foto').value = publicUrl;
-            statusEl.innerHTML = '<i class="fas fa-check-circle"></i> Berhasil diunggah';
+            
+            // Langsung update preview di form
+            document.getElementById('profil-foto-preview').style.display = '';
+            document.getElementById('profil-foto-preview').src = publicUrl;
+            document.getElementById('profil-foto-preview').classList.remove('hidden');
+            
+            // Fix efek ganda: membersihkan inline-style yang ditambahkan onerror sebelumnya
+            document.getElementById('profil-icon').style.display = ''; 
+            document.getElementById('profil-icon').classList.add('hidden');
+
+            statusEl.innerHTML = '<i class="fas fa-check-circle"></i> Berhasil diunggah (Jangan lupa klik Simpan)';
             statusEl.className = 'text-[10px] text-green-600 mt-1 font-bold';
         } catch (error) {
             let errorMsg = 'Gagal unggah foto.';
             if(error.message && error.message.includes('row-level security')) {
-               errorMsg = 'Akses ditolak. RLS Policy di Storage belum Tepat.';
+               errorMsg = 'Akses ditolak. Cek RLS Policy Storage.';
             }
             statusEl.innerHTML = `<i class="fas fa-times-circle"></i> ${errorMsg}`;
             statusEl.className = 'text-[10px] text-red-500 mt-1 font-bold';
-            document.getElementById('edit-foto').value = '';
             console.error(error);
         }
     });
@@ -1027,8 +1157,10 @@
         document.getElementById('edit-foto').value = currentUser.foto_profil || '';
         document.getElementById('edit-nohp').value = currentUser.no_hp || '';
         document.getElementById('edit-alamat').value = currentUser.alamat || '';
+        document.getElementById('edit-password-siswa').value = ''; // Kosongkan password
     }
 
+    // FIX: Memperjelas pesan error ke pengguna apabila kolom tidak ada di database
     async function simpanProfilSiswa() {
         const btn = document.getElementById('btn-simpan-profil');
         const tempat = document.getElementById('edit-tempat-lahir').value.trim();
@@ -1036,13 +1168,19 @@
         const foto = document.getElementById('edit-foto').value.trim();
         const nohp = document.getElementById('edit-nohp').value.trim();
         const alamat = document.getElementById('edit-alamat').value.trim();
+        const passBaru = document.getElementById('edit-password-siswa').value.trim();
 
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
         btn.disabled = true;
 
+        let dataUpdate = { tempat_lahir: tempat, tgl_lahir: tgl, foto_profil: foto, no_hp: nohp, alamat: alamat };
+        if (passBaru !== '') {
+            dataUpdate.password = passBaru;
+        }
+
         try {
             const { error } = await db.from('tabel_siswa')
-                .update({ tempat_lahir: tempat, tgl_lahir: tgl, foto_profil: foto, no_hp: nohp, alamat: alamat })
+                .update(dataUpdate)
                 .eq('nis', currentUser.nis);
 
             if(error) throw error;
@@ -1052,12 +1190,26 @@
             currentUser.foto_profil = foto;
             currentUser.no_hp = nohp;
             currentUser.alamat = alamat;
+            if (passBaru !== '') currentUser.password = passBaru;
+
             updateFotoUI(foto);
             
             showToast('Profil berhasil diperbarui!');
+            document.getElementById('edit-password-siswa').value = ''; 
         } catch (error) {
-            showToast('Gagal menyimpan profil!', true);
-            console.error(error);
+            console.error("Detail Error Siswa:", error);
+            
+            let errMsg = "Gagal menyimpan profil!";
+            if (error.message) {
+                 if (error.message.includes("does not exist")) {
+                     errMsg = "Error DB: Ada kolom profil yang belum dibuat di tabel_siswa (seperti foto_profil, no_hp, dll).";
+                 } else if (error.message.includes("row-level security")) {
+                     errMsg = "Akses ditolak: Aturan RLS di tabel_siswa belum mengizinkan Update.";
+                 } else {
+                     errMsg = error.message;
+                 }
+            }
+            showToast(`Gagal: ${errMsg}`, true);
         } finally {
             btn.innerHTML = '<i class="fas fa-save"></i> Simpan Perubahan';
             btn.disabled = false;
@@ -1098,33 +1250,29 @@
     }
 
     let currentAbsenType = 'masuk';
-    let cameraStream = null; // Menyimpan status kamera
+    let cameraStream = null;
 
-    // Fungsi untuk menyalakan kamera
     async function startCamera() {
         const videoElement = document.getElementById('camera-feed');
         const iconElement = document.getElementById('scan-icon');
         const scanText = document.getElementById('scan-text');
 
         try {
-            // Minta izin kamera (prioritas kamera depan untuk selfie)
             cameraStream = await navigator.mediaDevices.getUserMedia({ 
                 video: { facingMode: "user" },
                 audio: false 
             });
             
             videoElement.srcObject = cameraStream;
-            videoElement.classList.remove('hidden'); // Tampilkan video
-            iconElement.classList.add('hidden'); // Sembunyikan ikon awan
+            videoElement.classList.remove('hidden'); 
+            iconElement.classList.add('hidden'); 
             scanText.innerText = "Deteksi Wajah Aktif...";
         } catch (err) {
             console.error("Gagal akses kamera:", err);
             scanText.innerText = "Kamera tidak diizinkan / tidak tersedia.";
-            // Tetap tampilkan ikon awan jika kamera gagal
         }
     }
 
-    // Fungsi untuk mematikan kamera (Penting untuk hemat baterai/privasi)
     function stopCamera() {
         if (cameraStream) {
             cameraStream.getTracks().forEach(track => track.stop());
@@ -1134,7 +1282,6 @@
         document.getElementById('scan-icon').classList.remove('hidden');
     }
 
-    // Override Fungsi Buka Scanner (Beri Validasi Waktu & Lokasi)
     async function openScanner(type) {
         try {
             const { data } = await db.from('tabel_pengaturan').select('*').limit(1).single();
@@ -1193,14 +1340,11 @@
         document.getElementById('screen-scanner').classList.remove('hidden');
         document.getElementById('screen-scanner').classList.add('flex');
         
-        // Mulai kamera saat UI ditampilkan
         startCamera();
     }
 
     function closeScanner() {
-        // Matikan kamera saat UI ditutup
         stopCamera();
-        
         document.getElementById('screen-scanner').classList.add('hidden');
         document.getElementById('screen-scanner').classList.remove('flex');
         document.getElementById('screen-mobile').classList.remove('hidden');
@@ -1279,6 +1423,15 @@
             document.getElementById('badge-wali-kelas').classList.add('hidden');
         }
 
+        const adminOnlyElements = document.querySelectorAll('.admin-only');
+        if (user.role === 'admin') {
+            adminOnlyElements.forEach(el => el.style.display = '');
+        } else {
+            adminOnlyElements.forEach(el => el.style.display = 'none');
+        }
+
+        updateFotoGuruUI(user.foto_profil);
+
         showScreen('screen-desktop');
         switchGuruMenu('dashboard');
         
@@ -1290,6 +1443,27 @@
 
         loadDashboardGuruData();
     }
+
+    // FIX: Membersihkan inline style saat Guru mengubah Foto Profil
+    function updateFotoGuruUI(url) {
+        const sideImg = document.getElementById('guru-foto-side');
+        const sideIco = document.getElementById('guru-icon-side');
+        const topMobImg = document.getElementById('guru-foto-topmob');
+        const topMobIco = document.getElementById('guru-icon-topmob');
+        const editImg = document.getElementById('edit-preview-foto-guru');
+        const editIco = document.getElementById('edit-icon-guru');
+
+        if (url && url.trim() !== '') {
+            if(sideImg) { sideImg.style.display = ''; sideImg.src = url; sideImg.classList.remove('hidden'); sideIco.style.display = ''; sideIco.classList.add('hidden'); }
+            if(topMobImg) { topMobImg.style.display = ''; topMobImg.src = url; topMobImg.classList.remove('hidden'); topMobIco.style.display = ''; topMobIco.classList.add('hidden'); }
+            if(editImg) { editImg.style.display = ''; editImg.src = url; editImg.classList.remove('hidden'); editIco.style.display = ''; editIco.classList.add('hidden'); }
+        } else {
+            if(sideImg) { sideImg.classList.add('hidden'); sideIco.style.display = ''; sideIco.classList.remove('hidden'); }
+            if(topMobImg) { topMobImg.classList.add('hidden'); topMobIco.style.display = ''; topMobIco.classList.remove('hidden'); }
+            if(editImg) { editImg.classList.add('hidden'); editIco.style.display = ''; editIco.classList.remove('hidden'); }
+        }
+    }
+
 
     function switchGuruMenu(targetId) {
         document.querySelectorAll('.guru-section').forEach(s => s.classList.add('hidden'));
@@ -1310,15 +1484,14 @@
             b.classList.add('text-teal-600');
         });
 
-        // Auto load data saat buka tab
         if(targetId === 'siswa') loadDataSiswa();
         if(targetId === 'guru') loadDataGuru();
         if(targetId === 'rekap') loadDataRekap();
         if(targetId === 'izin-admin') loadIzinAdmin();
         if(targetId === 'pengaturan') loadPengaturan();
+        if(targetId === 'profil-guru') loadProfilGuru();
     }
 
-    // --- Logika Izin untuk Admin ---
     async function loadIzinAdmin() {
         const tbody = document.getElementById('tabel-data-izin-admin');
         tbody.innerHTML = '<tr><td colspan="6" class="text-center p-8"><i class="fas fa-spinner fa-spin text-teal-600 text-2xl"></i><p class="text-sm mt-2 text-gray-500">Menarik data dari Cloud...</p></td></tr>';
@@ -1358,7 +1531,7 @@
             const { error } = await db.from('tabel_izin').update({ status: statusBaru }).eq('id', id);
             if(error) throw error;
             showToast(`Pengajuan berhasil ${statusBaru.toLowerCase()}!`);
-            loadIzinAdmin(); // Refresh data table
+            loadIzinAdmin(); 
         } catch (error) {
             console.error(error);
             showToast('Gagal mengubah status', true);
@@ -1592,7 +1765,7 @@
     }
 
     // ==========================================
-    // 6. PENGATURAN (WAKTU & LOKASI GPS)
+    // 6. PENGATURAN & TAMPILAN
     // ==========================================
     let cachedPengaturan = null;
 
@@ -1610,6 +1783,18 @@
                 document.getElementById('set-lat').value = data.lokasi_lat || '';
                 document.getElementById('set-lng').value = data.lokasi_lng || '';
                 document.getElementById('set-radius').value = data.radius || '';
+                
+                document.getElementById('set-logo-url').value = data.logo_url || '';
+                document.getElementById('set-bg-url').value = data.bg_url || '';
+                
+                if(data.logo_url) {
+                    document.getElementById('preview-logo-setting').src = data.logo_url;
+                    document.getElementById('preview-logo-setting').classList.remove('hidden');
+                }
+                if(data.bg_url) {
+                    document.getElementById('preview-bg-setting').src = data.bg_url;
+                    document.getElementById('preview-bg-setting').classList.remove('hidden');
+                }
             }
         } catch(err) {
             console.log("Belum ada data pengaturan.");
@@ -1636,30 +1821,70 @@
         }
     }
 
+    async function handleTampilanUpload(fileInputId, statusId, hiddenInputId, previewId) {
+        const file = document.getElementById(fileInputId).files[0];
+        if (!file) return;
+        
+        const statusEl = document.getElementById(statusId);
+        statusEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mengunggah...';
+        statusEl.className = 'text-[10px] text-teal-600 mt-1 font-bold';
+
+        try {
+            const fileExt = file.name.split('.').pop();
+            const fileName = `aset_${fileInputId}_${Date.now()}.${fileExt}`;
+            const publicUrl = await uploadFileToSupabase(file, 'aset_aplikasi', fileName);
+            
+            document.getElementById(hiddenInputId).value = publicUrl;
+            const previewEl = document.getElementById(previewId);
+            previewEl.src = publicUrl;
+            previewEl.classList.remove('hidden');
+            
+            statusEl.innerHTML = '<i class="fas fa-check-circle"></i> Berhasil diunggah';
+            statusEl.className = 'text-[10px] text-green-600 mt-1 font-bold';
+        } catch (error) {
+            statusEl.innerHTML = `<i class="fas fa-times-circle"></i> Gagal unggah. Cek bucket 'aset_aplikasi' dan RLS.`;
+            statusEl.className = 'text-[10px] text-red-500 mt-1 font-bold';
+            console.error(error);
+        }
+    }
+
+    document.getElementById('set-logo-file').addEventListener('change', () => handleTampilanUpload('set-logo-file', 'status-logo-upload', 'set-logo-url', 'preview-logo-setting'));
+    document.getElementById('set-bg-file').addEventListener('change', () => handleTampilanUpload('set-bg-file', 'status-bg-upload', 'set-bg-url', 'preview-bg-setting'));
+
     async function simpanPengaturan() {
         const btn = document.getElementById('btn-save-pengaturan');
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
+        btn.disabled = true;
         
         const payload = {
-            id: 1,
+            id: 1, // Asumsi row pengaturan selalu ID 1
             jam_masuk_mulai: document.getElementById('set-jam-masuk-buka').value,
             jam_masuk_akhir: document.getElementById('set-jam-masuk-tutup').value,
             jam_pulang_mulai: document.getElementById('set-jam-pulang').value,
             lokasi_lat: document.getElementById('set-lat').value,
             lokasi_lng: document.getElementById('set-lng').value,
-            radius: document.getElementById('set-radius').value
+            radius: document.getElementById('set-radius').value,
+            logo_url: document.getElementById('set-logo-url').value, 
+            bg_url: document.getElementById('set-bg-url').value      
         };
 
         try {
             const { error } = await db.from('tabel_pengaturan').upsert(payload);
-            if(error) throw error;
+            if(error) {
+                if (error.message && error.message.includes("does not exist")) {
+                   throw new Error("Kolom logo_url atau bg_url belum dibuat di tabel_pengaturan Supabase!");
+                }
+                throw error;
+            }
             cachedPengaturan = payload;
             showToast('Pengaturan berhasil disimpan ke Cloud!');
         } catch (err) {
-            showToast('Gagal menyimpan. Pastikan tabel_pengaturan sudah dibuat!', true);
-            console.error(err);
+            const errorMsg = err.message || 'Terjadi kesalahan saat menyimpan.';
+            showToast(`Gagal menyimpan: ${errorMsg}`, true);
+            console.error("Detail Error Supabase:", err);
         } finally {
             btn.innerHTML = '<i class="fas fa-save"></i> Simpan Pengaturan';
+            btn.disabled = false;
         }
     }
 
@@ -1676,6 +1901,129 @@
         const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 
         return R * c; 
+    }
+
+    // ==========================================
+    // 7. PENGATURAN AKUN GURU (BARU)
+    // ==========================================
+    // FIX: Memastikan icon profil dihapus gaya inline-nya agar foto baru tampil bersih
+    document.getElementById('edit-foto-guru-file').addEventListener('change', async function(e) {
+        const file = e.target.files[0];
+        if (!file || !currentUser || currentUser.role !== 'guru') return;
+        
+        const statusEl = document.getElementById('status-foto-guru-upload');
+        statusEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mengunggah foto...';
+        statusEl.className = 'text-xs text-teal-600 mt-1 font-bold';
+
+        try {
+            const fileExt = file.name.split('.').pop();
+            const fileName = `profil_guru_${currentUser.nip}_${Date.now()}.${fileExt}`;
+            const publicUrl = await uploadFileToSupabase(file, 'foto_profil', fileName);
+            
+            document.getElementById('edit-foto-guru-url').value = publicUrl;
+            
+            // Langsung update preview di form
+            document.getElementById('edit-preview-foto-guru').style.display = '';
+            document.getElementById('edit-preview-foto-guru').src = publicUrl;
+            document.getElementById('edit-preview-foto-guru').classList.remove('hidden');
+            
+            // Membersihkan sisa style dari onerror sebelumnya
+            document.getElementById('edit-icon-guru').style.display = '';
+            document.getElementById('edit-icon-guru').classList.add('hidden');
+
+            statusEl.innerHTML = '<i class="fas fa-check-circle"></i> Berhasil diunggah (Jangan lupa klik Simpan)';
+            statusEl.className = 'text-xs text-green-600 mt-1 font-bold';
+        } catch (error) {
+            let errorMsg = 'Gagal unggah foto.';
+            if(error.message && error.message.includes('row-level security')) {
+               errorMsg = 'Akses ditolak. Cek RLS Policy Storage.';
+            }
+            statusEl.innerHTML = `<i class="fas fa-times-circle"></i> ${errorMsg}`;
+            statusEl.className = 'text-xs text-red-500 mt-1 font-bold';
+            console.error(error);
+        }
+    });
+
+    function loadProfilGuru() {
+        if(!currentUser || currentUser.role === 'admin') {
+             document.getElementById('lbl-nama-guru').innerText = currentUser ? currentUser.nama : "Admin";
+             document.getElementById('lbl-nip-guru').innerText = "Akun Master tidak dapat diubah di sini.";
+             document.getElementById('edit-foto-guru-file').disabled = true;
+             document.getElementById('edit-password-guru').disabled = true;
+             document.getElementById('btn-simpan-profil-guru').disabled = true;
+             return;
+        }
+
+        document.getElementById('lbl-nama-guru').innerText = currentUser.nama;
+        document.getElementById('lbl-nip-guru').innerText = `NIP: ${currentUser.nip} | ${currentUser.jabatan || 'Guru'}`;
+        
+        document.getElementById('edit-foto-guru-url').value = currentUser.foto_profil || '';
+        document.getElementById('edit-password-guru').value = ''; 
+        
+        if (currentUser.foto_profil) {
+             const editImg = document.getElementById('edit-preview-foto-guru');
+             editImg.style.display = ''; 
+             editImg.src = currentUser.foto_profil;
+             editImg.classList.remove('hidden');
+             document.getElementById('edit-icon-guru').style.display = '';
+             document.getElementById('edit-icon-guru').classList.add('hidden');
+        }
+    }
+
+    // FIX: Memperjelas penanganan Error untuk menampilkan indikasi kolom belum dibuat di tabel_guru
+    async function simpanProfilGuru() {
+        if(!currentUser || currentUser.role !== 'guru') return;
+
+        const btn = document.getElementById('btn-simpan-profil-guru');
+        const fotoUrl = document.getElementById('edit-foto-guru-url').value.trim();
+        const passBaru = document.getElementById('edit-password-guru').value.trim();
+
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
+        btn.disabled = true;
+
+        let dataUpdate = {};
+        if (fotoUrl !== '') dataUpdate.foto_profil = fotoUrl;
+        if (passBaru !== '') dataUpdate.password = passBaru;
+
+        if (Object.keys(dataUpdate).length === 0) {
+             showToast('Tidak ada perubahan yang disimpan.');
+             btn.innerHTML = '<i class="fas fa-save"></i> Simpan Perubahan Akun';
+             btn.disabled = false;
+             return;
+        }
+
+        try {
+            const { error } = await db.from('tabel_guru')
+                .update(dataUpdate)
+                .eq('nip', currentUser.nip);
+
+            if(error) throw error;
+
+            if (fotoUrl !== '') currentUser.foto_profil = fotoUrl;
+            if (passBaru !== '') currentUser.password = passBaru;
+
+            updateFotoGuruUI(fotoUrl);
+            
+            showToast('Profil akun berhasil diperbarui!');
+            document.getElementById('edit-password-guru').value = ''; 
+        } catch (error) {
+            console.error("Detail Error Guru:", error);
+            
+            let errMsg = "Gagal menyimpan profil!";
+            if (error.message) {
+                 if (error.message.includes("does not exist")) {
+                     errMsg = "Error DB: Kolom 'foto_profil' atau 'password' belum dibuat di tabel_guru.";
+                 } else if (error.message.includes("row-level security")) {
+                     errMsg = "Akses ditolak: Aturan RLS di tabel_guru belum mengizinkan Update.";
+                 } else {
+                     errMsg = error.message;
+                 }
+            }
+            showToast(`Gagal: ${errMsg}`, true);
+        } finally {
+            btn.innerHTML = '<i class="fas fa-save"></i> Simpan Perubahan Akun';
+            btn.disabled = false;
+        }
     }
 
 </script>
