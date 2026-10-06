@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Aplikasi Presensi Siswa Mandiri</title>
     
     <!-- Library CSS -->
@@ -36,15 +36,18 @@
         @keyframes scanMove { 0% { top: 0; } 50% { top: 100%; } 100% { top: 0; } }
         
         .device-frame {
-            width: 100%; max-width: 400px; height: 100vh; max-height: 850px;
+            width: 100%; max-width: 400px; 
+            height: 100vh; /* Fallback untuk browser lawas */
+            height: 100dvh; /* Dynamic Viewport - Mengatasi bug Address Bar HP */
+            max-height: 850px;
             margin: 0 auto; background: white; position: relative; overflow: hidden;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
         }
         
         @media (min-width: 768px) {
-            .device-frame { height: 90vh; border-radius: 40px; border: 12px solid #1f2937; margin-top: 5vh; }
+            .device-frame { height: 90vh; height: 90dvh; border-radius: 40px; border: 12px solid #1f2937; margin-top: 5vh; }
             .desktop-mode { 
-                max-width: 1200px; height: 90vh; border-radius: 20px; border: none; 
+                max-width: 1200px; height: 90vh; height: 90dvh; border-radius: 20px; border: none; 
                 display: flex; flex-direction: row; margin-top: 5vh;
             }
         }
@@ -163,9 +166,8 @@
         <!-- Main Content Scrollable Area -->
         <div class="relative z-10 w-full h-full flex flex-col overflow-y-auto custom-scroll px-6 pt-10 pb-16">
             
-            <!-- Header: Logo & School Info (PERBAIKAN TAMPILAN BACKGROUND BULATAN PUTIH) -->
+            <!-- Header: Logo & School Info (Background Bulat Transparan) -->
             <div class="flex items-center gap-3 mb-8">
-                <!-- Class bg-white, rounded-full, border, dan shadow dihilangkan agar transparan -->
                 <div class="w-14 h-14 shrink-0 flex items-center justify-center">
                     <img id="login-logo-img" src="" onerror="this.style.display='none'; document.getElementById('login-logo-icon').style.display='block';" class="w-full h-full object-contain hidden drop-shadow-md">
                     <i id="login-logo-icon" class="fas fa-school text-teal-600 text-4xl"></i>
@@ -238,10 +240,12 @@
     </div>
 
     <!-- 3. MOBILE APP (SISWA) -->
+    <!-- PERUBAHAN LAYOUT: Bottom Nav dibuat menjejak (shrink-0), tidak lagi melayang (absolute) -->
     <div id="screen-mobile" class="absolute inset-0 bg-gray-50 hidden flex-col">
         
         <!-- Dashboard Siswa -->
-        <div id="tab-dashboard" class="flex-1 custom-scroll overflow-y-auto pb-24 hidden bg-[#f8fafc]">
+        <!-- Perhatikan padding-bottom disesuaikan menjadi pb-6 agar proporsional dengan menu bawah yang solid -->
+        <div id="tab-dashboard" class="flex-1 custom-scroll overflow-y-auto pb-6 hidden bg-[#f8fafc]">
             <!-- Header Baru bergaya Modern -->
             <div class="px-6 pt-10 pb-4 bg-white sticky top-0 z-20 flex justify-between items-center shadow-[0_2px_10px_rgba(0,0,0,0.02)]">
                 <div class="flex items-center gap-3">
@@ -342,7 +346,7 @@
         </div>
 
         <!-- Histori Siswa -->
-        <div id="tab-histori" class="flex-1 custom-scroll overflow-y-auto pb-24 hidden bg-gray-50">
+        <div id="tab-histori" class="flex-1 custom-scroll overflow-y-auto pb-6 hidden bg-gray-50">
             <div class="bg-white pt-12 pb-4 px-6 sticky top-0 z-20 shadow-sm flex justify-between items-center">
                 <div class="flex items-center gap-4">
                     <button onclick="switchTabMobile('dashboard')"><i class="fas fa-arrow-left text-gray-600"></i></button>
@@ -357,7 +361,7 @@
         </div>
 
         <!-- Tab: Pengajuan Izin/Sakit Siswa -->
-        <div id="tab-izin" class="flex-1 custom-scroll overflow-y-auto pb-24 hidden bg-gray-50">
+        <div id="tab-izin" class="flex-1 custom-scroll overflow-y-auto pb-6 hidden bg-gray-50">
             <div class="bg-white pt-12 pb-4 px-6 sticky top-0 z-20 shadow-sm flex justify-between items-center">  
                 <div class="flex items-center gap-4">
                     <button onclick="switchTabMobile('dashboard')"><i class="fas fa-arrow-left text-gray-600"></i></button>
@@ -406,7 +410,7 @@
         </div>
 
         <!-- Tab: Profil Lengkap Siswa -->
-        <div id="tab-profil" class="flex-1 custom-scroll overflow-y-auto pb-24 hidden bg-[#f4f7fb]">
+        <div id="tab-profil" class="flex-1 custom-scroll overflow-y-auto pb-6 hidden bg-[#f4f7fb]">
             <!-- Header Profil -->
             <div class="px-6 pt-12 pb-4 bg-[#f4f7fb] sticky top-0 z-20 flex justify-between items-center">
                 <button onclick="switchTabMobile('menu')" class="text-gray-800 hover:text-blue-600 transition-colors"><i class="fas fa-chevron-left text-lg"></i></button>
@@ -528,7 +532,7 @@
         </div>
 
         <!-- Tab: Menu Utama Siswa (BARU) -->
-        <div id="tab-menu" class="flex-1 custom-scroll overflow-y-auto pb-24 hidden bg-[#f8fafc]">
+        <div id="tab-menu" class="flex-1 custom-scroll overflow-y-auto pb-6 hidden bg-[#f8fafc]">
             <!-- Header Latar Biru Modern -->
             <div class="bg-blue-600 pt-12 pb-20 px-6 text-white relative rounded-b-[2.5rem] shadow-md overflow-hidden">
                 <div class="flex justify-between items-center mb-2 relative z-10">
@@ -634,8 +638,8 @@
             </div>
         </div>
 
-        <!-- Bottom Navigation -->
-        <div class="absolute bottom-0 w-full bg-white border-t border-gray-100 flex justify-around items-center pb-6 pt-3 px-2 shadow-[0_-10px_20px_rgba(0,0,0,0.03)] z-30">
+        <!-- Bottom Navigation - Disesuaikan agar selalu menjejak (shrink-0 relative) -->
+        <div class="w-full shrink-0 relative bg-white border-t border-gray-100 flex justify-around items-center pb-6 pt-3 px-2 shadow-[0_-10px_20px_rgba(0,0,0,0.03)] z-30">
             <button onclick="switchTabMobile('dashboard')" id="nav-dashboard" class="flex flex-col items-center text-teal-600 w-16">
                 <i class="fas fa-home text-xl mb-1"></i>
                 <span class="text-[10px] font-bold">Beranda</span>
@@ -648,7 +652,6 @@
                 <i class="fas fa-envelope-open-text text-xl mb-1"></i>
                 <span class="text-[10px] font-bold">Izin/Sakit</span>
             </button>
-            <!-- Tombol Navigasi Menu Baru -->
             <button onclick="switchTabMobile('menu')" id="nav-menu" class="flex flex-col items-center text-gray-400 w-16">
                 <i class="fas fa-th-large text-xl mb-1"></i>
                 <span class="text-[10px] font-bold">Menu</span>
@@ -793,7 +796,7 @@
 
         <!-- Main Content Area (Guru) -->
         <div class="flex-1 flex flex-col h-full bg-gray-50 w-full relative">
-            <div class="md:hidden bg-white px-6 pt-10 pb-4 shadow-sm flex justify-between items-center z-10 sticky top-0">
+            <div class="md:hidden bg-white px-6 pt-10 pb-4 shadow-sm flex justify-between items-center z-10 sticky top-0 shrink-0">
                 <div>
                     <h2 class="font-bold text-lg text-gray-800">Panel Admin</h2>
                     <p id="guru-name-mob" class="text-xs text-teal-600 font-bold"><i class="fas fa-circle text-[8px]"></i> Supabase Connected</p>
@@ -807,7 +810,7 @@
                 </div>
             </div>
 
-            <div class="flex-1 overflow-y-auto custom-scroll p-4 md:p-8 pb-24 md:pb-8">
+            <div class="flex-1 overflow-y-auto custom-scroll p-4 md:p-8 pb-6 md:pb-8">
                 
                 <!-- GURU: DASHBOARD -->
                 <div id="guru-section-dashboard" class="guru-section animate-fade-in block">
@@ -1162,7 +1165,8 @@
 
             </div>
 
-            <nav class="md:hidden bg-white border-t border-gray-100 flex justify-around items-center pb-6 pt-3 px-2 shadow-[0_-10px_20px_rgba(0,0,0,0.03)] z-20 absolute bottom-0 w-full overflow-x-auto custom-scroll gap-2">
+            <!-- Perbaikan layout mobile Bottom Nav untuk Admin/Guru -->
+            <nav class="md:hidden shrink-0 relative bg-white border-t border-gray-100 flex justify-around items-center pb-6 pt-3 px-2 shadow-[0_-10px_20px_rgba(0,0,0,0.03)] z-20 w-full overflow-x-auto custom-scroll gap-2">
                 <button onclick="switchGuruMenu('dashboard')" class="guru-mobnav-btn flex flex-col items-center text-teal-600 min-w-[56px]" data-target="dashboard">
                     <i class="fas fa-border-all text-xl mb-1"></i>
                     <span class="text-[9px] font-bold">Beranda</span>
@@ -2476,7 +2480,7 @@
         if(localRekapCache.length === 0) return showToast('Data kosong', true);
         
         const dataToExport = localRekapCache.map((log, i) => ({
-            'No': i + 1, 'Tanggal': log.tanggal, 'NIS': log.nama, 'Nama': log.nama,
+            'No': i + 1, 'Tanggal': log.tanggal, 'NIS': log.nis, 'Nama': log.nama,
             'Kelas': log.kelas, 'Masuk': log.jam_masuk, 'Pulang': log.jam_pulang
         }));
 
@@ -2588,7 +2592,6 @@
     document.getElementById('set-logo-file').addEventListener('change', () => handleTampilanUpload('set-logo-file', 'status-logo-upload', 'set-logo-url', 'preview-logo-setting'));
     document.getElementById('set-bg-file').addEventListener('change', () => handleTampilanUpload('set-bg-file', 'status-bg-upload', 'set-bg-url', 'preview-bg-setting'));
     document.getElementById('set-logo-sekolah-file').addEventListener('change', () => handleTampilanUpload('set-logo-sekolah-file', 'status-logo-sekolah-upload', 'set-logo-sekolah-url', 'preview-logo-sekolah-setting'));
-
 
     async function simpanPengaturan() {
         const btn = document.getElementById('btn-save-pengaturan');
