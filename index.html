@@ -21,11 +21,17 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; overflow: hidden;}
         
+        input[type="password"]::-ms-reveal,
+        input[type="password"]::-ms-clear {
+            display: none;
+        }
+
         .bg-teal-gradient { background: linear-gradient(135deg, #0f766e 0%, #064e3b 100%); }
         .bg-blue-teal { background-color: #08838b; }
         
         .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
         .animate-scan { animation: scanMove 2s infinite linear; }
         @keyframes scanMove { 0% { top: 0; } 50% { top: 100%; } 100% { top: 0; } }
         
@@ -48,9 +54,24 @@
             clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
             border: 4px solid #00f6ff; box-shadow: 0 0 20px #00f6ff;
         }
+        
         .glow-btn { box-shadow: 0 0 15px rgba(0, 255, 128, 0.6); }
         .custom-scroll::-webkit-scrollbar { width: 5px; height: 5px; }
         .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 5px; }
+
+        .animate-soft-pulse {
+            animation: softPulse 2s infinite cubic-bezier(0.4, 0, 0.6, 1);
+        }
+        @keyframes softPulse {
+            0%, 100% {
+                box-shadow: 0 0 15px rgba(16, 185, 129, 0.4), 0 0 30px rgba(16, 185, 129, 0.2);
+                transform: scale(1);
+            }
+            50% {
+                box-shadow: 0 0 25px rgba(16, 185, 129, 0.8), 0 0 50px rgba(16, 185, 129, 0.4);
+                transform: scale(1.05);
+            }
+        }
     </style>
 </head>
 <body class="flex justify-center items-center min-h-screen text-gray-800">
@@ -99,10 +120,9 @@
     
     <!-- 1. SPLASH SCREEN -->
     <div id="screen-splash" class="absolute inset-0 bg-white flex flex-col items-center justify-center z-50 transition-opacity duration-500">
-        <div class="relative w-full h-full flex flex-col items-center justify-center overflow-hidden z-10" style="background: inherit;">
+        <div class="relative w-full h-full flex flex-col items-center justify-center overflow-hidden z-10" style="background: inherit;">            
             <div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(#08838b 1px, transparent 1px); background-size: 20px 20px; z-index: -1;"></div>
             
-            <!-- Perbaikan Logo Landing Page -->
             <div id="splash-logo-container" class="w-auto h-32 mb-6 z-10 flex items-center justify-center">
                 <div id="default-splash-icon" class="w-32 h-32 rounded-full border-4 border-teal-600 p-2 shadow-lg bg-white flex items-center justify-center overflow-hidden">
                     <i class="fas fa-cloud text-5xl text-teal-600"></i>
@@ -121,28 +141,99 @@
     </div>
 
     <!-- 2. LOGIN SCREEN -->
-    <div id="screen-login" class="absolute inset-0 bg-white z-40 hidden flex-col justify-center px-8">
-        <h2 class="text-3xl font-bold text-teal-700 mb-2">Masuk</h2>
-        <p class="text-gray-500 mb-8 text-sm">Silakan masuk menggunakan NIS atau NIP Anda.</p>
-        
-        <div class="space-y-4">
-            <div>
-                <label class="block text-xs font-semibold text-gray-600 mb-1">ID Pengguna (NIS/NIP)</label>
-                <input type="text" id="login-id" class="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500" placeholder="Masukkan ID Anda">
+    <div id="screen-login" class="absolute inset-0 bg-[#f4f8fd] z-40 hidden flex-col overflow-hidden">
+        <!-- Background Decoration (Top Gradient) -->
+        <div class="absolute top-0 left-0 w-full h-[60%] bg-gradient-to-b from-blue-100/60 to-transparent z-0 pointer-events-none"></div>
+        <div class="absolute top-0 right-0 w-64 h-64 bg-teal-200/20 rounded-full blur-3xl -mr-20 -mt-20 z-0 pointer-events-none"></div>
+
+        <!-- Background Decoration (Bottom Wave) -->
+        <div class="absolute bottom-0 left-0 w-full z-0 flex flex-col justify-end h-[35%] pointer-events-none">
+            <svg viewBox="0 0 1440 320" class="w-full h-auto -mb-1" preserveAspectRatio="none">
+                <path fill="#0284c7" fill-opacity="1" d="M0,160L48,176C96,192,192,224,288,218.7C384,213,480,171,576,160C672,149,768,171,864,197.3C960,224,1056,256,1152,245.3C1248,235,1344,181,1392,154.7L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
+            </svg>
+            <div class="bg-[#0284c7] w-full flex-1 flex justify-between items-start px-8 pt-2 overflow-hidden relative">
+                <div class="text-white transform -rotate-6 relative z-10 mt-2">
+                    <p class="font-serif italic font-bold text-lg leading-tight text-blue-100">Bersama Teknologi</p>
+                    <p class="font-serif italic font-bold text-lg leading-tight text-white">Menuju Prestasi</p>
+                </div>
+                <i class="fas fa-video text-white/20 text-7xl transform rotate-12 -mt-6 -mr-4"></i>
             </div>
-            <div>
-                <label class="block text-xs font-semibold text-gray-600 mb-1">Kata Sandi</label>
-                <input type="password" id="login-pass" class="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500" placeholder="••••••••">
-            </div>
-            <button id="btn-login" onclick="handleLogin()" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-3 rounded-xl shadow-md transition-all mt-4 flex justify-center items-center gap-2">
-                <span>Masuk Sistem</span>
-            </button>
-            <p id="login-error" class="text-red-500 text-xs text-center mt-2 hidden">ID atau Kata Sandi salah!</p>
         </div>
-        
-        <div class="mt-8 pt-6 border-t border-gray-100 text-xs text-gray-500">
-            <p class="font-bold mb-1">Status Database Cloud:</p>
-            <p id="db-status-indicator" class="text-orange-500"><i class="fas fa-spinner fa-spin"></i> Mengecek koneksi...</p>
+
+        <!-- Main Content Scrollable Area -->
+        <div class="relative z-10 w-full h-full flex flex-col overflow-y-auto custom-scroll px-6 pt-10 pb-16">
+            
+            <!-- Header: Logo & School Info (PERBAIKAN TAMPILAN BACKGROUND BULATAN PUTIH) -->
+            <div class="flex items-center gap-3 mb-8">
+                <!-- Class bg-white, rounded-full, border, dan shadow dihilangkan agar transparan -->
+                <div class="w-14 h-14 shrink-0 flex items-center justify-center">
+                    <img id="login-logo-img" src="" onerror="this.style.display='none'; document.getElementById('login-logo-icon').style.display='block';" class="w-full h-full object-contain hidden drop-shadow-md">
+                    <i id="login-logo-icon" class="fas fa-school text-teal-600 text-4xl"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-blue-900 text-sm leading-tight">SMKN 1 Tasikmalaya<br><span class="text-teal-600 text-[11px]">BROADCASTING & PERFILMAN</span></h1>
+                    <p class="text-[9px] text-gray-500 font-medium tracking-wide mt-0.5">Disiplin . Kreatif . Profesional</p>
+                </div>
+            </div>
+
+            <!-- Greeting Titles -->
+            <div class="mb-16">
+                <h2 class="text-4xl font-extrabold text-[#1e3a8a] mb-1 tracking-tight drop-shadow-sm">Selamat Datang</h2>
+                <h3 class="text-lg text-blue-800 font-medium mb-3">di Aplikasi Presensi Siswa</h3>
+                <p class="text-[11px] text-gray-600 leading-relaxed max-w-[85%]">Masuk untuk mengakses fitur presensi, jadwal, dan informasi sekolah.</p>
+            </div>
+
+            <!-- Login Floating Card -->
+            <div class="bg-white/95 backdrop-blur-md rounded-[2rem] p-6 shadow-[0_15px_40px_rgba(0,0,0,0.08)] relative mt-auto border border-white/50">
+                <!-- Avatar Floating Badge -->
+                <div class="absolute -top-10 left-1/2 transform -translate-x-1/2">
+                    <div class="w-20 h-20 rounded-full bg-gradient-to-b from-[#2dd4bf] to-[#2563eb] p-1 shadow-xl">
+                        <div class="w-full h-full rounded-full border-2 border-white flex items-center justify-center text-white text-3xl">
+                            <i class="fas fa-user-graduate"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-10 space-y-5">
+                    <!-- Form Input: ID -->
+                    <div class="flex items-start gap-4">
+                        <div class="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-teal-600 shrink-0 mt-1 shadow-sm border border-blue-100">
+                            <i class="fas fa-user text-sm"></i>
+                        </div>
+                        <div class="flex-1">
+                            <label class="block text-[11px] font-bold text-blue-900 mb-1.5">ID Pengguna (NIS/NIP)</label>
+                            <input type="text" id="login-id" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 text-gray-700 bg-gray-50 hover:bg-white transition-colors" placeholder="Masukkan ID Anda">
+                        </div>
+                    </div>
+
+                    <!-- Form Input: Password -->
+                    <div class="flex items-start gap-4">
+                        <div class="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-teal-600 shrink-0 mt-1 shadow-sm border border-blue-100">
+                            <i class="fas fa-lock text-sm"></i>
+                        </div>
+                        <div class="flex-1 relative">
+                            <label class="block text-[11px] font-bold text-blue-900 mb-1.5">Kata Sandi</label>
+                            <input type="password" id="login-pass" class="w-full border border-gray-200 rounded-xl pl-4 pr-10 py-3 text-sm outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 text-gray-700 bg-gray-50 hover:bg-white transition-colors" placeholder="Masukkan kata sandi">
+                            <button type="button" onclick="togglePasswordVisibility()" class="absolute right-3 top-[28px] w-8 h-8 flex items-center justify-center text-gray-400 hover:text-teal-600 transition-colors">
+                                <i class="fas fa-eye" id="eye-icon"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <p id="login-error" class="text-red-500 text-[11px] font-bold text-center hidden bg-red-50 p-2 rounded-lg border border-red-100"><i class="fas fa-exclamation-triangle mr-1"></i> ID atau Kata Sandi salah!</p>
+
+                    <!-- Login Button -->
+                    <button id="btn-login" onclick="handleLogin()" class="w-full bg-gradient-to-r from-[#0d9488] to-[#0284c7] hover:from-teal-600 hover:to-blue-700 text-white font-bold py-4 rounded-full shadow-[0_8px_20px_rgba(13,148,136,0.3)] transition-all flex justify-center items-center gap-3 active:scale-95 mt-4">
+                        <span class="w-6 h-6 bg-white rounded-full flex items-center justify-center text-teal-600 shadow-sm"><i class="fas fa-arrow-right text-[10px]"></i></span>
+                        <span class="text-sm tracking-wide">Masuk Sistem</span>
+                    </button>
+
+                    <!-- Database Status Indicator -->
+                    <div class="mt-4 pt-4 border-t border-gray-100 flex justify-center">
+                        <p id="db-status-indicator" class="text-orange-500 text-[11px] font-semibold text-center"><i class="fas fa-spinner fa-spin"></i> Mengecek koneksi...</p>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -267,7 +358,7 @@
 
         <!-- Tab: Pengajuan Izin/Sakit Siswa -->
         <div id="tab-izin" class="flex-1 custom-scroll overflow-y-auto pb-24 hidden bg-gray-50">
-            <div class="bg-white pt-12 pb-4 px-6 sticky top-0 z-20 shadow-sm flex justify-between items-center">
+            <div class="bg-white pt-12 pb-4 px-6 sticky top-0 z-20 shadow-sm flex justify-between items-center">  
                 <div class="flex items-center gap-4">
                     <button onclick="switchTabMobile('dashboard')"><i class="fas fa-arrow-left text-gray-600"></i></button>
                     <h2 class="font-bold text-lg text-gray-800">Pengajuan Izin</h2>
@@ -315,58 +406,230 @@
         </div>
 
         <!-- Tab: Profil Lengkap Siswa -->
-        <div id="tab-profil" class="flex-1 custom-scroll overflow-y-auto pb-24 hidden bg-gray-50">
-            <div class="bg-blue-teal curved-header pt-12 pb-16 px-6 text-white text-center">
-                <div class="w-24 h-24 bg-white rounded-full mx-auto mb-3 flex items-center justify-center overflow-hidden border-4 border-white/30 relative">
-                    <img id="profil-foto-preview" src="" onerror="this.style.display='none'; document.getElementById('profil-icon').style.display='block';" class="absolute inset-0 w-full h-full object-cover z-10 hidden">
-                    <i id="profil-icon" class="fas fa-user text-4xl text-teal-600"></i>
-                </div>
-                <h2 id="profil-name" class="font-bold text-xl truncate px-2">Nama Siswa</h2>
-                <p id="profil-jurusan" class="text-xs text-teal-100 mt-1">Jurusan</p>
+        <div id="tab-profil" class="flex-1 custom-scroll overflow-y-auto pb-24 hidden bg-[#f4f7fb]">
+            <!-- Header Profil -->
+            <div class="px-6 pt-12 pb-4 bg-[#f4f7fb] sticky top-0 z-20 flex justify-between items-center">
+                <button onclick="switchTabMobile('menu')" class="text-gray-800 hover:text-blue-600 transition-colors"><i class="fas fa-chevron-left text-lg"></i></button>
+                <h2 class="font-bold text-lg text-gray-800">Profil Saya</h2>
+                <button onclick="handleLogout()" class="text-gray-400 hover:text-red-500 transition-colors"><i class="fas fa-sign-out-alt text-lg"></i></button>
             </div>
             
-            <div class="px-6 -mt-8 relative z-10">
-                <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 mb-6">
-                    <h3 class="font-bold text-gray-800 mb-4 text-sm border-b pb-2">Pengaturan Data Diri</h3>
+            <!-- Foto & Nama Profil -->
+            <div class="flex flex-col items-center mt-2 mb-6 px-6 relative z-10">
+                <div class="w-28 h-28 rounded-full p-1 bg-white shadow-sm relative mb-4">
+                    <div class="w-full h-full rounded-full overflow-hidden bg-gradient-to-b from-red-500 to-red-600 flex items-center justify-center relative">
+                        <img id="profil-foto-preview" src="" onerror="this.style.display='none'; document.getElementById('profil-icon').style.display='block';" class="absolute inset-0 w-full h-full object-cover z-10 hidden">
+                        <i id="profil-icon" class="fas fa-user text-5xl text-white opacity-80"></i>
+                    </div>
                     
+                    <!-- Tombol Upload Camera Ganti Foto -->
+                    <label for="edit-foto-file" class="absolute bottom-0 right-0 w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white border-[2.5px] border-white shadow-md cursor-pointer hover:bg-blue-700 hover:scale-105 transition-all z-20">
+                        <i class="fas fa-camera text-xs"></i>
+                    </label>
+                    <input type="file" id="edit-foto-file" accept="image/*" class="hidden">
+                    <input type="hidden" id="edit-foto">
+                </div>
+                <p class="text-[10px] text-teal-600 font-bold mb-2 hidden text-center" id="foto-upload-status"></p>
+                
+                <h2 id="profil-name" class="font-bold text-xl text-gray-800 text-center leading-tight">Nama Siswa</h2>
+                <p id="profil-jurusan" class="text-sm text-gray-600 mt-1 text-center font-medium">Tingkat - Jurusan</p>
+                <p class="text-[11px] text-gray-500 mt-0.5 text-center" id="profil-sekolah-label">SMK Negeri 1 Tasikmalaya</p>
+            </div>
+
+            <!-- Kartu Info Read-Only -->
+            <div class="px-6 mb-6">
+                <div class="bg-white rounded-3xl p-5 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-gray-100 space-y-4">
+                    <div class="flex justify-between items-center pb-3 border-b border-gray-50">
+                        <div class="flex items-center gap-3">
+                            <div class="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-sm"><i class="fas fa-id-card"></i></div>
+                            <span class="text-xs font-semibold text-gray-600">NIS</span>
+                        </div>
+                        <span class="text-sm font-bold text-gray-800" id="info-nis">...</span>
+                    </div>
+                    <div class="flex justify-between items-center pb-3 border-b border-gray-50">
+                        <div class="flex items-center gap-3">
+                            <div class="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-sm"><i class="fas fa-briefcase"></i></div>
+                            <span class="text-xs font-semibold text-gray-600">Jurusan</span>
+                        </div>
+                        <span class="text-sm font-bold text-gray-800" id="info-jurusan-detail">...</span>
+                    </div>
+                    <div class="flex justify-between items-center pb-3 border-b border-gray-50">
+                        <div class="flex items-center gap-3">
+                            <div class="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-sm"><i class="fas fa-graduation-cap"></i></div>
+                            <span class="text-xs font-semibold text-gray-600">Tahun Masuk</span>
+                        </div>
+                        <span class="text-sm font-bold text-gray-800" id="info-tahun">...</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center gap-3">
+                            <div class="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-sm"><i class="fas fa-user-check"></i></div>
+                            <span class="text-xs font-semibold text-gray-600">Status</span>
+                        </div>
+                        <span class="text-[10px] font-bold text-green-700 bg-green-100 px-3 py-1 rounded-full" id="info-status">Aktif</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Menu Aksi Cepat -->
+            <div class="px-6 space-y-3">
+                <button onclick="toggleEditProfil()" class="w-full bg-white rounded-2xl p-4.5 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-gray-100 flex justify-between items-center group hover:bg-gray-50 transition-colors">
+                    <div class="flex items-center gap-4">
+                        <div class="text-blue-600 text-lg w-6 text-center"><i class="far fa-user"></i></div>
+                        <span class="text-sm font-semibold text-gray-700">Data Pribadi & Keamanan</span>
+                    </div>
+                    <i class="fas fa-chevron-right text-gray-300 text-sm group-hover:text-blue-500 transition-transform duration-300" id="icon-toggle-profil"></i>
+                </button>
+
+                <!-- Form Edit (Hidden by Default) -->
+                <div id="form-edit-profil" class="hidden bg-white rounded-3xl p-5 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-blue-100 mt-2 mb-4 animate-fade-in relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-full h-1 bg-blue-500"></div>
+                    <h3 class="font-bold text-gray-800 mb-4 text-sm border-b pb-2">Perbarui Data Pribadi</h3>
                     <div class="space-y-4">
                         <div>
                             <label class="block text-xs font-semibold text-gray-600 mb-1">Tempat, Tanggal Lahir</label>
                             <div class="flex gap-2">
-                                <input type="text" id="edit-tempat-lahir" class="w-1/2 border border-gray-300 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-teal-500" placeholder="Tempat Lahir">
-                                <input type="date" id="edit-tgl-lahir" class="w-1/2 border border-gray-300 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-teal-500">
+                                <input type="text" id="edit-tempat-lahir" class="w-1/2 border border-gray-300 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500" placeholder="Tempat Lahir">
+                                <input type="date" id="edit-tgl-lahir" class="w-1/2 border border-gray-300 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500">
                             </div>
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold text-gray-600 mb-1">Foto Profil (Upload File)</label>
-                            <input type="file" id="edit-foto-file" accept="image/*" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100 cursor-pointer">
-                            <input type="hidden" id="edit-foto">
-                            <p class="text-[10px] text-gray-400 mt-1" id="foto-upload-status"></p>
-                        </div>
-                        <div>
                             <label class="block text-xs font-semibold text-gray-600 mb-1">Nomor HP</label>
-                            <input type="text" id="edit-nohp" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-teal-500" placeholder="08123456789">
+                            <input type="text" id="edit-nohp" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500" placeholder="08123456789">
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-gray-600 mb-1">Alamat Lengkap</label>
-                            <textarea id="edit-alamat" rows="2" class="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm outline-none focus:border-teal-500" placeholder="Jl. Raya..."></textarea>
+                            <textarea id="edit-alamat" rows="2" class="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm outline-none focus:border-blue-500" placeholder="Jl. Raya..."></textarea>
                         </div>
-                        
-                        <div class="pt-4 border-t border-gray-100 mt-4">
-                            <h3 class="font-bold text-gray-800 mb-3 text-sm">Keamanan Akun</h3>
-                            <label class="block text-xs font-semibold text-gray-600 mb-1">Kata Sandi Baru (Kosongkan jika tidak diubah)</label>
-                            <input type="password" id="edit-password-siswa" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-teal-500" placeholder="••••••••">
-                            <p class="text-[10px] text-orange-500 mt-1 font-medium"><i class="fas fa-info-circle"></i> Jika lupa, admin dapat meresetnya ke "123456".</p>
+                        <div class="pt-3 border-t border-gray-100">
+                            <label class="block text-xs font-semibold text-gray-600 mb-1">Ubah Kata Sandi (Kosongkan jika tidak diubah)</label>
+                            <input type="password" id="edit-password-siswa" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500" placeholder="••••••••">
                         </div>
-
-                        <button id="btn-simpan-profil" onclick="simpanProfilSiswa()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl shadow-md mt-2 hover:bg-blue-700 transition-colors flex justify-center items-center gap-2">
+                        <button id="btn-simpan-profil" onclick="simpanProfilSiswa()" class="w-full bg-blue-600 text-white font-bold py-3.5 rounded-xl shadow-md mt-2 hover:bg-blue-700 transition-colors flex justify-center items-center gap-2 text-sm">
                             <i class="fas fa-save"></i> Simpan Perubahan
                         </button>
                     </div>
                 </div>
-                
-                <button onclick="handleLogout()" class="w-full bg-red-50 text-red-600 font-bold py-3 rounded-xl shadow-sm border border-red-100 hover:bg-red-100 transition-colors flex items-center justify-center gap-2">
-                    <i class="fas fa-sign-out-alt"></i> Keluar Akun
+
+                <button onclick="showToast('Fitur ini sedang dikembangkan.')" class="w-full bg-white rounded-2xl p-4.5 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-gray-100 flex justify-between items-center group hover:bg-gray-50 transition-colors">
+                    <div class="flex items-center gap-4">
+                        <div class="text-blue-600 text-lg w-6 text-center"><i class="fas fa-users"></i></div>
+                        <span class="text-sm font-semibold text-gray-700">Orang Tua/Wali</span>
+                    </div>
+                    <i class="fas fa-chevron-right text-gray-300 text-sm group-hover:text-blue-500 transition-transform"></i>
+                </button>
+                <button onclick="showToast('Fitur ini sedang dikembangkan.')" class="w-full bg-white rounded-2xl p-4.5 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-gray-100 flex justify-between items-center group hover:bg-gray-50 transition-colors">
+                    <div class="flex items-center gap-4">
+                        <div class="text-blue-600 text-lg w-6 text-center"><i class="fas fa-layer-group"></i></div>
+                        <span class="text-sm font-semibold text-gray-700">Riwayat Pendidikan</span>
+                    </div>
+                    <i class="fas fa-chevron-right text-gray-300 text-sm group-hover:text-blue-500 transition-transform"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Tab: Menu Utama Siswa (BARU) -->
+        <div id="tab-menu" class="flex-1 custom-scroll overflow-y-auto pb-24 hidden bg-[#f8fafc]">
+            <!-- Header Latar Biru Modern -->
+            <div class="bg-blue-600 pt-12 pb-20 px-6 text-white relative rounded-b-[2.5rem] shadow-md overflow-hidden">
+                <div class="flex justify-between items-center mb-2 relative z-10">
+                    <h1 class="text-2xl font-bold">Menu</h1>
+                    <button onclick="showToast('Pengaturan sedang dikembangkan')" class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-sm hover:bg-white/30 transition-colors">
+                        <i class="fas fa-cog"></i>
+                    </button>
+                </div>
+                <!-- Efek Cahaya Latar -->
+                <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-10 -mt-10 blur-xl pointer-events-none"></div>
+                <div class="absolute bottom-0 left-10 w-24 h-24 bg-white/10 rounded-full -mb-10 blur-lg pointer-events-none"></div>
+            </div>
+
+            <!-- Profil Card Melayang -->
+            <div class="px-6 -mt-12 relative z-10">
+                <div class="bg-white rounded-3xl p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 flex items-center gap-4">
+                    <div class="w-16 h-16 rounded-full p-0.5 bg-gray-100 flex items-center justify-center overflow-hidden border border-gray-200 relative shrink-0">
+                        <img id="menu-foto" src="" onerror="this.style.display='none'; document.getElementById('menu-icon').style.display='block';" class="absolute inset-0 w-full h-full object-cover z-10 hidden">
+                        <i id="menu-icon" class="fas fa-user text-2xl text-gray-400"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <h2 id="menu-name" class="font-bold text-[15px] text-gray-800 leading-tight truncate">Nama Siswa</h2>
+                        <p id="menu-kelas" class="text-xs text-gray-500 mt-0.5 mb-2 truncate">Kelas - Jurusan</p>
+                        <button onclick="switchTabMobile('profil')" class="bg-blue-50 text-blue-600 px-4 py-1.5 rounded-full text-[10px] font-bold inline-flex items-center gap-1 hover:bg-blue-100 transition-colors">
+                            Lihat Profil <i class="fas fa-chevron-right text-[8px]"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Menu List Dinamis -->
+            <div class="px-6 mt-6 space-y-3">
+                <button onclick="switchTabMobile('dashboard')" class="w-full bg-white rounded-2xl p-4 flex items-center gap-4 shadow-sm border border-gray-100 active:scale-95 transition-transform text-left">
+                    <div class="w-12 h-12 rounded-2xl bg-[#3b82f6] flex items-center justify-center text-white text-xl shrink-0 shadow-inner">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="font-bold text-sm text-gray-800">Presensi</h3>
+                        <p class="text-[10px] text-gray-400 mt-0.5">Scan QR / Lokasi</p>
+                    </div>
+                    <i class="fas fa-chevron-right text-gray-300 text-xs"></i>
+                </button>
+
+                <button onclick="showToast('Jadwal Pelajaran sedang dikembangkan')" class="w-full bg-white rounded-2xl p-4 flex items-center gap-4 shadow-sm border border-gray-100 active:scale-95 transition-transform text-left">
+                    <div class="w-12 h-12 rounded-2xl bg-[#a855f7] flex items-center justify-center text-white text-xl shrink-0 shadow-inner">
+                        <i class="far fa-calendar-alt"></i>
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="font-bold text-sm text-gray-800">Jadwal Pelajaran</h3>
+                        <p class="text-[10px] text-gray-400 mt-0.5">Lihat jadwal hari ini</p>
+                    </div>
+                    <i class="fas fa-chevron-right text-gray-300 text-xs"></i>
+                </button>
+
+                <button onclick="switchTabMobile('histori')" class="w-full bg-white rounded-2xl p-4 flex items-center gap-4 shadow-sm border border-gray-100 active:scale-95 transition-transform text-left">
+                    <div class="w-12 h-12 rounded-2xl bg-[#2563eb] flex items-center justify-center text-white text-xl shrink-0 shadow-inner">
+                        <i class="fas fa-history"></i>
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="font-bold text-sm text-gray-800">Riwayat Presensi</h3>
+                        <p class="text-[10px] text-gray-400 mt-0.5">Data kehadiran kamu</p>
+                    </div>
+                    <i class="fas fa-chevron-right text-gray-300 text-xs"></i>
+                </button>
+
+                <button onclick="switchTabMobile('izin')" class="w-full bg-white rounded-2xl p-4 flex items-center gap-4 shadow-sm border border-gray-100 active:scale-95 transition-transform text-left">
+                    <div class="w-12 h-12 rounded-2xl bg-[#f97316] flex items-center justify-center text-white text-xl shrink-0 shadow-inner">
+                        <i class="fas fa-envelope-open-text"></i>
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="font-bold text-sm text-gray-800">Izin / Sakit</h3>
+                        <p class="text-[10px] text-gray-400 mt-0.5">Ajukan izin atau sakit</p>
+                    </div>
+                    <i class="fas fa-chevron-right text-gray-300 text-xs"></i>
+                </button>
+
+                <button onclick="showToast('Tidak ada pengumuman baru')" class="w-full bg-white rounded-2xl p-4 flex items-center gap-4 shadow-sm border border-gray-100 active:scale-95 transition-transform text-left">
+                    <div class="w-12 h-12 rounded-2xl bg-[#10b981] flex items-center justify-center text-white text-xl shrink-0 shadow-inner relative">
+                        <i class="fas fa-bullhorn"></i>
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="font-bold text-sm text-gray-800">Pengumuman</h3>
+                        <p class="text-[10px] text-gray-400 mt-0.5">Info penting sekolah</p>
+                    </div>
+                    <span class="bg-red-500 text-white font-bold text-[10px] w-5 h-5 flex items-center justify-center rounded-full shadow-sm">3</span>
+                </button>
+
+                <button onclick="showToast('Pengaturan sedang dikembangkan')" class="w-full bg-white rounded-2xl p-4 flex items-center gap-4 shadow-sm border border-gray-100 active:scale-95 transition-transform text-left">
+                    <div class="w-12 h-12 rounded-2xl bg-[#94a3b8] flex items-center justify-center text-white text-xl shrink-0 shadow-inner">
+                        <i class="fas fa-cog"></i>
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="font-bold text-sm text-gray-800">Pengaturan</h3>
+                        <p class="text-[10px] text-gray-400 mt-0.5">Bahasa, notifikasi, dll</p>
+                    </div>
+                    <i class="fas fa-chevron-right text-gray-300 text-xs"></i>
+                </button>
+
+                <!-- Tombol Logout -->
+                <button onclick="handleLogout()" class="w-full bg-red-50 hover:bg-red-100 text-red-600 rounded-2xl py-4 flex items-center justify-center gap-2 font-bold text-sm shadow-sm transition-colors mt-4 mb-2 border border-red-100">
+                    <i class="fas fa-sign-out-alt"></i> Keluar
                 </button>
             </div>
         </div>
@@ -385,41 +648,89 @@
                 <i class="fas fa-envelope-open-text text-xl mb-1"></i>
                 <span class="text-[10px] font-bold">Izin/Sakit</span>
             </button>
-            <button onclick="switchTabMobile('profil')" id="nav-profil" class="flex flex-col items-center text-gray-400 w-16">
-                <i class="fas fa-user-circle text-xl mb-1"></i>
-                <span class="text-[10px] font-bold">Profil</span>
+            <!-- Tombol Navigasi Menu Baru -->
+            <button onclick="switchTabMobile('menu')" id="nav-menu" class="flex flex-col items-center text-gray-400 w-16">
+                <i class="fas fa-th-large text-xl mb-1"></i>
+                <span class="text-[10px] font-bold">Menu</span>
             </button>
         </div>
     </div>
 
+
     <!-- 4. SCANNER SCREEN -->
-    <div id="screen-scanner" class="absolute inset-0 bg-[#0f172a] z-50 hidden flex-col items-center pt-12 px-6">
-        <button onclick="closeScanner()" class="absolute top-12 left-6 text-white text-xl z-20">
-            <i class="fas fa-arrow-left"></i>
+    <div id="screen-scanner" class="absolute inset-0 bg-[#091525] z-50 hidden flex-col items-center pt-10 px-6 overflow-hidden">
+        <!-- Grid Background Pattern -->
+        <div class="absolute inset-0 opacity-20 pointer-events-none" style="background-image: linear-gradient(rgba(34, 211, 238, 0.2) 1px, transparent 1px), linear-gradient(90deg, rgba(34, 211, 238, 0.2) 1px, transparent 1px); background-size: 30px 30px; z-index: 1;"></div>
+
+        <!-- Tombol Kembali -->
+        <button onclick="closeScanner()" class="absolute top-10 left-6 text-white text-xl z-20 bg-white/5 w-10 h-10 rounded-full flex items-center justify-center backdrop-blur-md hover:bg-white/20 transition-colors border border-white/10">
+            <i class="fas fa-arrow-left text-sm"></i>
         </button>
         
-        <div class="bg-white rounded-xl p-3 w-full shadow-lg relative z-10 flex flex-col gap-2">
-            <div class="flex justify-between items-center">
-                <p class="text-xs font-bold text-gray-800">Koneksi Server:<br><span class="font-normal text-teal-600" id="lbl-cloud-status">Tersambung (Online)</span></p>
-                <span class="bg-green-100 text-green-700 text-[10px] font-bold px-2 py-1 rounded">Siap Kirim</span>
+        <!-- Header Lokasi & Map -->
+        <div class="w-full mt-16 z-20">
+            <div class="flex justify-between items-end mb-3">
+                <div>
+                    <p class="text-gray-400 text-[10px] font-bold uppercase tracking-wider mb-0.5">Lokasi Terkini:</p>
+                    <p class="text-white font-bold text-sm" id="scanner-lokasi-text">Sekolah SMK Tasikmalaya</p>
+                </div>
+                <span class="bg-emerald-500 text-white text-[10px] font-bold px-3 py-1 rounded-full shadow-[0_0_10px_rgba(16,185,129,0.4)]">Valid</span>
+            </div>
+            <!-- Mockup Map Google -->
+            <div class="w-full h-24 bg-gray-200 rounded-2xl overflow-hidden shadow-lg border border-slate-700/50 relative">
+                 <iframe width="100%" height="100%" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" src="https://maps.google.com/maps?q=Tasikmalaya&t=&z=14&ie=UTF8&iwloc=&output=embed" class="pointer-events-none" style="filter: opacity(0.9);"></iframe>
+                 <div class="absolute inset-0 bg-blue-900/10 z-10 pointer-events-none"></div>
             </div>
         </div>
 
         <!-- Scanner Area -->
-        <div class="flex-1 flex flex-col items-center justify-center w-full relative mt-8">
-            <div class="w-48 h-56 hexagon-frame bg-slate-800/50 flex items-center justify-center relative overflow-hidden backdrop-blur-sm">
-                <!-- Elemen Video Pengganti Ikon Awan -->
-                <video id="camera-feed" class="absolute w-full h-full object-cover hidden" autoplay playsinline></video>
-                <i class="fas fa-cloud-arrow-up text-7xl text-slate-400" id="scan-icon"></i>
-                <div class="absolute w-full h-1 bg-cyan-400 shadow-[0_0_15px_#22d3ee] animate-scan z-10"></div>
+        <div class="flex-1 flex flex-col items-center justify-center w-full relative z-20 -mt-4">
+            
+            <!-- Viewfinder Corners -->
+            <div class="w-[280px] h-[280px] relative flex items-center justify-center">
+                <!-- Sudut Pembidik -->
+                <div class="absolute top-0 left-0 w-10 h-10 border-t-4 border-l-4 border-cyan-400 rounded-tl-2xl shadow-[-5px_-5px_15px_rgba(34,211,238,0.15)]"></div>
+                <div class="absolute top-0 right-0 w-10 h-10 border-t-4 border-r-4 border-cyan-400 rounded-tr-2xl shadow-[5px_-5px_15px_rgba(34,211,238,0.15)]"></div>
+                <div class="absolute bottom-0 left-0 w-10 h-10 border-b-4 border-l-4 border-cyan-400 rounded-bl-2xl shadow-[-5px_5px_15px_rgba(34,211,238,0.15)]"></div>
+                <div class="absolute bottom-0 right-0 w-10 h-10 border-b-4 border-r-4 border-cyan-400 rounded-br-2xl shadow-[5px_5px_15px_rgba(34,211,238,0.15)]"></div>
+                
+                <!-- Hexagon Glowing Border -->
+                <div class="w-64 h-56 relative flex justify-center items-center">
+                    <!-- Outer Glow & Border (Cyan) -->
+                    <div class="absolute inset-0 bg-cyan-400 shadow-[0_0_25px_rgba(34,211,238,0.6)]" style="clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);"></div>
+                    
+                    <!-- Inner Background (Dark) & Content -->
+                    <div class="absolute inset-[3px] bg-[#091525] flex items-center justify-center overflow-hidden" style="clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);">
+                        
+                        <!-- Fallback Photo Siswa / Avatar -->
+                        <img id="scanner-student-photo" src="" class="absolute w-full h-full object-cover opacity-90 hidden">
+                        <i class="fas fa-user text-6xl text-slate-500" id="scanner-student-icon"></i>
+
+                        <!-- Video Feed Kamera (Menimpa foto jika aktif) -->
+                        <video id="camera-feed" class="absolute w-full h-full object-cover hidden z-10 opacity-90" autoplay playsinline></video>
+                        
+                        <!-- Grid Overlay Halus untuk efek Sci-Fi -->
+                        <div class="absolute inset-0 opacity-30 pointer-events-none z-10" style="background-image: linear-gradient(rgba(34, 211, 238, 0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(34, 211, 238, 0.4) 1px, transparent 1px); background-size: 15px 15px;"></div>
+
+                        <!-- Laser Scan Line -->
+                        <div class="absolute w-full h-1 bg-cyan-300 shadow-[0_0_20px_#67e8f9,0_0_10px_#fff] animate-scan z-20"></div>
+                    </div>
+                </div>
             </div>
-            <p class="text-cyan-400 font-bold mt-6 text-lg tracking-wide" id="scan-text">Mempersiapkan Data...</p>
+            
+            <div class="mt-8 text-center relative z-20">
+                <h3 class="text-white font-bold text-xl tracking-wide mb-1" id="scan-title">Memindai Wajah...</h3>
+                <p class="text-cyan-400 font-semibold text-sm" id="scan-text">Mempersiapkan Data</p>
+            </div>
         </div>
 
-        <!-- Submit Button -->
-        <button id="btn-submit-absen" onclick="processAbsenToCloud()" class="glow-btn bg-gradient-to-r from-green-500 to-green-400 w-full rounded-2xl py-4 flex items-center justify-center gap-3 text-white font-bold text-lg mb-10 hover:scale-105 transition-transform">
-            <i class="fas fa-paper-plane text-3xl"></i> <span id="lbl-absen-tipe">Kirim Absen Masuk</span>
-        </button>
+        <!-- Submit Button (Circular Fingerprint) -->
+        <div class="w-full flex justify-center mb-10 z-20">
+            <button id="btn-submit-absen" onclick="processAbsenToCloud()" class="w-24 h-24 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-white border-2 border-emerald-300 animate-soft-pulse hover:scale-110 transition-transform">
+                <i class="fas fa-fingerprint text-5xl drop-shadow-md"></i>
+            </button>
+        </div>
+        <p id="lbl-absen-tipe" class="text-emerald-400 font-bold text-xs uppercase tracking-wider mb-8 z-20 text-center">Tekan untuk Absen Masuk</p>
     </div>
 
     <!-- 5. DESKTOP / GURU APP -->
@@ -743,7 +1054,7 @@
                         <!-- Pengaturan Lokasi (GPS) -->
                         <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden p-6">
                             <div class="flex justify-between items-center mb-4">
-                                <h3 class="font-bold text-gray-800 text-lg"><i class="fas fa-map-marker-alt text-red-500 mr-2"></i> Kunci Lokasi (GPS)</h3>
+                                <h3 class="font-bold text-gray-800 text-lg"><i class="fas fa-map-marker-alt text-red-500 mr-2"></i> Kunci Lokasi (GPS)</h3>       
                                 <button onclick="getLokasiSekarang()" class="bg-blue-50 text-blue-600 text-[10px] font-bold px-3 py-1.5 rounded-lg border border-blue-200 hover:bg-blue-100 transition-colors"><i class="fas fa-crosshairs"></i> Deteksi Lokasi Ini</button>
                             </div>
                             <div class="space-y-4">
@@ -767,16 +1078,27 @@
 
                         <!-- Pengaturan Tampilan Landing/Splash Screen -->
                         <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden p-6 md:col-span-2">
-                            <h3 class="font-bold text-gray-800 text-lg mb-4"><i class="fas fa-image text-purple-600 mr-2"></i> Tampilan Landing / Splash Screen</h3>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <h3 class="font-bold text-gray-800 text-lg mb-4"><i class="fas fa-image text-purple-600 mr-2"></i> Tampilan Layar Awal & Halaman Login</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                                 <div>
-                                    <label class="block text-xs font-bold text-gray-600 mb-1">Logo Aplikasi</label>
+                                    <label class="block text-xs font-bold text-gray-600 mb-1">Logo Aplikasi (Layar Awal)</label>
                                     <div class="flex gap-3 items-center">
                                         <img id="preview-logo-setting" src="" class="w-12 h-12 rounded-lg border border-gray-200 object-cover hidden">
                                         <div class="flex-1">
                                             <input type="file" id="set-logo-file" accept="image/*" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100 cursor-pointer">
                                             <input type="hidden" id="set-logo-url">
-                                            <p class="text-[10px] text-gray-400 mt-1" id="status-logo-upload">Kosongkan jika ingin memakai logo bawaan (Awan)</p>
+                                            <p class="text-[10px] text-gray-400 mt-1" id="status-logo-upload">Kosongkan jika pakai bawaan</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-600 mb-1">Logo Sekolah (Login)</label>
+                                    <div class="flex gap-3 items-center">
+                                        <img id="preview-logo-sekolah-setting" src="" class="w-12 h-12 rounded-lg border border-gray-200 object-cover hidden">
+                                        <div class="flex-1">
+                                            <input type="file" id="set-logo-sekolah-file" accept="image/*" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer">
+                                            <input type="hidden" id="set-logo-sekolah-url">
+                                            <p class="text-[10px] text-gray-400 mt-1" id="status-logo-sekolah-upload">Muncul di pojok kiri Login</p>
                                         </div>
                                     </div>
                                 </div>
@@ -787,7 +1109,7 @@
                                         <div class="flex-1">
                                             <input type="file" id="set-bg-file" accept="image/*" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100 cursor-pointer">
                                             <input type="hidden" id="set-bg-url">
-                                            <p class="text-[10px] text-gray-400 mt-1" id="status-bg-upload">Kosongkan jika ingin memakai warna bawaan (Putih)</p>
+                                            <p class="text-[10px] text-gray-400 mt-1" id="status-bg-upload">Kosongkan jika pakai bawaan</p>
                                         </div>
                                     </div>
                                 </div>
@@ -914,16 +1236,18 @@
         
         // 1. Terapkan Logo & Background dari tabel_pengaturan
         try {
-            const { data: peng } = await db.from('tabel_pengaturan').select('logo_url, bg_url').limit(1).single();
+            const { data: peng } = await db.from('tabel_pengaturan').select('logo_url, bg_url, logo_sekolah_url').limit(1).single();
             if (peng) {
                 const splashScreen = document.getElementById('screen-splash');
                 const splashWrap = splashScreen.querySelector('.relative.w-full.h-full');
-                
+               
                 if (peng.bg_url) {
                     splashWrap.style.backgroundImage = `linear-gradient(rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.95)), url('${peng.bg_url}')`;
                     splashWrap.style.backgroundSize = 'cover';
                     splashWrap.style.backgroundPosition = 'center';
                 }
+                
+                // Menampilkan Logo Aplikasi (Layar Awal)
                 if (peng.logo_url) {
                     const defIcon = document.getElementById('default-splash-icon');
                     if(defIcon) defIcon.classList.add('hidden');
@@ -931,22 +1255,43 @@
                     const custLogo = document.getElementById('custom-splash-logo');
                     if(custLogo) {
                         custLogo.src = peng.logo_url;
+                        custLogo.style.display = 'block'; // Antisipasi jika ada efek onerror
                         custLogo.classList.remove('hidden');
                     }
                 }
+
+                // Menampilkan Logo Sekolah (Halaman Login)
+                if (peng.logo_sekolah_url) {
+                    const loginLogo = document.getElementById('login-logo-img');
+                    const loginLogoIcon = document.getElementById('login-logo-icon');
+                    
+                    if(loginLogo) {
+                        loginLogo.src = peng.logo_sekolah_url;
+                        loginLogo.style.display = 'block'; // Hapus efek tersembunyi dari bawaan HTML
+                        loginLogo.classList.remove('hidden');
+                    }
+                    if(loginLogoIcon) {
+                        loginLogoIcon.style.display = 'none'; // Sembunyikan ikon gedung sekolah
+                        loginLogoIcon.classList.add('hidden');
+                    }
+                }
             }
-        } catch(e) { console.log("Gagal memuat kustomisasi landing page") }
+        } catch(e) { console.log("Gagal memuat kustomisasi landing page", e) }
 
         // 2. Cek Koneksi DB
         try {
             const { error } = await db.from('tabel_siswa').select('nis').limit(1);
             if(error) throw error;
-            ind.innerHTML = '<i class="fas fa-check-circle"></i> Terhubung ke Cloud';
-            ind.className = 'text-green-600 font-bold';
+            if(ind) {
+                ind.innerHTML = '<i class="fas fa-check-circle"></i> Terhubung ke Cloud';
+                ind.className = 'text-green-500 text-[11px] font-semibold text-center';
+            }
         } catch (err) {
             console.error(err);
-            ind.innerHTML = '<i class="fas fa-times-circle"></i> Cek setting RLS di Supabase!';
-            ind.className = 'text-red-500 font-bold';
+            if(ind) {
+                ind.innerHTML = '<i class="fas fa-times-circle"></i> Cek setting RLS di Supabase!';
+                ind.className = 'text-red-500 text-[11px] font-semibold text-center';
+            }
         }
         
         const izinTglInput = document.getElementById('izin-tgl-input');
@@ -978,8 +1323,8 @@
 
         try {
             // Cek Master Admin
-            if (idInput === '19830410' && passInput === '123456') {
-                currentUser = { role: 'admin', nip: '19830410', nama: 'Admin Super', jabatan: 'Admin Master', wali_kelas: '', kelas_ajar: '' };
+            if (idInput === '051282' && passInput === '16041992') {
+                currentUser = { role: 'admin', nip: '051282', nama: 'Admin Super', jabatan: 'Admin Master', wali_kelas: '', kelas_ajar: '' };
                 setupGuruDashboard(currentUser);
                 return;
             }
@@ -1021,11 +1366,26 @@
 
         } catch (err) {
             console.error(err);
-            errText.innerText = err.message || "ID atau Sandi salah!";
+            errText.innerHTML = `<i class="fas fa-exclamation-triangle mr-1"></i> ${err.message || "ID atau Kata Sandi salah!"}`;
             errText.classList.remove('hidden');
+            errText.classList.add('block');
         } finally {
-            btn.innerHTML = '<span>Masuk Sistem</span>';
+            btn.innerHTML = '<span class="w-6 h-6 bg-white rounded-full flex items-center justify-center text-teal-600 shadow-sm"><i class="fas fa-arrow-right text-[10px]"></i></span><span class="text-sm tracking-wide">Masuk Sistem</span>';
             btn.disabled = false;
+        }
+    }
+
+    function togglePasswordVisibility() {
+        const passInput = document.getElementById('login-pass');
+        const eyeIcon = document.getElementById('eye-icon');
+        if (passInput.type === 'password') {
+            passInput.type = 'text';
+            eyeIcon.classList.remove('fa-eye');
+            eyeIcon.classList.add('fa-eye-slash');
+        } else {
+            passInput.type = 'password';
+            eyeIcon.classList.remove('fa-eye-slash');
+            eyeIcon.classList.add('fa-eye');
         }
     }
 
@@ -1059,7 +1419,39 @@
         if(elProfilName) elProfilName.innerText = user.nama;
         
         const elProfilJurusan = document.getElementById('profil-jurusan');
-        if(elProfilJurusan) elProfilJurusan.innerText = `Jurusan: ${user.id_jurusan || "-"}`;
+        if(elProfilJurusan) elProfilJurusan.innerText = `${user.tingkat || "-"} ${user.id_jurusan || "-"}`;
+        
+        // Setup Informasi Menu Card Baru
+        const elMenuName = document.getElementById('menu-name');
+        if(elMenuName) elMenuName.innerText = user.nama;
+        const elMenuKelas = document.getElementById('menu-kelas');
+        if(elMenuKelas) elMenuKelas.innerText = `${user.kelas || "-"} ${user.id_jurusan || "-"}`;
+        
+        // Populating Profile Info Card
+        const elInfoNis = document.getElementById('info-nis');
+        if(elInfoNis) elInfoNis.innerText = user.nis || "-";
+        
+        const elInfoJurusanDetail = document.getElementById('info-jurusan-detail');
+        if(elInfoJurusanDetail) elInfoJurusanDetail.innerText = user.id_jurusan || "-";
+        
+        const elInfoStatus = document.getElementById('info-status');
+        if(elInfoStatus) {
+            elInfoStatus.innerText = user.status_siswa || "Aktif";
+            if(user.status_siswa && user.status_siswa.toLowerCase() !== 'aktif') {
+                elInfoStatus.className = "text-[10px] font-bold text-red-700 bg-red-100 px-3 py-1 rounded-full";
+            } else {
+                elInfoStatus.className = "text-[10px] font-bold text-green-700 bg-green-100 px-3 py-1 rounded-full";
+            }
+        }
+        
+        const elInfoTahun = document.getElementById('info-tahun');
+        if(elInfoTahun) {
+            if(user.nis && user.nis.length >= 4) {
+                elInfoTahun.innerText = user.nis.substring(0, 4);
+            } else {
+                elInfoTahun.innerText = "-";
+            }
+        }
         
         updateFotoUI(user.foto_profil);
 
@@ -1083,6 +1475,8 @@
         const dIco = document.getElementById('dashboard-icon');
         const pImg = document.getElementById('profil-foto-preview');
         const pIco = document.getElementById('profil-icon');
+        const mImg = document.getElementById('menu-foto');
+        const mIco = document.getElementById('menu-icon');
         
         if(url && url.trim() !== '') {
             if(dImg) { dImg.style.display = 'block'; dImg.src = url; dImg.classList.remove('hidden'); }
@@ -1090,29 +1484,58 @@
             
             if(pImg) { pImg.style.display = 'block'; pImg.src = url; pImg.classList.remove('hidden'); }
             if(pIco) { pIco.style.display = 'none'; pIco.classList.add('hidden'); }
+            
+            if(mImg) { mImg.style.display = 'block'; mImg.src = url; mImg.classList.remove('hidden'); }
+            if(mIco) { mIco.style.display = 'none'; mIco.classList.add('hidden'); }
         } else {
             if(dImg) { dImg.style.display = 'none'; dImg.classList.add('hidden'); }
             if(dIco) { dIco.style.display = 'block'; dIco.classList.remove('hidden'); }
             
             if(pImg) { pImg.style.display = 'none'; pImg.classList.add('hidden'); }
             if(pIco) { pIco.style.display = 'block'; pIco.classList.remove('hidden'); }
+            
+            if(mImg) { mImg.style.display = 'none'; mImg.classList.add('hidden'); }
+            if(mIco) { mIco.style.display = 'block'; mIco.classList.remove('hidden'); }
         }
     }
 
     function switchTabMobile(tabId) {
-        ['tab-dashboard', 'tab-histori', 'tab-izin', 'tab-profil'].forEach(id => document.getElementById(id).classList.add('hidden'));
-        document.getElementById(`tab-${tabId}`).classList.remove('hidden');
-        
-        ['nav-dashboard', 'nav-histori', 'nav-izin', 'nav-profil'].forEach(id => {
-            document.getElementById(id).classList.remove('text-teal-600');
-            document.getElementById(id).classList.add('text-gray-400');
+        // Hapus hidden dengan iterasi lebih aman
+        ['tab-dashboard', 'tab-histori', 'tab-izin', 'tab-profil', 'tab-menu'].forEach(id => {
+            const el = document.getElementById(id);
+            if(el) el.classList.add('hidden');
         });
-        document.getElementById(`nav-${tabId}`).classList.remove('text-gray-400');
-        document.getElementById(`nav-${tabId}`).classList.add('text-teal-600');
+        
+        const activeTab = document.getElementById(`tab-${tabId}`);
+        if(activeTab) activeTab.classList.remove('hidden');
+        
+        // Pewarnaan bar bawah hanya untuk menu yang ada di bottom nav
+        ['nav-dashboard', 'nav-histori', 'nav-izin', 'nav-menu'].forEach(id => {
+            const el = document.getElementById(id);
+            if(el) {
+                el.classList.remove('text-teal-600');
+                el.classList.add('text-gray-400');
+            }
+        });
+        
+        const activeNav = document.getElementById(`nav-${tabId}`);
+        if(activeNav) {
+            activeNav.classList.remove('text-gray-400');
+            activeNav.classList.add('text-teal-600');
+        }
 
         if(tabId === 'histori') loadHistoriSiswa();
         if(tabId === 'izin') loadIzinSiswa();
-        if(tabId === 'profil') loadProfilForm();
+        if(tabId === 'profil') {
+            loadProfilForm();
+            // Pastikan form edit tersembunyi setiap kali tab profil dibuka ulang
+            const form = document.getElementById('form-edit-profil');
+            const icon = document.getElementById('icon-toggle-profil');
+            if (form && !form.classList.contains('hidden')) {
+                form.classList.add('hidden');
+                if(icon) icon.style.transform = 'rotate(0deg)';
+            }
+        }
     }
 
     async function uploadFileToSupabase(file, bucketName, filePath) {
@@ -1260,18 +1683,43 @@
             document.getElementById('profil-icon').style.display = 'none';
             document.getElementById('profil-icon').classList.add('hidden');
 
-            statusEl.innerHTML = '<i class="fas fa-check-circle"></i> Berhasil diunggah (Jangan lupa klik Simpan)';
-            statusEl.className = 'text-[10px] text-green-600 mt-1 font-bold';
+            statusEl.innerHTML = '<i class="fas fa-check-circle"></i> Diunggah. Silakan Simpan Data!';
+            statusEl.className = 'text-[10px] text-green-600 font-bold mt-2 text-center block';
+            statusEl.classList.remove('hidden');
+            
+            // Animasi sukses sebentar lalu hilang
+            setTimeout(() => { statusEl.classList.add('hidden'); }, 4000);
+            
+            // Jika form edit tertutup, buka agar user ingat untuk klik simpan
+            const form = document.getElementById('form-edit-profil');
+            if (form.classList.contains('hidden')) {
+                toggleEditProfil();
+            }
+
         } catch (error) {
             let errorMsg = 'Gagal unggah foto.';
             if(error.message && error.message.includes('row-level security')) {
-               errorMsg = 'Akses ditolak. Cek RLS Policy Storage.';
+               errorMsg = 'Akses ditolak. Cek RLS Storage.';
             }
             statusEl.innerHTML = `<i class="fas fa-times-circle"></i> ${errorMsg}`;
-            statusEl.className = 'text-[10px] text-red-500 mt-1 font-bold';
+            statusEl.className = 'text-[10px] text-red-500 font-bold mt-2 text-center block';
+            statusEl.classList.remove('hidden');
             console.error(error);
         }
     });
+
+    function toggleEditProfil() {
+        const form = document.getElementById('form-edit-profil');
+        const icon = document.getElementById('icon-toggle-profil');
+        if (form.classList.contains('hidden')) {
+            form.classList.remove('hidden');
+            icon.style.transform = 'rotate(90deg)';
+            setTimeout(() => form.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
+        } else {
+            form.classList.add('hidden');
+            icon.style.transform = 'rotate(0deg)';
+        }
+    }
 
     function loadProfilForm() {
         if(!currentUser) return;
@@ -1365,7 +1813,7 @@
 
     async function startCamera() {
         const videoElement = document.getElementById('camera-feed');
-        const iconElement = document.getElementById('scan-icon');
+        const scanTitle = document.getElementById('scan-title');
         const scanText = document.getElementById('scan-text');
 
         try {
@@ -1376,11 +1824,14 @@
             
             videoElement.srcObject = cameraStream;
             videoElement.classList.remove('hidden'); 
-            iconElement.classList.add('hidden'); 
-            scanText.innerText = "Deteksi Wajah Aktif...";
+            scanTitle.innerText = "Memindai Wajah...";
+            scanText.innerText = "Wajah Terdeteksi (Kamera Aktif)";
+            scanText.className = "text-green-400 font-semibold text-sm";
         } catch (err) {
             console.error("Gagal akses kamera:", err);
-            scanText.innerText = "Kamera tidak diizinkan / tidak tersedia.";
+            scanTitle.innerText = "Memindai Data Profil...";
+            scanText.innerText = "Kamera tidak tersedia.";
+            scanText.className = "text-cyan-400 font-semibold text-sm";
         }
     }
 
@@ -1390,7 +1841,6 @@
             cameraStream = null;
         }
         document.getElementById('camera-feed').classList.add('hidden');
-        document.getElementById('scan-icon').classList.remove('hidden');
     }
 
     async function openScanner(type) {
@@ -1446,11 +1896,25 @@
 
     function tampilkanScannerUI(type) {
         currentAbsenType = type;
-        document.getElementById('lbl-absen-tipe').innerText = type === 'masuk' ? 'Kirim Absen Masuk' : 'Kirim Absen Pulang';
+        document.getElementById('lbl-absen-tipe').innerText = type === 'masuk' ? 'Tekan untuk Absen Masuk' : 'Tekan untuk Absen Pulang';
         document.getElementById('screen-mobile').classList.add('hidden');
         document.getElementById('screen-scanner').classList.remove('hidden');
         document.getElementById('screen-scanner').classList.add('flex');
         
+        // Menampilkan Foto Profil Siswa di Scanner
+        const scanPhoto = document.getElementById('scanner-student-photo');
+        const scanIcon = document.getElementById('scanner-student-icon');
+        
+        if (currentUser && currentUser.foto_profil) {
+            scanPhoto.src = currentUser.foto_profil;
+            scanPhoto.style.display = 'block'; 
+            scanPhoto.classList.remove('hidden');
+            scanIcon.classList.add('hidden');
+        } else {
+            scanPhoto.classList.add('hidden');
+            scanIcon.classList.remove('hidden');
+        }
+
         startCamera();
     }
 
@@ -1463,7 +1927,11 @@
 
     async function processAbsenToCloud() {
         const btn = document.getElementById('btn-submit-absen');
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin text-3xl"></i> <span id="lbl-absen-tipe">Menyinkronkan...</span>';
+        const lbl = document.getElementById('lbl-absen-tipe');
+        
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin text-4xl"></i>';
+        btn.classList.remove('animate-soft-pulse');
+        lbl.innerText = 'Menyinkronkan...';
         btn.disabled = true;
 
         const dateObj = new Date();
@@ -1514,7 +1982,9 @@
             showToast(`Gagal: ${msg}`, true);
         } finally {
             closeScanner();
-            btn.innerHTML = `<i class="fas fa-paper-plane text-3xl"></i> <span id="lbl-absen-tipe">${currentAbsenType === 'masuk' ? 'Kirim Absen Masuk' : 'Kirim Absen Pulang'}</span>`;
+            btn.innerHTML = '<i class="fas fa-fingerprint text-5xl drop-shadow-md"></i>';
+            btn.classList.add('animate-soft-pulse');
+            lbl.innerText = currentAbsenType === 'masuk' ? 'Tekan untuk Absen Masuk' : 'Tekan untuk Absen Pulang';
             btn.disabled = false;
         }
     }
@@ -2006,7 +2476,7 @@
         if(localRekapCache.length === 0) return showToast('Data kosong', true);
         
         const dataToExport = localRekapCache.map((log, i) => ({
-            'No': i + 1, 'Tanggal': log.tanggal, 'NIS': log.nis, 'Nama': log.nama,
+            'No': i + 1, 'Tanggal': log.tanggal, 'NIS': log.nama, 'Nama': log.nama,
             'Kelas': log.kelas, 'Masuk': log.jam_masuk, 'Pulang': log.jam_pulang
         }));
 
@@ -2047,11 +2517,16 @@
                 document.getElementById('set-radius').value = data.radius || '';
                 
                 document.getElementById('set-logo-url').value = data.logo_url || '';
+                document.getElementById('set-logo-sekolah-url').value = data.logo_sekolah_url || '';
                 document.getElementById('set-bg-url').value = data.bg_url || '';
                 
                 if(data.logo_url) {
                     document.getElementById('preview-logo-setting').src = data.logo_url;
                     document.getElementById('preview-logo-setting').classList.remove('hidden');
+                }
+                if(data.logo_sekolah_url) {
+                    document.getElementById('preview-logo-sekolah-setting').src = data.logo_sekolah_url;
+                    document.getElementById('preview-logo-sekolah-setting').classList.remove('hidden');
                 }
                 if(data.bg_url) {
                     document.getElementById('preview-bg-setting').src = data.bg_url;
@@ -2112,6 +2587,8 @@
 
     document.getElementById('set-logo-file').addEventListener('change', () => handleTampilanUpload('set-logo-file', 'status-logo-upload', 'set-logo-url', 'preview-logo-setting'));
     document.getElementById('set-bg-file').addEventListener('change', () => handleTampilanUpload('set-bg-file', 'status-bg-upload', 'set-bg-url', 'preview-bg-setting'));
+    document.getElementById('set-logo-sekolah-file').addEventListener('change', () => handleTampilanUpload('set-logo-sekolah-file', 'status-logo-sekolah-upload', 'set-logo-sekolah-url', 'preview-logo-sekolah-setting'));
+
 
     async function simpanPengaturan() {
         const btn = document.getElementById('btn-save-pengaturan');
@@ -2127,7 +2604,8 @@
             lokasi_lng: document.getElementById('set-lng').value,
             radius: document.getElementById('set-radius').value,
             logo_url: document.getElementById('set-logo-url').value, 
-            bg_url: document.getElementById('set-bg-url').value      
+            bg_url: document.getElementById('set-bg-url').value,
+            logo_sekolah_url: document.getElementById('set-logo-sekolah-url').value      
         };
 
         try {
