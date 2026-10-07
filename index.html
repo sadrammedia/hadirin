@@ -76,6 +76,33 @@
             }
         }
 
+        
+        /* --- UI FLOATING ACTION BUTTON (TENGAH) --- */
+        .nav-fab-container {
+            position: relative;
+            width: 64px;
+            display: flex;
+            justify-content: center;
+        }
+        .nav-fab-btn {
+            position: absolute;
+            top: -30px; /* Membuat tombol melayang keluar dari bar */
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            border: 4px solid #ffffff; /* Border tebal agar menyatu mulus dengan background putih */
+            z-index: 40;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .nav-fab-btn:active {
+            transform: scale(0.9);
+        }
+
 
         /* --- UI MODERN BOTTOM NAVIGATION --- */
         .nav-item .nav-icon-box {
@@ -703,37 +730,42 @@
 
         <!-- Bottom Navigation - Disesuaikan agar selalu menjejak (shrink-0 relative) -->
         <!-- Bottom Navigation Modern -->
-        <div class="w-full shrink-0 relative bg-white/95 backdrop-blur-xl border-t border-gray-100 flex justify-around items-center pb-6 pt-3 px-2 shadow-[0_-15px_30px_rgba(0,0,0,0.04)] z-30 rounded-t-3xl">            
-            <button onclick="switchTabMobile('dashboard')" id="nav-dashboard" class="nav-item flex flex-col items-center relative w-16 active-nav group">
-                <div class="nav-icon-box w-12 h-12 flex items-center justify-center transition-all duration-300 group-active:scale-95 group-hover:-translate-y-1">
-                    <i class="fas fa-home text-[22px] drop-shadow-sm"></i>
+        <!-- Bottom Navigation Modern (Siswa) - 5 Menu -->
+        <div class="w-full shrink-0 relative bg-white/95 backdrop-blur-xl border-t border-gray-100 flex justify-between items-end pb-5 pt-2 px-4 shadow-[0_-15px_30px_rgba(0,0,0,0.04)] z-30 rounded-t-3xl">            
+            <button onclick="switchTabMobile('dashboard')" id="nav-dashboard" class="nav-item flex flex-col items-center relative w-14 active-nav group">
+                <div class="nav-icon-box w-10 h-10 flex items-center justify-center transition-all duration-300 group-active:scale-95 group-hover:-translate-y-1">
+                    <i class="fas fa-home text-[20px] drop-shadow-sm"></i>
                 </div>
-                <span class="nav-text text-[10px] font-bold mt-1.5 transition-all duration-300">Beranda</span>
-                <div class="nav-indicator absolute -bottom-3 w-1.5 h-1.5 rounded-full transition-all duration-300"></div>
+                <span class="nav-text text-[9px] font-bold mt-1 transition-all duration-300">Beranda</span>
             </button>
 
-            <button onclick="switchTabMobile('histori')" id="nav-histori" class="nav-item flex flex-col items-center relative w-16 group">
-                <div class="nav-icon-box w-12 h-12 flex items-center justify-center transition-all duration-300 group-active:scale-95 group-hover:-translate-y-1">
-                    <i class="fas fa-history text-[22px] drop-shadow-sm"></i>
+            <button onclick="switchTabMobile('histori')" id="nav-histori" class="nav-item flex flex-col items-center relative w-14 group">
+                <div class="nav-icon-box w-10 h-10 flex items-center justify-center transition-all duration-300 group-active:scale-95 group-hover:-translate-y-1">
+                    <i class="fas fa-history text-[20px] drop-shadow-sm"></i>
                 </div>
-                <span class="nav-text text-[10px] font-bold mt-1.5 transition-all duration-300">Riwayat</span>
-                <div class="nav-indicator absolute -bottom-3 w-1.5 h-1.5 rounded-full transition-all duration-300"></div>
+                <span class="nav-text text-[9px] font-bold mt-1 transition-all duration-300">Riwayat</span>
             </button>
 
-            <button onclick="switchTabMobile('izin')" id="nav-izin" class="nav-item flex flex-col items-center relative w-16 group">
-                <div class="nav-icon-box w-12 h-12 flex items-center justify-center transition-all duration-300 group-active:scale-95 group-hover:-translate-y-1">
-                    <i class="fas fa-envelope-open-text text-[22px] drop-shadow-sm"></i>
+            <!-- CENTER FAB: ABSEN (SIDIK JARI) -->
+            <div class="nav-fab-container">
+                <button onclick="triggerAbsenFAB()" class="nav-fab-btn bg-gradient-to-tr from-teal-500 to-emerald-400 shadow-[0_10px_20px_rgba(16,185,129,0.4)] hover:-translate-y-1">
+                    <i class="fas fa-fingerprint text-3xl drop-shadow-md"></i>
+                </button>
+                <span class="text-[10px] font-bold text-emerald-600 mt-9 mb-1">Absen</span>
+            </div>
+
+            <button onclick="switchTabMobile('izin')" id="nav-izin" class="nav-item flex flex-col items-center relative w-14 group">
+                <div class="nav-icon-box w-10 h-10 flex items-center justify-center transition-all duration-300 group-active:scale-95 group-hover:-translate-y-1">
+                    <i class="fas fa-envelope-open-text text-[20px] drop-shadow-sm"></i>
                 </div>
-                <span class="nav-text text-[10px] font-bold mt-1.5 transition-all duration-300">Izin/Sakit</span>
-                <div class="nav-indicator absolute -bottom-3 w-1.5 h-1.5 rounded-full transition-all duration-300"></div>
+                <span class="nav-text text-[9px] font-bold mt-1 transition-all duration-300">Izin</span>
             </button>
 
-            <button onclick="switchTabMobile('menu')" id="nav-menu" class="nav-item flex flex-col items-center relative w-16 group">
-                <div class="nav-icon-box w-12 h-12 flex items-center justify-center transition-all duration-300 group-active:scale-95 group-hover:-translate-y-1">
-                    <i class="fas fa-th-large text-[22px] drop-shadow-sm"></i>
+            <button onclick="switchTabMobile('menu')" id="nav-menu" class="nav-item flex flex-col items-center relative w-14 group">
+                <div class="nav-icon-box w-10 h-10 flex items-center justify-center transition-all duration-300 group-active:scale-95 group-hover:-translate-y-1">
+                    <i class="fas fa-th-large text-[20px] drop-shadow-sm"></i>
                 </div>
-                <span class="nav-text text-[10px] font-bold mt-1.5 transition-all duration-300">Menu</span>
-                <div class="nav-indicator absolute -bottom-3 w-1.5 h-1.5 rounded-full transition-all duration-300"></div>
+                <span class="nav-text text-[9px] font-bold mt-1 transition-all duration-300">Menu</span>
             </button>
         </div>
     </div>
@@ -1241,37 +1273,80 @@
                     </div>
                 </div>
 
+                <!-- GURU: MENU LAINNYA (TAMPILAN MOBILE) -->
+                <div id="guru-section-menu" class="guru-section hidden animate-fade-in">
+                    <h1 class="text-2xl font-bold text-gray-800 mb-6">Menu Lainnya</h1>
+                    <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-2 space-y-2">
+                        <button onclick="switchGuruMenu('guru')" class="admin-only w-full bg-white hover:bg-gray-50 rounded-2xl p-4 flex items-center gap-4 border border-gray-50 transition-colors text-left">
+                            <div class="w-12 h-12 rounded-xl bg-orange-50 flex items-center justify-center text-orange-600 text-xl shadow-inner"><i class="fas fa-chalkboard-teacher"></i></div>
+                            <div class="flex-1">
+                                <h3 class="font-bold text-sm text-gray-800">Data Guru</h3>
+                                <p class="text-[10px] text-gray-400">Manajemen akses pengajar</p>
+                            </div>
+                            <i class="fas fa-chevron-right text-gray-300 text-xs"></i>
+                        </button>
+                        <button onclick="switchGuruMenu('manajemen')" class="admin-only w-full bg-white hover:bg-gray-50 rounded-2xl p-4 flex items-center gap-4 border border-gray-50 transition-colors text-left">
+                            <div class="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 text-xl shadow-inner"><i class="fas fa-database"></i></div>
+                            <div class="flex-1">
+                                <h3 class="font-bold text-sm text-gray-800">Kelola Data Cloud</h3>
+                                <p class="text-[10px] text-gray-400">Import Excel ke database</p>
+                            </div>
+                            <i class="fas fa-chevron-right text-gray-300 text-xs"></i>
+                        </button>
+                        <button onclick="switchGuruMenu('pengaturan')" class="admin-only w-full bg-white hover:bg-gray-50 rounded-2xl p-4 flex items-center gap-4 border border-gray-50 transition-colors text-left">
+                            <div class="w-12 h-12 rounded-xl bg-purple-50 flex items-center justify-center text-purple-600 text-xl shadow-inner"><i class="fas fa-cog"></i></div>
+                            <div class="flex-1">
+                                <h3 class="font-bold text-sm text-gray-800">Pengaturan Sistem</h3>
+                                <p class="text-[10px] text-gray-400">Jam absen, GPS & Tampilan</p>
+                            </div>
+                            <i class="fas fa-chevron-right text-gray-300 text-xs"></i>
+                        </button>
+                        <button onclick="switchGuruMenu('profil-guru')" class="w-full bg-white hover:bg-gray-50 rounded-2xl p-4 flex items-center gap-4 border border-gray-50 transition-colors text-left">
+                            <div class="w-12 h-12 rounded-xl bg-teal-50 flex items-center justify-center text-teal-600 text-xl shadow-inner"><i class="fas fa-user-circle"></i></div>
+                            <div class="flex-1">
+                                <h3 class="font-bold text-sm text-gray-800">Akun Saya</h3>
+                                <p class="text-[10px] text-gray-400">Edit foto dan kata sandi</p>
+                            </div>
+                            <i class="fas fa-chevron-right text-gray-300 text-xs"></i>
+                        </button>
+                        <button onclick="handleLogout()" class="w-full bg-red-50 hover:bg-red-100 rounded-2xl p-4 flex items-center justify-center gap-2 border border-red-100 transition-colors text-red-600 font-bold text-sm mt-4">
+                            <i class="fas fa-sign-out-alt"></i> Keluar Sistem
+                        </button>
+                    </div>
+                </div>        
+
             </div>
 
             <!-- Perbaikan layout mobile Bottom Nav untuk Admin/Guru -->
-            <nav class="md:hidden shrink-0 relative bg-white border-t border-gray-100 flex justify-around items-center pb-6 pt-3 px-2 shadow-[0_-10px_20px_rgba(0,0,0,0.03)] z-20 w-full overflow-x-auto custom-scroll gap-2">
-                <button onclick="switchGuruMenu('dashboard')" class="guru-mobnav-btn flex flex-col items-center text-teal-600 min-w-[56px]" data-target="dashboard">
-                    <i class="fas fa-border-all text-xl mb-1"></i>
+            <!-- Bottom Navigation Modern (Guru/Admin) - 5 Menu -->
+            <nav class="md:hidden shrink-0 relative bg-white/95 backdrop-blur-xl border-t border-gray-100 flex justify-between items-end pb-5 pt-2 px-4 shadow-[0_-15px_30px_rgba(0,0,0,0.04)] z-20 w-full rounded-t-3xl">                
+                <button onclick="switchGuruMenu('dashboard')" class="guru-mobnav-btn flex flex-col items-center text-teal-600 w-14 group transition-transform active:scale-95" data-target="dashboard">
+                    <i class="fas fa-border-all text-xl mb-1.5 drop-shadow-sm"></i>
                     <span class="text-[9px] font-bold">Beranda</span>
                 </button>
-                <button onclick="switchGuruMenu('siswa')" class="guru-mobnav-btn flex flex-col items-center text-gray-400 min-w-[56px]" data-target="siswa">
-                    <i class="fas fa-user-graduate text-xl mb-1"></i>
+                
+                <button onclick="switchGuruMenu('siswa')" class="guru-mobnav-btn flex flex-col items-center text-gray-400 w-14 group transition-transform active:scale-95" data-target="siswa">
+                    <i class="fas fa-user-graduate text-xl mb-1.5 drop-shadow-sm"></i>
                     <span class="text-[9px] font-bold">Siswa</span>
                 </button>
-                <button onclick="switchGuruMenu('guru')" class="guru-mobnav-btn admin-only flex flex-col items-center text-gray-400 min-w-[56px]" data-target="guru">
-                    <i class="fas fa-chalkboard-teacher text-xl mb-1"></i>
-                    <span class="text-[9px] font-bold">Guru</span>
-                </button>
-                <button onclick="switchGuruMenu('izin-admin')" class="guru-mobnav-btn flex flex-col items-center text-gray-400 min-w-[56px]" data-target="izin-admin">
-                    <i class="fas fa-envelope-open-text text-xl mb-1"></i>
+
+                <!-- CENTER FAB: REKAP PRESENSI -->
+                <div class="nav-fab-container">
+                    <button onclick="switchGuruMenu('rekap')" class="nav-fab-btn bg-gradient-to-tr from-blue-600 to-cyan-400 shadow-[0_10px_20px_rgba(6,182,212,0.4)] hover:-translate-y-1 guru-mobnav-btn" data-target="rekap">
+                        <i class="fas fa-clipboard-check text-[26px] drop-shadow-md"></i>
+                    </button>
+                    <span class="text-[10px] font-bold text-cyan-600 mt-9 mb-1">Rekap</span>
+                </div>
+
+                <button onclick="switchGuruMenu('izin-admin')" class="guru-mobnav-btn flex flex-col items-center text-gray-400 w-14 group transition-transform active:scale-95" data-target="izin-admin">
+                    <i class="fas fa-envelope-open-text text-xl mb-1.5 drop-shadow-sm"></i>
                     <span class="text-[9px] font-bold">Izin</span>
                 </button>
-                <button onclick="switchGuruMenu('rekap')" class="guru-mobnav-btn flex flex-col items-center text-gray-400 min-w-[56px]" data-target="rekap">
-                    <i class="fas fa-clipboard-list text-xl mb-1"></i>
-                    <span class="text-[9px] font-bold">Rekap</span>
-                </button>
-                <button onclick="switchGuruMenu('manajemen')" class="guru-mobnav-btn admin-only flex flex-col items-center text-gray-400 min-w-[56px]" data-target="manajemen">
-                    <i class="fas fa-database text-xl mb-1"></i>
-                    <span class="text-[9px] font-bold">Kelola</span>
-                </button>
-                <button onclick="switchGuruMenu('pengaturan')" class="guru-mobnav-btn admin-only flex flex-col items-center text-gray-400 min-w-[56px]" data-target="pengaturan">
-                    <i class="fas fa-cog text-xl mb-1"></i>
-                    <span class="text-[9px] font-bold">Setting</span>
+                
+                <!-- Tab Menu Khusus Guru -->
+                <button onclick="switchGuruMenu('menu')" class="guru-mobnav-btn flex flex-col items-center text-gray-400 w-14 group transition-transform active:scale-95" data-target="menu">
+                    <i class="fas fa-bars text-xl mb-1.5 drop-shadow-sm"></i>
+                    <span class="text-[9px] font-bold">Menu</span>
                 </button>
             </nav>
         </div>
@@ -2070,6 +2145,22 @@
             btn.disabled = false;
         }
     }
+
+
+    // Aksi ketika tombol tengah/sidik jari ditekan oleh siswa
+        function triggerAbsenFAB() {
+            switchTabMobile('dashboard');
+            setTimeout(() => {
+                const btnMasuk = document.querySelector('button[onclick="openScanner(\'masuk\')"]');
+                if(btnMasuk) {
+                    btnMasuk.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    // Efek berkedip lembut untuk menyorot letak tombol masuk/pulang
+                    btnMasuk.parentElement.classList.add('animate-soft-pulse');
+                    setTimeout(() => btnMasuk.parentElement.classList.remove('animate-soft-pulse'), 1500);
+                }
+            }, 300);
+        }
+
 
     // ==========================================
     // 4. LOGIKA GURU & ADMIN (BACA DARI CLOUD)
