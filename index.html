@@ -978,6 +978,8 @@
                                         <th class="px-6 py-4">Kelas</th>
                                         <th class="px-6 py-4">Jurusan</th>
                                         <th class="px-6 py-4">No. HP</th>
+                                        <th class="px-6 py-4">Status HP</th>
+                                        <th class="px-6 py-4 text-center">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-gray-100" id="tabel-data-siswa">
@@ -1005,6 +1007,7 @@
                                         <th class="px-6 py-4">Jabatan</th>
                                         <th class="px-6 py-4">Wali Kelas</th>
                                         <th class="px-6 py-4">Kelas yang Diajarkan</th>
+                                        <th class="px-6 py-4">Status HP</th>
                                         <th class="px-6 py-4 text-center">Aksi</th>
                                     </tr>
                                 </thead>
@@ -1363,6 +1366,20 @@
     const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 
     let currentUser = null;
+
+    // ==========================================
+    // FUNGSI KEAMANAN & SESI PERANGKAT
+    // ==========================================
+    function getDeviceID() {
+        // Ambil ID perangkat dari penyimpanan HP, atau buat baru jika belum ada
+        let deviceId = localStorage.getItem('app_device_id');
+        if (!deviceId) {
+            deviceId = 'dev_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
+            localStorage.setItem('app_device_id', deviceId);
+        }
+        return deviceId;
+    }    
+
     let localRekapCache = [];
 
     function showToast(msg, isError = false) {
@@ -1455,6 +1472,29 @@
         if (izinTglInput) {
             izinTglInput.value = new Date().toISOString().split('T')[0];
         }
+
+        // --- TAMBAHKAN BLOK AUTO-LOGIN INI DI SINI ---
+        const savedSession = localStorage.getItem('app_session');
+        if (savedSession) {
+            try {
+                const userData = JSON.parse(savedSession);
+                currentUser = userData;
+                
+                // Langsung arahkan ke dashboard sesuai role
+                if (userData.role === 'siswa') {
+                    setupSiswaDashboard(userData);
+                } else {
+                    setupGuruDashboard(userData);
+                }
+                
+                // Matikan Splash Screen secara paksa jika auto-login aktif
+                document.getElementById('screen-splash').classList.add('hidden');
+                document.getElementById('screen-splash').classList.remove('flex');
+            } catch (e) {
+                // Jika data sesi rusak, hapus sesi tersebut
+                localStorage.removeItem('app_session');
+            }
+        }
     };
 
     function showScreen(id) {
@@ -1471,6 +1511,7 @@
         const passInput = document.getElementById('login-pass').value;
         const btn = document.getElementById('btn-login');
         const errText = document.getElementById('login-error');
+        const currentDeviceId = getDeviceID(); // Ambil ID Perangkat
         
         if(!idInput) return;
 
@@ -1482,6 +1523,7 @@
             // Cek Master Admin
             if (idInput === '051282' && passInput === '16041992') {
                 currentUser = { role: 'admin', nip: '051282', nama: 'Admin Super', jabatan: 'Admin Master', wali_kelas: '', kelas_ajar: '' };
+                localStorage.setItem('app_session', JSON.stringify(currentUser));
                 setupGuruDashboard(currentUser);
                 return;
             }
@@ -1491,7 +1533,18 @@
             if (siswa) {
                 const pwSiswa = siswa.password || '123456';
                 if (passInput === pwSiswa) {
+                    
+                    // --- LOGIKA DEVICE BINDING SISWA ---
+                    if (siswa.device_id && siswa.device_id !== currentDeviceId) {
+                        throw new Error("Akun ini sedang aktif di HP lain. Harap Logout dari perangkat sebelumnya.");
+                    } else if (!siswa.device_id) {
+                        // Daftarkan HP ini ke database
+                        await db.from('tabel_siswa').update({ device_id: currentDeviceId }).eq('nis', idInput);
+                        siswa.device_id = currentDeviceId;
+                    }
+
                     currentUser = { role: 'siswa', ...siswa };
+                    localStorage.setItem('app_session', JSON.stringify(currentUser)); // Simpan sesi
                     setupSiswaDashboard(currentUser);
                     return;
                 } else {
@@ -1505,13 +1558,22 @@
                 const pwGuru = guru.password || '123456';
                 if (passInput === pwGuru) {
                     
-                    // Logika PRO: Deteksi Jabatan Admin secara dinamis
+                    // --- LOGIKA DEVICE BINDING GURU ---
+                    if (guru.device_id && guru.device_id !== currentDeviceId) {
+                        throw new Error("Akun ini sedang aktif di perangkat lain.");
+                    } else if (!guru.device_id) {
+                        // Daftarkan perangkat ini ke database
+                        await db.from('tabel_guru').update({ device_id: currentDeviceId }).eq('nip', idInput);
+                        guru.device_id = currentDeviceId;
+                    }
+
                     let roleGuru = 'guru';
                     if (guru.jabatan && guru.jabatan.toLowerCase().includes('admin')) {
-                        roleGuru = 'admin'; // Otomatis jadi admin jika jabatannya mengandung kata "admin"
+                        roleGuru = 'admin'; 
                     }
                     
                     currentUser = { role: roleGuru, ...guru };
+                    localStorage.setItem('app_session', JSON.stringify(currentUser)); // Simpan sesi
                     setupGuruDashboard(currentUser);
                     return;
                 } else {
@@ -1546,8 +1608,27 @@
         }
     }
 
-    function handleLogout() {
+    async function handleLogout() {
+        // Hapus ikatan perangkat di server sebelum keluar
+        if (currentUser) {
+            try {
+                if (currentUser.role === 'siswa') {
+                    await db.from('tabel_siswa').update({ device_id: null }).eq('nis', currentUser.nis);
+                } else if (currentUser.role === 'guru' || currentUser.role === 'admin') {
+                    if (currentUser.nip !== '051282') { // Abaikan admin master
+                        await db.from('tabel_guru').update({ device_id: null }).eq('nip', currentUser.nip);
+                    }
+                }
+            } catch (e) {
+                console.error("Gagal melepas ikatan perangkat", e);
+            }
+        }
+
+        // Hapus memori lokal
         currentUser = null;
+        localStorage.removeItem('app_session'); 
+
+        // Kembali ke layar login
         document.getElementById('login-id').value = '';
         document.getElementById('login-pass').value = '';
         showScreen('screen-login');
@@ -1556,6 +1637,34 @@
         container.classList.add('device-frame');
     }
 
+    async function resetDeviceBinding(tabel, kolomId, nilaiId) {
+        // Konfirmasi agar tidak tertekan secara tidak sengaja
+        if (!confirm(`Yakin ingin me-reset (menghapus) ikatan perangkat untuk ID ${nilaiId}?\n\nPengguna akan bisa login kembali di perangkat mana pun.`)) {
+            return;
+        }
+        
+        showToast('Memproses pelepasan perangkat...');
+        
+        try {
+            const { error } = await db.from(tabel)
+                .update({ device_id: null }) // Mengosongkan data device_id di Cloud
+                .eq(kolomId, nilaiId);
+                
+            if (error) throw error;
+            
+            showToast(`Perangkat untuk ${nilaiId} berhasil dibebaskan!`);
+            
+            // Segarkan tampilan tabel agar badge "Terikat" berubah menjadi "Bebas"
+            if (tabel === 'tabel_siswa') loadDataSiswa();
+            if (tabel === 'tabel_guru') loadDataGuru();
+            
+        } catch (error) {
+            console.error(error);
+            showToast('Gagal me-reset ikatan perangkat (Cek RLS/Koneksi).', true);
+        }
+    }
+
+    
     // ==========================================
     // 3. LOGIKA SISWA & PRESENSI CLOUD
     // ==========================================
@@ -2149,6 +2258,10 @@
 
     // Aksi ketika tombol tengah/sidik jari ditekan oleh siswa
         function triggerAbsenFAB() {
+            // Langsung memanggil fungsi absen masuk (membuka layar scanner)
+            openScanner('masuk');
+        }
+        /**
             switchTabMobile('dashboard');
             setTimeout(() => {
                 const btnMasuk = document.querySelector('button[onclick="openScanner(\'masuk\')"]');
@@ -2160,7 +2273,7 @@
                 }
             }, 300);
         }
-
+        */
 
     // ==========================================
     // 4. LOGIKA GURU & ADMIN (BACA DARI CLOUD)
@@ -2351,6 +2464,17 @@
 
         tbody.innerHTML = '';
         data.forEach(s => {
+            const isAdmin = currentUser && currentUser.role === 'admin';
+            const isDeviceBound = s.device_id && s.device_id !== '';
+            
+            const badgeDevice = isDeviceBound 
+                ? `<span class="bg-green-100 text-green-700 px-2 py-1 rounded text-[10px] font-bold border border-green-200"><i class="fas fa-lock"></i> Terikat</span>` 
+                : `<span class="bg-gray-100 text-gray-500 px-2 py-1 rounded text-[10px] font-bold border border-gray-200"><i class="fas fa-unlock"></i> Bebas</span>`;
+
+            const btnAksi = isAdmin 
+                ? `<button onclick="resetDeviceBinding('tabel_siswa', 'nis', '${s.nis}')" class="bg-red-50 text-red-600 hover:bg-red-100 px-2.5 py-1.5 rounded-lg text-[10px] font-bold transition-colors border border-red-200" title="Lepaskan Perangkat"><i class="fas fa-mobile-alt"></i> Reset HP</button>`
+                : '-';
+
             tbody.innerHTML += `
                 <tr class="hover:bg-gray-50 border-b border-gray-50">
                     <td class="px-6 py-4 font-mono text-gray-500 text-xs">${s.nisn || '-'}</td>
@@ -2361,6 +2485,8 @@
                     <td class="px-6 py-4 font-bold text-teal-700">${s.kelas || '-'}</td>
                     <td class="px-6 py-4"><span class="bg-blue-50 px-2.5 py-1 rounded-lg text-xs font-bold text-blue-700 border border-blue-100">${s.id_jurusan || '-'}</span></td>
                     <td class="px-6 py-4 text-xs text-gray-600">${s.no_hp || '-'}</td>
+                    <td class="px-6 py-4">${badgeDevice}</td>
+                    <td class="px-6 py-4 text-center">${btnAksi}</td>
                 </tr>
             `;
         });
@@ -2482,11 +2608,28 @@
 
         tbody.innerHTML = '';
         data.forEach(g => {
-            const btnEdit = currentUser && currentUser.role === 'admin' 
-                ? `<button onclick="openModalEditGuru('${g.nip}', '${g.nama.replace(/'/g, "\\'")}', '${g.jabatan || ''}', '${g.wali_kelas || ''}', '${g.kelas_ajar || ''}')" class="bg-teal-100 text-teal-700 hover:bg-teal-200 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors"><i class="fas fa-edit"></i> Edit</button>`
-                : '-';
+            const isAdmin = currentUser && currentUser.role === 'admin';
+            const isDeviceBound = g.device_id && g.device_id !== '';
+            
+            const badgeDevice = isDeviceBound 
+                ? `<span class="bg-green-100 text-green-700 px-2 py-1 rounded text-[10px] font-bold border border-green-200"><i class="fas fa-lock"></i> Terikat</span>` 
+                : `<span class="bg-gray-100 text-gray-500 px-2 py-1 rounded text-[10px] font-bold border border-gray-200"><i class="fas fa-unlock"></i> Bebas</span>`;
 
-            // Pisahkan badge kelas ajar agar rapi
+            let btnAksi = '-';
+            if (isAdmin) {
+                // Sembunyikan tombol reset untuk admin master (051282) agar tidak mereset dirinya sendiri
+                const btnReset = g.nip !== '051282' 
+                    ? `<button onclick="resetDeviceBinding('tabel_guru', 'nip', '${g.nip}')" class="bg-red-50 text-red-600 hover:bg-red-100 px-2.5 py-1.5 rounded-lg text-[10px] font-bold transition-colors border border-red-200" title="Lepaskan Perangkat"><i class="fas fa-mobile-alt"></i> Reset</button>` 
+                    : '';
+                    
+                btnAksi = `
+                    <div class="flex justify-center gap-1">
+                        <button onclick="openModalEditGuru('${g.nip}', '${g.nama.replace(/'/g, "\\'")}', '${g.jabatan || ''}', '${g.wali_kelas || ''}', '${g.kelas_ajar || ''}')" class="bg-teal-50 text-teal-700 hover:bg-teal-100 px-2.5 py-1.5 rounded-lg text-[10px] font-bold transition-colors border border-teal-200"><i class="fas fa-edit"></i> Edit</button>
+                        ${btnReset}
+                    </div>
+                `;
+            }
+
             let badgeKelasAjar = '-';
             if (g.kelas_ajar && g.kelas_ajar.trim() !== '') {
                 badgeKelasAjar = g.kelas_ajar.split(',').map(k => `<span class="inline-block bg-gray-100 border border-gray-200 text-gray-600 px-2 py-0.5 rounded text-[10px] font-bold mr-1 mb-1">${k.trim()}</span>`).join('');
@@ -2499,7 +2642,8 @@
                     <td class="px-6 py-4 font-medium text-gray-700">${g.jabatan || '-'}</td>
                     <td class="px-6 py-4"><span class="bg-orange-50 px-2.5 py-1 rounded-lg text-xs font-bold text-orange-700 border border-orange-100">${g.wali_kelas || '-'}</span></td>
                     <td class="px-6 py-4 whitespace-normal min-w-[200px]">${badgeKelasAjar}</td>
-                    <td class="px-6 py-4 text-center">${btnEdit}</td>
+                    <td class="px-6 py-4">${badgeDevice}</td>
+                    <td class="px-6 py-4 text-center">${btnAksi}</td>
                 </tr>
             `;
         });
