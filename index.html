@@ -19,44 +19,32 @@
     
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        /* --- PERBAIKAN BUG OVERSCROLL & FULLSCREEN (MOBILE NATIVE) --- */
+        /* --- PERBAIKAN BUG OVERSCROLL (RUBBER-BANDING) & LAYAR PUTIH --- */
         html, body { 
             font-family: 'Inter', sans-serif; 
-            background-color: #f4f8fd; 
+            background-color: #f4f8fd; /* Disamakan dengan warna dasar login agar tidak ada garis putih */
             overflow: hidden; 
             width: 100%; 
             height: 100%; 
             margin: 0; 
             padding: 0;
-            /* KUNCI 1: Mengubah body menjadi fixed mematikan total efek tarikan layar */
-            position: fixed; 
+            /* KUNCI 1: Mematikan efek membal (bounce/tarik) bawaan browser HP */
             overscroll-behavior-y: none; 
             overscroll-behavior-x: none;
         }
 
+        /* KUNCI 2: Mencegah scroll di dalam konten memicu Pull-to-Refresh browser HP */
         .custom-scroll { 
             overscroll-behavior-y: contain; 
         }
 
+        /* KUNCI 3: Paksa frame aplikasi mengisi layar 100% di mode HP tanpa batas maksimum */
         @media (max-width: 767px) {
             .device-frame {
-                /* KUNCI 2: Paksa frame menempel sempurna di 4 sisi layar HP */
-                position: fixed; 
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                width: 100%;
-                /* Menggunakan 100% lebih kebal terhadap toolbar browser dibanding 100vh/100dvh */
-                height: 100%; 
                 max-width: 100%;
-                max-height: none;
+                max-height: 100vh;
+                max-height: 100dvh;
                 border-radius: 0;
-            }
-            
-            /* KUNCI 3: Jarak aman (Safe Area) untuk mengangkat menu dari toolbar Samsung/iPhone */
-            .safe-bottom-nav {
-                padding-bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px));
             }
         }
         
@@ -770,7 +758,7 @@
         <!-- Bottom Navigation - Disesuaikan agar selalu menjejak (shrink-0 relative) -->
         <!-- Bottom Navigation Modern -->
         <!-- Bottom Navigation Modern (Siswa) - 5 Menu -->
-        <nav class="md:hidden absolute bottom-0 left-0 w-full bg-white/95 backdrop-blur-xl border-t border-gray-100 flex justify-between items-end safe-bottom-nav pt-2 px-4 shadow-[0_-15px_30px_rgba(0,0,0,0.04)] z-50 rounded-t-3xl">            
+        <div class="absolute bottom-0 left-0 w-full bg-white/95 backdrop-blur-xl border-t border-gray-100 flex justify-between items-end pb-5 pt-2 px-4 shadow-[0_-15px_30px_rgba(0,0,0,0.04)] z-50 rounded-t-3xl">            
             <button onclick="switchTabMobile('dashboard')" id="nav-dashboard" class="nav-item flex flex-col items-center relative w-14 active-nav group">
                 <div class="nav-icon-box w-10 h-10 flex items-center justify-center transition-all duration-300 group-active:scale-95 group-hover:-translate-y-1">
                     <i class="fas fa-home text-[20px] drop-shadow-sm"></i>
