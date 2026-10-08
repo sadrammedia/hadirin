@@ -335,7 +335,7 @@
         
         <!-- Dashboard Siswa -->
         <!-- Perhatikan padding-bottom disesuaikan menjadi pb-6 agar proporsional dengan menu bawah yang solid -->
-        <div id="tab-dashboard" class="flex-1 custom-scroll overflow-y-auto pb-6 hidden bg-[#f8fafc]">
+        <div id="tab-dashboard" class="flex-1 custom-scroll overflow-y-auto pb-28 hidden bg-[#f8fafc]">
             <!-- Header Baru bergaya Modern -->
             <div class="px-6 pt-10 pb-4 bg-white sticky top-0 z-20 flex justify-between items-center shadow-[0_2px_10px_rgba(0,0,0,0.02)]">
                 <div class="flex items-center gap-3">
@@ -436,7 +436,7 @@
         </div>
 
         <!-- Histori Siswa -->
-        <div id="tab-histori" class="flex-1 custom-scroll overflow-y-auto pb-6 hidden bg-gray-50">
+        <div id="tab-histori" class="flex-1 custom-scroll overflow-y-auto pb-28 hidden bg-gray-50">
             <div class="bg-white pt-12 pb-4 px-6 sticky top-0 z-20 shadow-sm flex justify-between items-center">
                 <div class="flex items-center gap-4">
                     <button onclick="switchTabMobile('dashboard')"><i class="fas fa-arrow-left text-gray-600"></i></button>
@@ -451,7 +451,7 @@
         </div>
 
         <!-- Tab: Pengajuan Izin/Sakit Siswa -->
-        <div id="tab-izin" class="flex-1 custom-scroll overflow-y-auto pb-6 hidden bg-gray-50">
+        <div id="tab-izin" class="flex-1 custom-scroll overflow-y-auto pb-28 hidden bg-gray-50">
             <div class="bg-white pt-12 pb-4 px-6 sticky top-0 z-20 shadow-sm flex justify-between items-center">  
                 <div class="flex items-center gap-4">
                     <button onclick="switchTabMobile('dashboard')"><i class="fas fa-arrow-left text-gray-600"></i></button>
@@ -500,7 +500,7 @@
         </div>
 
         <!-- Tab: Profil Lengkap Siswa -->
-        <div id="tab-profil" class="flex-1 custom-scroll overflow-y-auto pb-6 hidden bg-[#f4f7fb]">
+        <div id="tab-profil" class="flex-1 custom-scroll overflow-y-auto pb-28 hidden bg-[#f4f7fb]">
             <!-- Header Profil -->
             <div class="px-6 pt-12 pb-4 bg-[#f4f7fb] sticky top-0 z-20 flex justify-between items-center">
                 <button onclick="switchTabMobile('menu')" class="text-gray-800 hover:text-blue-600 transition-colors"><i class="fas fa-chevron-left text-lg"></i></button>
@@ -622,7 +622,7 @@
         </div>
 
         <!-- Tab: Menu Utama Siswa (BARU) -->
-        <div id="tab-menu" class="flex-1 custom-scroll overflow-y-auto pb-6 hidden bg-[#f8fafc]">
+        <div id="tab-menu" class="flex-1 custom-scroll overflow-y-auto pb-28 hidden bg-[#f8fafc]">
             <!-- Header Latar Biru Modern -->
             <div class="bg-blue-600 pt-12 pb-20 px-6 text-white relative rounded-b-[2.5rem] shadow-md overflow-hidden">
                 <div class="flex justify-between items-center mb-2 relative z-10">
@@ -731,7 +731,7 @@
         <!-- Bottom Navigation - Disesuaikan agar selalu menjejak (shrink-0 relative) -->
         <!-- Bottom Navigation Modern -->
         <!-- Bottom Navigation Modern (Siswa) - 5 Menu -->
-        <div class="w-full shrink-0 relative bg-white/95 backdrop-blur-xl border-t border-gray-100 flex justify-between items-end pb-5 pt-2 px-4 shadow-[0_-15px_30px_rgba(0,0,0,0.04)] z-30 rounded-t-3xl">            
+        <div class="absolute bottom-0 left-0 w-full bg-white/95 backdrop-blur-xl border-t border-gray-100 flex justify-between items-end pb-5 pt-2 px-4 shadow-[0_-15px_30px_rgba(0,0,0,0.04)] z-50 rounded-t-3xl">            
             <button onclick="switchTabMobile('dashboard')" id="nav-dashboard" class="nav-item flex flex-col items-center relative w-14 active-nav group">
                 <div class="nav-icon-box w-10 h-10 flex items-center justify-center transition-all duration-300 group-active:scale-95 group-hover:-translate-y-1">
                     <i class="fas fa-home text-[20px] drop-shadow-sm"></i>
@@ -920,7 +920,7 @@
                 </div>
             </div>
 
-            <div class="flex-1 overflow-y-auto custom-scroll p-4 md:p-8 pb-6 md:pb-8">
+            <div class="flex-1 overflow-y-auto custom-scroll p-4 md:p-8 pb-28 md:pb-8">
                 
                 <!-- GURU: DASHBOARD -->
                 <div id="guru-section-dashboard" class="guru-section animate-fade-in block">
@@ -1323,7 +1323,7 @@
              </div>
             <!-- Perbaikan layout mobile Bottom Nav untuk Admin/Guru -->
             <!-- Bottom Navigation Modern (Guru/Admin) - 5 Menu -->
-            <nav class="md:hidden shrink-0 relative bg-white/95 backdrop-blur-xl border-t border-gray-100 flex justify-between items-end pb-5 pt-2 px-4 shadow-[0_-15px_30px_rgba(0,0,0,0.04)] z-20 w-full rounded-t-3xl">                
+            <nav class="md:hidden absolute bottom-0 left-0 w-full bg-white/95 backdrop-blur-xl border-t border-gray-100 flex justify-between items-end pb-5 pt-2 px-4 shadow-[0_-15px_30px_rgba(0,0,0,0.04)] z-50 rounded-t-3xl">                
                 <button onclick="switchGuruMenu('dashboard')" class="guru-mobnav-btn flex flex-col items-center text-teal-600 w-14 group transition-transform active:scale-95" data-target="dashboard">
                     <i class="fas fa-border-all text-xl mb-1.5 drop-shadow-sm"></i>
                     <span class="text-[9px] font-bold">Beranda</span>
