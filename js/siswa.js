@@ -480,14 +480,21 @@ async function openScanner(type) {
                         }
                     },
                     (error) => {
-                        let errDetail = 'Gagal membaca GPS. Pastikan izin lokasi aktif!';
-                        if (error.code === error.PERMISSION_DENIED) errDetail = 'Izin lokasi ditolak oleh browser.';
+                        let errDetail = 'Gagal membaca GPS.';
+                        if (error.code === error.PERMISSION_DENIED) {
+                            errDetail = 'Izin lokasi ditolak oleh browser.';
+                        } else if (error.code === error.TIMEOUT) {
+                            errDetail = 'Waktu pencarian lokasi habis. Coba lagi.';
+                        } else if (error.code === error.POSITION_UNAVAILABLE) {
+                            errDetail = 'Sinyal lokasi tidak tersedia.';
+                        }
                         showToast(errDetail, true);
                     },
-                    { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
+                    // PERUBAHAN DI SINI:
+                    // Gunakan batas waktu 20 detik dan izinkan cache hingga 30 detik
+                    { enableHighAccuracy: false, timeout: 20000, maximumAge: 30000 }
                 );
             }
-    }
     
     tampilkanScannerUI(type);
 }
