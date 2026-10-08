@@ -1048,7 +1048,8 @@
                 </div>
 
                 <!-- GURU: REKAP PRESENSI -->
-                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+                <div id="guru-section-rekap" class="guru-section hidden animate-fade-in">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
                         <div>
                             <h1 class="text-2xl font-bold text-gray-800">Rekap Presensi Harian</h1>
                             <p class="text-sm text-gray-500">Pilih kelas untuk memfilter data.</p>
@@ -1057,8 +1058,7 @@
                             <!-- Dropdown Filter Kelas -->
                             <select id="filter-kelas-rekap" onchange="loadDataRekap()" class="border border-gray-300 rounded-xl px-4 py-2 text-sm outline-none focus:border-teal-500 bg-white font-medium text-gray-700 flex-1 md:flex-none">
                                 <option value="ALL">Semua Kelas</option>
-                            </select>
-                            
+                            </select>                         
                             <button onclick="loadDataRekap()" class="bg-white border border-gray-200 px-3 py-2 rounded-xl text-gray-600 hover:bg-gray-50 transition-colors shadow-sm">
                                 <i class="fas fa-sync-alt"></i>
                             </button>
@@ -1278,7 +1278,6 @@
                             </div>
                         </div>
                     </div>
-                </div>
 
                 <!-- GURU: MENU LAINNYA (TAMPILAN MOBILE) -->
                 <div id="guru-section-menu" class="guru-section hidden animate-fade-in">
@@ -1321,7 +1320,6 @@
                         </button>
                     </div>
                 </div>        
-
             </div>
 
             <!-- Perbaikan layout mobile Bottom Nav untuk Admin/Guru -->
