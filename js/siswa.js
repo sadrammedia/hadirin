@@ -197,7 +197,6 @@ async function simpanProfilSiswa() {
     }
 }
 
-// Handler Ganti Foto Profil Siswa
 const editFotoFileEl = document.getElementById('edit-foto-file');
 if (editFotoFileEl) {
     editFotoFileEl.addEventListener('change', async function(e) {
@@ -460,41 +459,39 @@ async function openScanner(type) {
             }
         }
 
-        // Pengecekan GPS jika batas koordinat diaktifkan
-            if (cachedPengaturan.lokasi_lat && cachedPengaturan.lokasi_lng && cachedPengaturan.radius) {
-                showToast('Mengecek lokasi GPS...', false);
-                if (!navigator.geolocation) return showToast('Browser tidak mendukung pembacaan GPS!', true);
-                
-                return navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                        const jarak = hitungJarakGPS(
-                            position.coords.latitude, position.coords.longitude,
-                            parseFloat(cachedPengaturan.lokasi_lat), parseFloat(cachedPengaturan.lokasi_lng)
-                        );
-                        
-                        const maxRadius = parseFloat(cachedPengaturan.radius);
-                        if (jarak > maxRadius) {
-                            return showToast(`Gagal: Berada di luar area sekolah! (Jarak: ${Math.round(jarak)}m | Toleransi: ${maxRadius}m)`, true);
-                        } else {
-                            tampilkanScannerUI(type); 
-                        }
-                    },
-                    (error) => {
-                        let errDetail = 'Gagal membaca GPS.';
-                        if (error.code === error.PERMISSION_DENIED) {
-                            errDetail = 'Izin lokasi ditolak oleh browser.';
-                        } else if (error.code === error.TIMEOUT) {
-                            errDetail = 'Waktu pencarian lokasi habis. Coba lagi.';
-                        } else if (error.code === error.POSITION_UNAVAILABLE) {
-                            errDetail = 'Sinyal lokasi tidak tersedia.';
-                        }
-                        showToast(errDetail, true);
-                    },
-                    // PERUBAHAN DI SINI:
-                    // Gunakan batas waktu 20 detik dan izinkan cache hingga 30 detik
-                    { enableHighAccuracy: false, timeout: 20000, maximumAge: 30000 }
-                );
-            }
+        if (cachedPengaturan.lokasi_lat && cachedPengaturan.lokasi_lng && cachedPengaturan.radius) {
+            showToast('Mengecek lokasi GPS...', false);
+            if (!navigator.geolocation) return showToast('Browser tidak mendukung pembacaan GPS!', true);
+            
+            return navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const jarak = hitungJarakGPS(
+                        position.coords.latitude, position.coords.longitude,
+                        parseFloat(cachedPengaturan.lokasi_lat), parseFloat(cachedPengaturan.lokasi_lng)
+                    );
+                    
+                    const maxRadius = parseFloat(cachedPengaturan.radius);
+                    if (jarak > maxRadius) {
+                        return showToast(`Gagal: Berada di luar area sekolah! (Jarak: ${Math.round(jarak)}m | Toleransi: ${maxRadius}m)`, true);
+                    } else {
+                        tampilkanScannerUI(type); 
+                    }
+                },
+                (error) => {
+                    let errDetail = 'Gagal membaca GPS.';
+                    if (error.code === error.PERMISSION_DENIED) {
+                        errDetail = 'Izin lokasi ditolak oleh browser.';
+                    } else if (error.code === error.TIMEOUT) {
+                        errDetail = 'Waktu pencarian lokasi habis. Coba lagi.';
+                    } else if (error.code === error.POSITION_UNAVAILABLE) {
+                        errDetail = 'Sinyal lokasi tidak tersedia.';
+                    }
+                    showToast(errDetail, true);
+                },
+                { enableHighAccuracy: false, timeout: 20000, maximumAge: 30000 }
+            );
+        }
+    }
     
     tampilkanScannerUI(type);
 }
