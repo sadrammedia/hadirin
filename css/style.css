@@ -169,3 +169,201 @@ input[type="password"]::-ms-clear {
 }
 #nav-menu.active-nav .nav-text { color: #9333ea; }
 #nav-menu.active-nav .nav-indicator { background-color: #9333ea; opacity: 1; transform: scale(1); }
+
+/* ==========================================
+   STYLE MODE GELAP (DARK MODE SISWA)
+========================================== */
+.dark-mode-simulated,
+.dark-mode-simulated #screen-mobile,
+.dark-mode-simulated #tab-dashboard,
+.dark-mode-simulated #tab-histori,
+.dark-mode-simulated #tab-izin,
+.dark-mode-simulated #tab-profil,
+.dark-mode-simulated #tab-menu,
+.dark-mode-simulated #tab-pengumuman,
+.dark-mode-simulated #tab-jadwal,
+.dark-mode-simulated #tab-pengaturan-siswa {
+    background-color: #0f172a !important; /* Slate 900 */
+    color: #f1f5f9 !important;
+}
+
+/* Header sticky di mode gelap */
+.dark-mode-simulated [class*="sticky"] {
+    background-color: rgba(15, 23, 42, 0.95) !important;
+    border-color: #1e293b !important;
+}
+
+/* Semua kartu putih berubah jadi dark card */
+.dark-mode-simulated .bg-white,
+.dark-mode-simulated .setting-card {
+    background-color: #1e293b !important; /* Slate 800 */
+    border-color: #334155 !important; /* Slate 700 */
+    color: #f1f5f9 !important;
+}
+
+/* Penyesuaian teks di mode gelap */
+.dark-mode-simulated .text-gray-800,
+.dark-mode-simulated .text-slate-800,
+.dark-mode-simulated .text-gray-900,
+.dark-mode-simulated .setting-item-title {
+    color: #f8fafc !important;
+}
+
+.dark-mode-simulated .text-gray-500,
+.dark-mode-simulated .text-gray-600,
+.dark-mode-simulated .setting-item-desc {
+    color: #94a3b8 !important;
+}
+
+.dark-mode-simulated .text-gray-400,
+.dark-mode-simulated .setting-group-title {
+    color: #64748b !important;
+}
+
+.dark-mode-simulated .border-gray-50,
+.dark-mode-simulated .border-gray-100 {
+    border-color: #334155 !important;
+}
+
+.dark-mode-simulated .bg-gray-50,
+.dark-mode-simulated .bg-gray-100 {
+    background-color: #334155 !important;
+    color: #e2e8f0 !important;
+}
+
+/* Bottom Navigation Bar di Mode Gelap */
+.dark-mode-simulated .absolute.bottom-0.bg-white\/95 {
+    background-color: rgba(15, 23, 42, 0.95) !important;
+    border-color: #334155 !important;
+}
+
+
+/* ====================================================
+   PENYELARASAN KOTAK PRESENSI MASUK & PULANG DI MODE GELAP
+==================================================== */
+
+/* 1. Kotak Presensi Masuk (Aksen Soft Blue Glow) */
+.dark-mode-simulated #tab-dashboard #smart-status-card .grid > div:first-child {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.12) 0%, #1e293b 100%) !important;
+    border-color: rgba(59, 130, 246, 0.35) !important;
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.08) !important;
+}
+
+/* 2. Kotak Presensi Pulang (Aksen Soft Amber/Orange Glow) */
+.dark-mode-simulated #tab-dashboard #smart-status-card .grid > div:last-child {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, #1e293b 100%) !important;
+    border-color: rgba(245, 158, 11, 0.35) !important;
+    box-shadow: 0 4px 15px rgba(245, 158, 11, 0.08) !important;
+}
+
+/* 3. Label Judul ("Presensi Masuk" & "Presensi Pulang") */
+.dark-mode-simulated #tab-dashboard #smart-status-card .grid span.text-slate-500 {
+    color: #94a3b8 !important; /* Slate terang */
+}
+
+/* 4. Teks Jam Digital (Bercahaya & Jelas Terbaca) */
+.dark-mode-simulated #tab-dashboard #status-val-masuk {
+    color: #93c5fd !important; /* Biru muda cerah */
+}
+.dark-mode-simulated #tab-dashboard #status-val-pulang {
+    color: #fcd34d !important; /* Amber/oranye muda cerah */
+}
+
+/* 5. Teks Keterangan Subtitle ("Gunakan Tombol Bawah" / "Belum Dibuka") */
+.dark-mode-simulated #tab-dashboard #status-sub-masuk {
+    color: #60a5fa !important;
+}
+.dark-mode-simulated #tab-dashboard #status-sub-pulang {
+    color: #fbbf24 !important;
+}
+
+/* 6. Ikon Status Pulang saat Masih Inaktif */
+.dark-mode-simulated #tab-dashboard #smart-status-card .grid > div:last-child .bg-slate-200 {
+    background-color: rgba(245, 158, 11, 0.2) !important;
+    color: #f59e0b !important;
+}
+
+
+/* ====================================================
+   PENYEMPURNAAN KARTU STATISTIK DASHBOARD DI MODE GELAP
+==================================================== */
+/* 1. Latar Kartu & Border Glow Halus untuk masing-masing Status */
+.dark-mode-simulated #tab-dashboard [class*="from-emerald-50"] {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, #1e293b 100%) !important;
+    border-color: rgba(16, 185, 129, 0.35) !important;
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.08) !important;
+}
+
+.dark-mode-simulated #tab-dashboard [class*="from-amber-50"] {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, #1e293b 100%) !important;
+    border-color: rgba(245, 158, 11, 0.35) !important;
+    box-shadow: 0 4px 15px rgba(245, 158, 11, 0.08) !important;
+}
+
+.dark-mode-simulated #tab-dashboard [class*="from-blue-50"] {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.12) 0%, #1e293b 100%) !important;
+    border-color: rgba(59, 130, 246, 0.35) !important;
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.08) !important;
+}
+
+/* 2. Angka Utama (Bercahaya Lembut / Neon Soft) */
+.dark-mode-simulated #tab-dashboard #kpi-hadir {
+    color: #34d399 !important; /* Emerald terang */
+}
+.dark-mode-simulated #tab-dashboard #kpi-izin {
+    color: #fbbf24 !important; /* Amber terang */
+}
+.dark-mode-simulated #tab-dashboard #kpi-persen {
+    color: #60a5fa !important; /* Sky/Blue terang */
+}
+
+/* 3. Badge Kecil Kategori (Hadir, Izin, Disiplin) */
+.dark-mode-simulated #tab-dashboard [class*="from-emerald-50"] .bg-white\/80 {
+    background-color: rgba(16, 185, 129, 0.2) !important;
+    color: #6ee7b7 !important;
+    border-color: rgba(16, 185, 129, 0.3) !important;
+}
+
+.dark-mode-simulated #tab-dashboard [class*="from-amber-50"] .bg-white\/80 {
+    background-color: rgba(245, 158, 11, 0.2) !important;
+    color: #fcd34d !important;
+    border-color: rgba(245, 158, 11, 0.3) !important;
+}
+
+.dark-mode-simulated #tab-dashboard [class*="from-blue-50"] .bg-white\/80 {
+    background-color: rgba(59, 130, 246, 0.2) !important;
+    color: #93c5fd !important;
+    border-color: rgba(59, 130, 246, 0.3) !important;
+}
+
+/* 4. Teks Keterangan Bawah (Hari Sekolah, Pengajuan, Kehadiran) */
+.dark-mode-simulated #tab-dashboard [class*="from-emerald-50"] .text-emerald-700\/80,
+.dark-mode-simulated #tab-dashboard [class*="from-amber-700\/80"],
+.dark-mode-simulated #tab-dashboard [class*="from-blue-700\/80"],
+.dark-mode-simulated #tab-dashboard [class*="text-emerald-700/80"],
+.dark-mode-simulated #tab-dashboard [class*="text-amber-700/80"],
+.dark-mode-simulated #tab-dashboard [class*="text-blue-700/80"] {
+    color: #94a3b8 !important; /* Slate terang */
+}
+
+/* 5. Watermark Icon Belakang agar Menyatu Samar */
+.dark-mode-simulated #tab-dashboard [class*="from-emerald-50"] i.fa-check-circle {
+    color: rgba(16, 185, 129, 0.15) !important;
+}
+.dark-mode-simulated #tab-dashboard [class*="from-amber-50"] i.fa-envelope-open-text {
+    color: rgba(245, 158, 11, 0.15) !important;
+}
+.dark-mode-simulated #tab-dashboard [class*="from-blue-50"] i.fa-chart-pie {
+    color: rgba(59, 130, 246, 0.15) !important;
+}
+
+/* 2. Perlindungan Tombol Grid Menu Siswa agar tetap Cerah & Bergradasi */
+.dark-mode-simulated #tab-menu [class*="from-blue-500"],
+.dark-mode-simulated #tab-menu [class*="from-purple-500"],
+.dark-mode-simulated #tab-menu [class*="from-teal-500"],
+.dark-mode-simulated #tab-menu [class*="from-amber-500"],
+.dark-mode-simulated #tab-menu [class*="from-rose-500"],
+.dark-mode-simulated #tab-menu [class*="from-cyan-500"] {
+    opacity: 1 !important;
+    filter: none !important;
+}
