@@ -112,6 +112,8 @@ function switchGuruMenu(targetId) {
     if (targetId === 'guru') loadDataGuru();
     if (targetId === 'rekap') loadDataRekap();
     if (targetId === 'izin-admin') loadIzinAdmin();
+    if (targetId === 'pengumuman-admin') loadPengumumanAdmin();
+    if (targetId === 'jadwal-admin') loadJadwalAdmin();
     if (targetId === 'pengaturan') loadPengaturan();
     if (targetId === 'profil-guru') loadProfilGuru();
 }
@@ -619,7 +621,9 @@ window.processImportToCloud = function() {
             
             if (json.length === 0) throw new Error("File Excel kosong tidak ada data.");
             
-            const targetTable = type === 'siswa' ? 'tabel_siswa' : 'tabel_guru';
+            let targetTable = 'tabel_siswa';
+            if (type === 'guru') targetTable = 'tabel_guru';
+            if (type === 'jadwal') targetTable = 'tabel_jadwal';
             
             const payload = json.map(row => {
                 let cleanRow = {};
@@ -668,14 +672,32 @@ window.processImportToCloud = function() {
 };
 
 window.downloadTemplate = function(type) {
-    const data = type === 'siswa' 
-        ? [{ nisn: "0118771800", nis: "20260001", nama: "Aiman Nuralamsyah", jk: "L", tingkat: "X", kelas: "X-AKL 1", status_siswa: "Aktif", id_jurusan: "AKL", tempat_lahir: "", tgl_lahir: "", no_hp: "08123456789", email_siswa: "siswa@mail.com", alamat: "Jl. Contoh" }]
-        : [{ nip: "19830410", nama: "Contoh Guru", jk: "P", jabatan: "Guru Mapel", wali_kelas: "X-A", kelas_ajar: "X-A, XI-A" }];
+    let data = [];
+    let fileName = `Template_${type}_Supabase.xlsx`;
+
+    if (type === 'siswa') {
+        data = [{ 
+            nisn: "0118771800", nis: "20260001", nama: "Aiman Nuralamsyah", jk: "L", 
+            tingkat: "X", kelas: "X-AKL 1", status_siswa: "Aktif", id_jurusan: "AKL", 
+            tempat_lahir: "", tgl_lahir: "", no_hp: "08123456789", email_siswa: "siswa@mail.com", alamat: "Jl. Contoh" 
+        }];
+    } else if (type === 'guru') {
+        data = [{ 
+            nip: "19830410", nama: "Contoh Guru", jk: "P", 
+            jabatan: "Guru Mapel", wali_kelas: "X-A", kelas_ajar: "X-A, XI-A" 
+        }];
+    } else if (type === 'jadwal') {
+        data = [
+            { hari: "Senin", jam_mulai: "07:00", jam_selesai: "07:45", mapel: "Upacara Bendera", guru: "Kesiswaan", ruang: "Lapangan", kelas: "XII-PF 1" },
+            { hari: "Senin", jam_mulai: "07:45", jam_selesai: "09:15", mapel: "Produksi Siaran TV", guru: "Bpk. Mardas, S.Pd", ruang: "Studio TV 1", kelas: "XII-PF 1" },
+            { hari: "Selasa", jam_mulai: "07:15", jam_selesai: "09:30", mapel: "Editing Audio Video", guru: "Tim BDF", ruang: "Lab Editing", kelas: "XII-PF 1" }
+        ];
+    }
     
     const ws = XLSX.utils.json_to_sheet(data);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Template");
-    XLSX.writeFile(wb, `Template_${type}_Supabase.xlsx`);
+    XLSX.writeFile(wb, fileName);
 };
 
 // ==========================================
@@ -932,5 +954,308 @@ async function simpanProfilGuru() {
     } finally {
         btn.innerHTML = '<i class="fas fa-save"></i> Simpan Perubahan Akun';
         btn.disabled = false;
+    }
+}
+
+
+// ==========================================
+// 7. MANAJEMEN PENGUMUMAN (PANEL ADMIN/GURU)
+// ==========================================
+
+async function loadPengumumanAdmin() {
+    const tbody = document.getElementById('tabel-data-pengumuman-admin');
+    if (!tbody) return;
+
+    tbody.innerHTML = '<tr><td colspan="5" class="text-center p-8"><i class="fas fa-spinner fa-spin text-teal-600 text-2xl"></i><p class="text-sm mt-2 text-gray-500">Menarik data pengumuman...</p></td></tr>';
+
+    try {
+        const { data, error } = await db.from('tabel_pengumuman')
+            .select('*')
+            .order('id', { ascending: false });
+
+        if (error) throw error;
+
+        if (!data || data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center p-8 text-gray-400">Belum ada pengumuman yang dibuat.</td></tr>';
+            return;
+        }
+
+        let html = '';
+        data.forEach(item => {
+            let badgeKat = 'bg-blue-50 text-blue-600 border-blue-200';
+            if (item.kategori === 'Penting') badgeKat = 'bg-rose-50 text-rose-600 border-rose-200';
+            if (item.kategori === 'Kegiatan') badgeKat = 'bg-emerald-50 text-emerald-600 border-emerald-200';
+            if (item.kategori === 'Akademik') badgeKat = 'bg-amber-50 text-amber-700 border-amber-200';
+
+            html += `
+                <tr class="hover:bg-gray-50 border-b border-gray-50 transition-colors">
+                    <td class="px-6 py-4">
+                        <span class="px-2.5 py-1 rounded-full text-[10px] font-bold border ${badgeKat}">
+                            ${item.kategori || 'Informasi'}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 max-w-sm">
+                        <h4 class="font-bold text-gray-800 text-xs truncate mb-1" title="${item.judul}">${item.judul}</h4>
+                        <p class="text-gray-500 text-[11px] truncate whitespace-normal line-clamp-2" title="${item.isi}">${item.isi}</p>
+                    </td>
+                    <td class="px-6 py-4">
+                        <span class="bg-gray-100 text-gray-600 px-2.5 py-1 rounded-md text-[10px] font-bold">
+                            ${item.target_kelas || 'ALL'}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 text-xs text-gray-600 font-medium">
+                        ${item.penulis || 'Admin'}
+                    </td>
+                    <td class="px-6 py-4 text-center">
+                        <button onclick="hapusPengumuman(${item.id})" class="bg-red-50 hover:bg-red-100 text-red-600 px-2.5 py-1.5 rounded-lg text-xs font-bold transition-colors border border-red-200" title="Hapus Pengumuman">
+                            <i class="fas fa-trash-alt"></i> Hapus
+                        </button>
+                    </td>
+                </tr>
+            `;
+        });
+
+        tbody.innerHTML = html;
+
+    } catch (err) {
+        console.error("Gagal memuat pengumuman admin:", err);
+        tbody.innerHTML = `<tr><td colspan="5" class="text-center p-8 text-red-500 font-medium">Gagal mengambil data (${err.message || 'Error RLS'})</td></tr>`;
+    }
+}
+
+async function tambahPengumumanBaru() {
+    const judulEl = document.getElementById('admin-pengumuman-judul');
+    const kategoriEl = document.getElementById('admin-pengumuman-kategori');
+    const targetEl = document.getElementById('admin-pengumuman-target');
+    const isiEl = document.getElementById('admin-pengumuman-isi');
+    const btn = document.getElementById('btn-tambah-pengumuman');
+
+    const judul = judulEl.value.trim();
+    const kategori = kategoriEl.value;
+    const target = targetEl.value.trim() || 'ALL';
+    const isi = isiEl.value.trim();
+
+    if (!judul || !isi) {
+        return showToast('Judul dan isi pengumuman wajib diisi!', true);
+    }
+
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mempublikasikan...';
+    btn.disabled = true;
+
+    try {
+        const payload = {
+            judul: judul,
+            isi: isi,
+            kategori: kategori,
+            target_kelas: target,
+            penulis: currentUser ? currentUser.nama : 'Admin Sekolah'
+        };
+
+        const { error } = await db.from('tabel_pengumuman').insert([payload]);
+        if (error) throw error;
+
+        showToast('Pengumuman berhasil dipublikasikan!');
+        judulEl.value = '';
+        isiEl.value = '';
+        targetEl.value = 'ALL';
+        
+        loadPengumumanAdmin();
+
+    } catch (err) {
+        console.error("Gagal tambah pengumuman:", err);
+        showToast(`Gagal: ${err.message || 'Terjadi kesalahan sistem'}`, true);
+    } finally {
+        btn.innerHTML = '<i class="fas fa-paper-plane"></i> Publikasikan Pengumuman';
+        btn.disabled = false;
+    }
+}
+
+async function hapusPengumuman(id) {
+    if (!confirm('Apakah Anda yakin ingin menghapus pengumuman ini?')) return;
+
+    try {
+        const { error } = await db.from('tabel_pengumuman').delete().eq('id', id);
+        if (error) throw error;
+
+        showToast('Pengumuman berhasil dihapus!');
+        loadPengumumanAdmin();
+    } catch (err) {
+        console.error("Gagal menghapus pengumuman:", err);
+        showToast(`Gagal menghapus: ${err.message}`, true);
+    }
+}
+
+
+// ==========================================
+// 8. MANAJEMEN JADWAL PELAJARAN (ADMIN/GURU)
+// ==========================================
+
+let rawJadwalList = [];
+
+async function loadJadwalAdmin(forceReload = false) {
+    const tbody = document.getElementById('tabel-data-jadwal-admin');
+    const counterEl = document.getElementById('counter-jadwal-admin');
+    if (!tbody) return;
+
+    if (!forceReload && rawJadwalList && rawJadwalList.length > 0) {
+        applyFilterJadwal();
+        return;
+    }
+
+    tbody.innerHTML = '<tr><td colspan="6" class="text-center p-8"><i class="fas fa-spinner fa-spin text-purple-600 text-2xl"></i><p class="text-sm mt-2 text-gray-500">Menarik data jadwal dari Cloud...</p></td></tr>';
+
+    try {
+        const { data, error } = await db.from('tabel_jadwal')
+            .select('*')
+            .order('hari', { ascending: true })
+            .order('jam_mulai', { ascending: true });
+
+        if (error) throw error;
+
+        if (!data || data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center p-8 text-gray-400">Belum ada data jadwal pelajaran.</td></tr>';
+            if (counterEl) counterEl.innerText = "0 jadwal";
+            rawJadwalList = [];
+            return;
+        }
+
+        rawJadwalList = data;
+
+        // Isi opsi filter kelas otomatis dari data yang ada
+        const filterKelasEl = document.getElementById('filter-jadwal-kelas');
+        if (filterKelasEl) {
+            const currentSelected = filterKelasEl.value;
+            const availableClasses = [...new Set(data.map(j => j.kelas ? j.kelas.trim() : null).filter(Boolean))].sort();
+            filterKelasEl.innerHTML = '<option value="ALL">Semua Kelas</option>';
+            availableClasses.forEach(k => {
+                const opt = document.createElement('option');
+                opt.value = k;
+                opt.textContent = k;
+                if (k === currentSelected) opt.selected = true;
+                filterKelasEl.appendChild(opt);
+            });
+        }
+
+        applyFilterJadwal();
+
+    } catch (err) {
+        console.error("Gagal memuat jadwal admin:", err);
+        tbody.innerHTML = `<tr><td colspan="6" class="text-center p-8 text-red-500 font-medium">Gagal memuat jadwal (${err.message || 'Error RLS'})</td></tr>`;
+    }
+}
+
+function applyFilterJadwal() {
+    const tbody = document.getElementById('tabel-data-jadwal-admin');
+    const counterEl = document.getElementById('counter-jadwal-admin');
+    if (!rawJadwalList || rawJadwalList.length === 0) return;
+
+    const filterKelas = document.getElementById('filter-jadwal-kelas')?.value || 'ALL';
+    const filterHari = document.getElementById('filter-jadwal-hari')?.value || 'ALL';
+
+    const urutanHari = { 'Senin': 1, 'Selasa': 2, 'Rabu': 3, 'Kamis': 4, 'Jumat': 5, 'Sabtu': 6 };
+
+    let filtered = rawJadwalList.filter(j => {
+        const matchKelas = filterKelas === 'ALL' || (j.kelas && j.kelas.trim() === filterKelas);
+        const matchHari = filterHari === 'ALL' || (j.hari && j.hari.trim() === filterHari);
+        return matchKelas && matchHari;
+    });
+
+    // Urutkan berdasarkan hari (Senin - Jumat) lalu jam mulai
+    filtered.sort((a, b) => {
+        const hA = urutanHari[a.hari] || 99;
+        const hB = urutanHari[b.hari] || 99;
+        if (hA !== hB) return hA - hB;
+        return String(a.jam_mulai || '').localeCompare(String(b.jam_mulai || ''));
+    });
+
+    if (counterEl) counterEl.innerText = `${filtered.length} jadwal ditemukan`;
+
+    if (filtered.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center p-8 text-gray-400">Tidak ada jadwal yang cocok dengan filter.</td></tr>';
+        return;
+    }
+
+    let html = '';
+    filtered.forEach(item => {
+        html += `
+            <tr class="hover:bg-gray-50 border-b border-gray-50 transition-colors">
+                <td class="px-5 py-3.5">
+                    <span class="font-bold text-gray-800 text-xs block">${item.hari}</span>
+                    <span class="text-purple-600 font-mono text-[11px] font-semibold">${item.jam_mulai} - ${item.jam_selesai}</span>
+                </td>
+                <td class="px-5 py-3.5 font-bold text-gray-900 text-xs">${item.mapel}</td>
+                <td class="px-5 py-3.5 text-xs text-gray-600 font-medium">${item.guru || '-'}</td>
+                <td class="px-5 py-3.5"><span class="bg-blue-50 text-blue-700 px-2.5 py-1 rounded text-xs font-bold border border-blue-100">${item.kelas}</span></td>
+                <td class="px-5 py-3.5 text-xs text-gray-500">${item.ruang || 'Kelas'}</td>
+                <td class="px-5 py-3.5 text-center">
+                    <button onclick="hapusJadwal(${item.id})" class="bg-red-50 hover:bg-red-100 text-red-600 px-2.5 py-1.5 rounded-lg text-xs font-bold transition-colors border border-red-200" title="Hapus Jadwal">
+                        <i class="fas fa-trash-alt"></i> Hapus
+                    </button>
+                </td>
+            </tr>
+        `;
+    });
+
+    tbody.innerHTML = html;
+}
+
+async function tambahJadwalBaru() {
+    const hari = document.getElementById('form-jadwal-hari').value;
+    const jam_mulai = document.getElementById('form-jadwal-mulai').value;
+    const jam_selesai = document.getElementById('form-jadwal-selesai').value;
+    const mapel = document.getElementById('form-jadwal-mapel').value.trim();
+    const guru = document.getElementById('form-jadwal-guru').value.trim();
+    const kelas = document.getElementById('form-jadwal-kelas').value.trim();
+    const ruang = document.getElementById('form-jadwal-ruang').value.trim() || 'Kelas';
+    const btn = document.getElementById('btn-tambah-jadwal');
+
+    if (!mapel || !kelas || !jam_mulai || !jam_selesai) {
+        return showToast('Harap lengkapi mata pelajaran, kelas, dan jam pelajaran!', true);
+    }
+
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
+    btn.disabled = true;
+
+    try {
+        const payload = {
+            hari: hari,
+            jam_mulai: jam_mulai,
+            jam_selesai: jam_selesai,
+            mapel: mapel,
+            guru: guru || '-',
+            kelas: kelas,
+            ruang: ruang
+        };
+
+        const { error } = await db.from('tabel_jadwal').insert([payload]);
+        if (error) throw error;
+
+        showToast('Jadwal pelajaran berhasil ditambahkan!');
+        document.getElementById('form-jadwal-mapel').value = '';
+        document.getElementById('form-jadwal-guru').value = '';
+
+        loadJadwalAdmin(true);
+
+    } catch (err) {
+        console.error("Gagal menambah jadwal:", err);
+        showToast(`Gagal: ${err.message || 'Terjadi kesalahan'}`, true);
+    } finally {
+        btn.innerHTML = '<i class="fas fa-save"></i> Simpan Jadwal';
+        btn.disabled = false;
+    }
+}
+
+async function hapusJadwal(id) {
+    if (!confirm('Apakah Anda yakin ingin menghapus jadwal ini?')) return;
+
+    try {
+        const { error } = await db.from('tabel_jadwal').delete().eq('id', id);
+        if (error) throw error;
+
+        showToast('Jadwal berhasil dihapus!');
+        loadJadwalAdmin(true);
+    } catch (err) {
+        console.error("Gagal menghapus jadwal:", err);
+        showToast(`Gagal: ${err.message}`, true);
     }
 }
