@@ -66,6 +66,11 @@ function setupSiswaDashboard(user) {
     container.classList.add('device-frame');
 
     // Sinkronisasi data pengumuman untuk siswa
+    // Inisialisasi data kontekstual dashboard baru
+    initLiveClock();
+    refreshDashboardSmartCard();
+    loadJadwalDashboardHariIni();
+    loadStatistikKehadiranBulanIni();
     loadPengumumanSiswa();
 }
 
@@ -670,6 +675,9 @@ async function processAbsenToCloud() {
 
                 const { error } = await db.from('tabel_presensi').insert([payload]);
                 if (error) throw error;
+                // Pemicu suara & getar sukses masuk
+                playBeepSuccess();
+                triggerHapticSuccess();
                 showToast('Absen Masuk Berhasil!');
             }
         } else { 
@@ -683,6 +691,9 @@ async function processAbsenToCloud() {
 
                 const { error } = await db.from('tabel_presensi').update(payload).eq('id', existData.id); 
                 if (error) throw error;
+                // Pemicu suara & getar sukses pulang
+                playBeepSuccess();
+                triggerHapticSuccess();
                 showToast('Absen Pulang Berhasil!');
             }
         }
@@ -691,6 +702,11 @@ async function processAbsenToCloud() {
         showToast(`Gagal: ${err.message || 'Terjadi kesalahan jaringan.'}`, true);
     } finally {
         closeScanner();
+
+        // Segarkan otomatis kartu status & statistik dashboard siswa
+        if (typeof refreshDashboardSmartCard === 'function') refreshDashboardSmartCard();
+        if (typeof loadStatistikKehadiranBulanIni === 'function') loadStatistikKehadiranBulanIni();
+
         btnSubmit.innerHTML = '<i class="fas fa-paper-plane"></i> Kirim Presensi';
         btnSubmit.disabled = false;
         btnRetake.disabled = false;
@@ -973,16 +989,49 @@ function handleToggleDarkMode(enabled) {
     }
 }
 
+// Generator suara konfirmasi presensi tanpa file eksternal (Web Audio API)
+function playBeepSuccess() {
+    if (localStorage.getItem('pref_suara') === 'false') return;
+    try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        // Nada dua ketuk yang ramah (Success Chime: 587Hz -> 880Hz)
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(587.33, audioCtx.currentTime); // D5
+        osc.frequency.setValueAtTime(880.00, audioCtx.currentTime + 0.12); // A5
+
+        gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.35);
+
+        osc.start(audioCtx.currentTime);
+        osc.stop(audioCtx.currentTime + 0.35);
+    } catch (e) {
+        console.log("AudioContext belum diizinkan atau tidak didukung:", e);
+    }
+}
+
+function triggerHapticSuccess() {
+    if (localStorage.getItem('pref_vibrasi') === 'false') return;
+    if (navigator.vibrate) {
+        // Pola getar presensi berhasil: getar pendek 100ms, jeda 50ms, getar 150ms
+        navigator.vibrate([100, 50, 150]);
+    }
+}
+
 function handleToggleSuara(enabled) {
     localStorage.setItem('pref_suara', enabled);
+    if (enabled) playBeepSuccess(); // Tes nada saat diaktifkan
     showToast(enabled ? 'Suara presensi aktif' : 'Suara presensi dimatikan');
 }
 
 function handleToggleVibrasi(enabled) {
     localStorage.setItem('pref_vibrasi', enabled);
-    if (enabled && navigator.vibrate) {
-        navigator.vibrate(50);
-    }
+    if (enabled) triggerHapticSuccess(); // Tes getar saat diaktifkan
     showToast(enabled ? 'Getaran aktif' : 'Getaran dimatikan');
 }
 
@@ -1000,3 +1049,205 @@ function bersihkanCacheAplikasi() {
         if (container) container.classList.add('dark-mode-simulated');
     }
 })();
+
+// ==========================================
+// 8. LOGIKA DASHBOARD DINAMIS & KONTEKSTUAL
+// ==========================================
+
+let liveClockInterval = null;
+
+function initLiveClock() {
+    if (liveClockInterval) clearInterval(liveClockInterval);
+    const updateTime = () => {
+        const now = new Date();
+        const jamStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' }).replace(/\./g, ':');
+        const badgeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace(/\./g, ':');
+        
+        const elClock = document.getElementById('live-clock');
+        const elBadge = document.getElementById('live-clock-badge');
+        if (elClock) elClock.innerText = jamStr;
+        if (elBadge) elBadge.innerText = `${badgeStr} WIB`;
+    };
+    updateTime();
+    liveClockInterval = setInterval(updateTime, 1000);
+}
+
+async function refreshDashboardSmartCard() {
+    if (!currentUser || currentUser.role !== 'siswa') return;
+
+    const elTitle = document.getElementById('status-card-title');
+    const elBadge = document.getElementById('status-badge-state');
+    const elDot = document.getElementById('status-pulse-dot');
+    const elValMasuk = document.getElementById('status-val-masuk');
+    const elSubMasuk = document.getElementById('status-sub-masuk');
+    const elValPulang = document.getElementById('status-val-pulang');
+    const elSubPulang = document.getElementById('status-sub-pulang');
+
+    if (!elTitle) return;
+
+    const dateObj = await getServerTime();
+    const yyyy = dateObj.getFullYear();
+    const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const dd = String(dateObj.getDate()).padStart(2, '0');
+    const tglHariIni = `${yyyy}-${mm}-${dd}`;
+
+    try {
+        const { data: existData } = await db.from('tabel_presensi')
+            .select('*')
+            .eq('nis', currentUser.nis)
+            .eq('tanggal', tglHariIni)
+            .maybeSingle();
+
+        // Status 1: Belum Masuk
+        if (!existData || !existData.jam_masuk) {
+            elTitle.innerText = "Belum Presensi";
+            if (elBadge) {
+                elBadge.innerText = "Belum Masuk";
+                elBadge.className = "text-[10px] font-bold text-amber-600 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-200/60";
+            }
+            if (elDot) elDot.className = "w-2.5 h-2.5 rounded-full bg-amber-500 animate-ping";
+            elValMasuk.innerText = "--:--";
+            elSubMasuk.innerText = "Gunakan Tombol Bawah";
+            elValPulang.innerText = "--:--";
+            elSubPulang.innerText = "Belum Dibuka";
+        }
+        // Status 2: Sudah Masuk, Belum Pulang
+        else if (existData.jam_masuk && !existData.jam_pulang) {
+            elTitle.innerText = "Hadir di Sekolah";
+            if (elBadge) {
+                elBadge.innerText = "Sudah Masuk";
+                elBadge.className = "text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200/60";
+            }
+            if (elDot) elDot.className = "w-2.5 h-2.5 rounded-full bg-emerald-500";
+            elValMasuk.innerText = existData.jam_masuk;
+            elSubMasuk.innerText = "Tercatat di Server";
+            elValPulang.innerText = "--:--";
+            elSubPulang.innerText = "Menunggu Kepulangan";
+        }
+        // Status 3: Lengkap Masuk & Pulang
+        else {
+            elTitle.innerText = "Presensi Selesai";
+            if (elBadge) {
+                elBadge.innerText = "Tuntas";
+                elBadge.className = "text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2.5 py-0.5 rounded-full border border-indigo-200/60";
+            }
+            if (elDot) elDot.className = "w-2.5 h-2.5 rounded-full bg-indigo-500";
+            elValMasuk.innerText = existData.jam_masuk;
+            elSubMasuk.innerText = "Hadir";
+            elValPulang.innerText = existData.jam_pulang;
+            elSubPulang.innerText = "Tuntas";
+        }
+    } catch (e) {
+        console.error("Gagal refresh smart card status:", e);
+    }
+}
+
+async function loadJadwalDashboardHariIni() {
+    if (!currentUser || currentUser.role !== 'siswa') return;
+    const container = document.getElementById('dash-jadwal-next-container');
+    if (!container) return;
+
+    const listHari = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+    const todayIndo = listHari[new Date().getDay()];
+
+    if (todayIndo === 'Minggu' || todayIndo === 'Sabtu') {
+        container.innerHTML = `
+            <div class="flex items-center gap-3 py-1">
+                <div class="w-8 h-8 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center text-sm font-bold shrink-0">
+                    <i class="fas fa-couch"></i>
+                </div>
+                <div>
+                    <h4 class="font-extrabold text-xs text-gray-800">Hari Libur Sekolah</h4>
+                    <p class="text-[10px] text-gray-400">Tidak ada agenda KBM di hari ${todayIndo}.</p>
+                </div>
+            </div>`;
+        return;
+    }
+
+    try {
+        const { data, error } = await db.from('tabel_jadwal')
+            .select('*')
+            .eq('kelas', currentUser.kelas)
+            .eq('hari', todayIndo)
+            .order('jam_mulai', { ascending: true });
+
+        if (error || !data || data.length === 0) {
+            container.innerHTML = `
+                <div class="flex items-center gap-3 py-1">
+                    <div class="w-8 h-8 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center text-sm font-bold shrink-0">
+                        <i class="far fa-calendar-check"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-extrabold text-xs text-gray-800">Tidak Ada Jadwal</h4>
+                        <p class="text-[10px] text-gray-400">Belum ada jadwal terdaftar untuk hari ${todayIndo}.</p>
+                    </div>
+                </div>`;
+            return;
+        }
+
+        // Tampilkan 2 mapel teratas hari ini
+        let html = '<div class="space-y-2 pt-1">';
+        data.slice(0, 2).forEach(item => {
+            html += `
+                <div class="flex items-center justify-between p-2 rounded-xl bg-gray-50/70 border border-gray-100">
+                    <div class="flex items-center gap-2.5 min-w-0">
+                        <span class="text-[10px] font-mono font-extrabold bg-white px-2 py-1 rounded-lg border border-gray-200 text-purple-700 shrink-0">
+                            ${item.jam_mulai}
+                        </span>
+                        <div class="min-w-0">
+                            <h4 class="font-extrabold text-xs text-gray-800 truncate leading-tight">${item.mapel}</h4>
+                            <p class="text-[9px] text-gray-400 font-medium truncate">${item.guru || '-'} • ${item.ruang || 'Kelas'}</p>
+                        </div>
+                    </div>
+                </div>`;
+        });
+        html += '</div>';
+        container.innerHTML = html;
+
+    } catch (e) {
+        console.error("Gagal load agenda jadwal hari ini:", e);
+        container.innerHTML = '<p class="text-[10px] text-gray-400 py-1">Gagal memuat jadwal hari ini.</p>';
+    }
+}
+
+async function loadStatistikKehadiranBulanIni() {
+    if (!currentUser || currentUser.role !== 'siswa') return;
+
+    const elHadir = document.getElementById('kpi-hadir');
+    const elIzin = document.getElementById('kpi-izin');
+    const elPersen = document.getElementById('kpi-persen');
+
+    try {
+        const dateObj = new Date();
+        const yyyy = dateObj.getFullYear();
+        const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
+        const prefixBulan = `${yyyy}-${mm}`; // Filter berdasarkan bulan berjalan (YYYY-MM)
+
+        // Hitung total hadir
+        const { data: hadirData } = await db.from('tabel_presensi')
+            .select('id, tanggal')
+            .eq('nis', currentUser.nis)
+            .like('tanggal', `${prefixBulan}%`);
+
+        const totalHadir = hadirData ? hadirData.length : 0;
+
+        // Hitung total izin disetujui
+        const { data: izinData } = await db.from('tabel_izin')
+            .select('id, tanggal')
+            .eq('nis', currentUser.nis)
+            .eq('status', 'Disetujui')
+            .like('tanggal', `${prefixBulan}%`);
+
+        const totalIzin = izinData ? izinData.length : 0;
+
+        const totalHari = totalHadir + totalIzin;
+        const persentase = totalHari > 0 ? Math.round((totalHadir / totalHari) * 100) : 100;
+
+        if (elHadir) elHadir.innerText = totalHadir;
+        if (elIzin) elIzin.innerText = totalIzin;
+        if (elPersen) elPersen.innerText = `${persentase}%`;
+
+    } catch (e) {
+        console.error("Gagal load statistik kehadiran bulanan:", e);
+    }
+}
