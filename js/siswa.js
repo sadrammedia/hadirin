@@ -394,11 +394,12 @@ async function loadHistoriSiswa() {
 }
 
 // ==========================================
-// 3. SCANNER, KAMERA & PROSES ABSENSI
+// 3. SCANNER, KAMERA, PREVIEW & PROSES ABSENSI
 // ==========================================
 
 let currentAbsenType = 'masuk';
 let cameraStream = null;
+let currentCapturedBlob = null;
 
 async function startCamera() {
     const videoElement = document.getElementById('camera-feed');
@@ -413,14 +414,14 @@ async function startCamera() {
         
         videoElement.srcObject = cameraStream;
         videoElement.classList.remove('hidden'); 
-        scanTitle.innerText = "Memindai Wajah...";
-        scanText.innerText = "Wajah Terdeteksi (Kamera Aktif)";
+        scanTitle.innerText = "Posisikan Wajah";
+        scanText.innerText = "Kamera Aktif & Siap Jepret";
         scanText.className = "text-green-400 font-semibold text-sm";
     } catch (err) {
         console.error("Gagal akses kamera:", err);
-        scanTitle.innerText = "Memindai Data Profil...";
-        scanText.innerText = "Kamera tidak tersedia.";
-        scanText.className = "text-cyan-400 font-semibold text-sm";
+        scanTitle.innerText = "Kamera Tidak Tersedia";
+        scanText.innerText = "Pastikan izin kamera browser aktif.";
+        scanText.className = "text-rose-400 font-semibold text-sm";
     }
 }
 
@@ -429,7 +430,11 @@ function stopCamera() {
         cameraStream.getTracks().forEach(track => track.stop());
         cameraStream = null;
     }
-    document.getElementById('camera-feed').classList.add('hidden');
+    const videoElement = document.getElementById('camera-feed');
+    if (videoElement) {
+        videoElement.srcObject = null;
+        videoElement.classList.add('hidden');
+    }
 }
 
 async function openScanner(type) {
@@ -498,7 +503,9 @@ async function openScanner(type) {
 
 function tampilkanScannerUI(type) {
     currentAbsenType = type;
-    document.getElementById('lbl-absen-tipe').innerText = type === 'masuk' ? 'Tekan untuk Absen Masuk' : 'Tekan untuk Absen Pulang';
+    currentCapturedBlob = null;
+
+    document.getElementById('lbl-absen-tipe').innerText = type === 'masuk' ? 'Jepret Foto Absen Masuk' : 'Jepret Foto Absen Pulang';
     document.getElementById('screen-mobile').classList.add('hidden');
     document.getElementById('screen-scanner').classList.remove('hidden');
     document.getElementById('screen-scanner').classList.add('flex');
@@ -516,50 +523,106 @@ function tampilkanScannerUI(type) {
         scanIcon.classList.remove('hidden');
     }
 
+    // Reset tombol kembali ke mode pengambilan foto
+    resetUIKeModeJepret();
     startCamera();
 }
 
 function closeScanner() {
     stopCamera();
+    currentCapturedBlob = null;
     document.getElementById('screen-scanner').classList.add('hidden');
     document.getElementById('screen-scanner').classList.remove('flex');
     document.getElementById('screen-mobile').classList.remove('hidden');
 }
 
-async function captureCompressUploadFoto() {
+// Alur 1: Jepret Foto & Tampilkan Preview
+async function handleAmbilFoto() {
     const video = document.getElementById('camera-feed');
     if (!video || video.classList.contains('hidden') || !cameraStream) {
-        return null;
+        showToast('Kamera belum aktif!', true);
+        return;
     }
 
-    const canvas = document.createElement('canvas');
-    const targetWidth = 400;
-    const ratio = video.videoWidth / video.videoHeight;
-    const targetHeight = targetWidth / ratio;
-    
-    canvas.width = targetWidth;
-    canvas.height = targetHeight;
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(video, 0, 0, targetWidth, targetHeight);
-    
-    const dataUrl = canvas.toDataURL('image/jpeg', 0.4);
-    
-    const res = await fetch(dataUrl);
-    const blob = await res.blob();
-    
-    const fileName = `absen_${currentUser.nis}_${Date.now()}.jpg`;
-    const publicUrl = await uploadFileToSupabase(blob, 'bukti_absen', fileName);
-    return publicUrl;
+    try {
+        const canvas = document.createElement('canvas');
+        const targetWidth = 400;
+        const ratio = (video.videoWidth || 4) / (video.videoHeight || 3);
+        const targetHeight = targetWidth / ratio;
+        
+        canvas.width = targetWidth;
+        canvas.height = targetHeight;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0, targetWidth, targetHeight);
+        
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.5);
+        const res = await fetch(dataUrl);
+        currentCapturedBlob = await res.blob();
+
+        // Tampilkan gambar pratinjau di layar frame hexagon
+        const imgPreview = document.getElementById('camera-preview-captured');
+        imgPreview.src = dataUrl;
+        imgPreview.classList.remove('hidden');
+
+        // Sembunyikan video live dan hentikan stream agar hemat baterai
+        video.classList.add('hidden');
+        stopCamera();
+
+        // Sembunyikan animasi laser saat pratinjau
+        const laser = document.getElementById('scan-laser-line');
+        if (laser) laser.classList.add('hidden');
+
+        // Alihkan tombol ke Mode Konfirmasi (Ulangi / Kirim)
+        document.getElementById('wrap-btn-capture').classList.add('hidden');
+        document.getElementById('wrap-btn-confirm').classList.remove('hidden');
+        document.getElementById('wrap-btn-confirm').classList.add('flex');
+
+        document.getElementById('scan-title').innerText = "Pratinjau Foto";
+        document.getElementById('scan-text').innerText = "Apakah foto sudah jelas?";
+        document.getElementById('scan-text').className = "text-amber-300 font-semibold text-sm";
+
+    } catch (e) {
+        console.error("Gagal mengambil foto:", e);
+        showToast('Gagal memproses jepretan foto.', true);
+    }
 }
 
-async function processAbsenToCloud() {
-    const btn = document.getElementById('btn-submit-absen');
-    const lbl = document.getElementById('lbl-absen-tipe');
+// Alur 2: Ulangi Foto (Mengaktifkan kembali kamera live)
+function handleUlangiFoto() {
+    currentCapturedBlob = null;
+    resetUIKeModeJepret();
+    startCamera();
+}
+
+function resetUIKeModeJepret() {
+    const imgPreview = document.getElementById('camera-preview-captured');
+    if (imgPreview) {
+        imgPreview.src = '';
+        imgPreview.classList.add('hidden');
+    }
+
+    const laser = document.getElementById('scan-laser-line');
+    if (laser) laser.classList.remove('hidden');
+
+    document.getElementById('wrap-btn-confirm').classList.add('hidden');
+    document.getElementById('wrap-btn-confirm').classList.remove('flex');
     
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin text-4xl"></i>';
-    btn.classList.remove('animate-soft-pulse');
-    lbl.innerText = 'Mengompres Foto & Menyinkronkan...';
-    btn.disabled = true;
+    document.getElementById('wrap-btn-capture').classList.remove('hidden');
+    document.getElementById('wrap-btn-capture').classList.add('flex');
+
+    document.getElementById('scan-title').innerText = "Posisikan Wajah";
+    document.getElementById('scan-text').innerText = "Kamera Aktif & Siap Jepret";
+    document.getElementById('scan-text').className = "text-green-400 font-semibold text-sm";
+}
+
+// Alur 3: Kirim Foto ke Cloud Supabase
+async function processAbsenToCloud() {
+    const btnSubmit = document.getElementById('btn-submit-absen');
+    const btnRetake = document.getElementById('btn-retake-photo');
+    
+    btnSubmit.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mengirim...';
+    btnSubmit.disabled = true;
+    btnRetake.disabled = true;
 
     const dateObj = await getServerTime();
     const yyyy = dateObj.getFullYear();
@@ -570,10 +633,13 @@ async function processAbsenToCloud() {
 
     try {
         let urlFotoBukti = null;
-        try {
-            urlFotoBukti = await captureCompressUploadFoto();
-        } catch (e) {
-            console.error("Kamera gagal diakses/upload gagal. Lanjut tanpa foto:", e);
+        if (currentCapturedBlob) {
+            try {
+                const fileName = `absen_${currentUser.nis}_${Date.now()}.jpg`;
+                urlFotoBukti = await uploadFileToSupabase(currentCapturedBlob, 'bukti_absen', fileName);
+            } catch (e) {
+                console.error("Upload foto bukti gagal, lanjut absen tanpa foto:", e);
+            }
         }
 
         const { data: existData, error: errCek } = await db.from('tabel_presensi')
@@ -619,13 +685,48 @@ async function processAbsenToCloud() {
         showToast(`Gagal: ${err.message || 'Terjadi kesalahan jaringan.'}`, true);
     } finally {
         closeScanner();
-        btn.innerHTML = '<i class="fas fa-fingerprint text-5xl drop-shadow-md"></i>';
-        btn.classList.add('animate-soft-pulse');
-        lbl.innerText = currentAbsenType === 'masuk' ? 'Tekan untuk Absen Masuk' : 'Tekan untuk Absen Pulang';
-        btn.disabled = false;
+        btnSubmit.innerHTML = '<i class="fas fa-paper-plane"></i> Kirim Presensi';
+        btnSubmit.disabled = false;
+        btnRetake.disabled = false;
     }
 }
 
-function triggerAbsenFAB() {
-    openScanner('masuk');
+// ==========================================
+// 4. SMART FAB (TOMBOL TENGAH OTOMATIS)
+// ==========================================
+async function triggerAbsenFAB() {
+    if (!currentUser || currentUser.role !== 'siswa') return;
+
+    showToast('Memeriksa status kehadiran hari ini...');
+
+    const dateObj = await getServerTime();
+    const yyyy = dateObj.getFullYear();
+    const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const dd = String(dateObj.getDate()).padStart(2, '0');
+    const tglHariIni = `${yyyy}-${mm}-${dd}`;
+
+    try {
+        const { data: existData } = await db.from('tabel_presensi')
+            .select('*')
+            .eq('nis', currentUser.nis)
+            .eq('tanggal', tglHariIni)
+            .maybeSingle();
+
+        // 1. Jika belum ada catatan absen atau belum ada jam masuk -> Absen Masuk
+        if (!existData || !existData.jam_masuk) {
+            openScanner('masuk');
+        } 
+        // 2. Jika sudah absen masuk tetapi belum absen pulang -> Otomatis Absen Pulang
+        else if (!existData.jam_pulang) {
+            openScanner('pulang');
+        } 
+        // 3. Jika masuk & pulang sudah lengkap
+        else {
+            showToast('Presensi Anda hari ini sudah lengkap (Masuk & Pulang). Terima kasih!', false);
+        }
+    } catch (err) {
+        console.error("Gagal memeriksa status FAB:", err);
+        // Fallback default jika koneksi cek lambat
+        openScanner('masuk');
+    }
 }
