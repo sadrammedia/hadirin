@@ -64,6 +64,9 @@ function setupSiswaDashboard(user) {
     const container = document.getElementById('app-container');
     container.classList.remove('desktop-mode');
     container.classList.add('device-frame');
+
+    // Sinkronisasi data pengumuman untuk siswa
+    loadPengumumanSiswa();
 }
 
 function updateFotoUI(url) {
@@ -96,7 +99,7 @@ function updateFotoUI(url) {
 }
 
 function switchTabMobile(tabId) {
-    ['tab-dashboard', 'tab-histori', 'tab-izin', 'tab-profil', 'tab-menu'].forEach(id => {
+    ['tab-dashboard', 'tab-histori', 'tab-izin', 'tab-profil', 'tab-menu', 'tab-pengumuman', 'tab-jadwal', 'tab-pengaturan-siswa'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.classList.add('hidden');
     });
@@ -119,6 +122,9 @@ function switchTabMobile(tabId) {
 
     if (tabId === 'histori') loadHistoriSiswa();
     if (tabId === 'izin') loadIzinSiswa();
+    if (tabId === 'pengumuman') loadPengumumanSiswa();
+    if (tabId === 'jadwal') initJadwalSiswa();
+    if (tabId === 'pengaturan-siswa') syncPengaturanToggles();
     if (tabId === 'profil') {
         loadProfilForm();
         const form = document.getElementById('form-edit-profil');
@@ -730,3 +736,267 @@ async function triggerAbsenFAB() {
         openScanner('masuk');
     }
 }
+
+
+// ==========================================
+// 5. FITUR PENGUMUMAN SEKOLAH (SISWA)
+// ==========================================
+
+async function loadPengumumanSiswa() {
+    if (!currentUser || currentUser.role !== 'siswa') return;
+
+    const container = document.getElementById('pengumuman-list-container');
+    const badgeDash = document.getElementById('badge-pengumuman-dashboard');
+    const badgeMenu = document.getElementById('badge-pengumuman-menu');
+    const previewDash = document.getElementById('preview-pengumuman-dashboard');
+
+    if (container) {
+        container.innerHTML = '<p class="text-center text-xs text-teal-600 py-10 font-medium"><i class="fas fa-spinner fa-spin mr-1"></i> Mengambil pengumuman terbaru...</p>';
+    }
+
+    try {
+        // Ambil pengumuman yang ditujukan untuk semua siswa (ALL) atau spesifik untuk kelas siswa ini
+        const { data, error } = await db.from('tabel_pengumuman')
+            .select('*')
+            .or(`target_kelas.eq.ALL,target_kelas.eq.${currentUser.kelas}`)
+            .order('id', { ascending: false });
+
+        if (error) throw error;
+
+        const total = data ? data.length : 0;
+        if (badgeDash) badgeDash.innerText = total;
+        if (badgeMenu) badgeMenu.innerText = total;
+
+        // Perbarui cuplikan ringkas di kartu beranda/dashboard
+        if (previewDash) {
+            if (total > 0) {
+                previewDash.innerText = `${data[0].judul} - ${data[0].isi}`;
+            } else {
+                previewDash.innerText = 'Belum ada pengumuman terbaru hari ini.';
+            }
+        }
+
+        if (!container) return;
+
+        if (!data || data.length === 0) {
+            container.innerHTML = `
+                <div class="bg-white rounded-3xl p-8 text-center border border-gray-100 shadow-sm mt-4">
+                    <div class="w-16 h-16 rounded-full bg-slate-50 text-slate-400 mx-auto flex items-center justify-center text-2xl mb-3">
+                        <i class="far fa-bell-slash"></i>
+                    </div>
+                    <h3 class="font-bold text-sm text-gray-700">Belum Ada Pengumuman</h3>
+                    <p class="text-xs text-gray-400 mt-1">Saat ini belum ada informasi baru yang dibagikan.</p>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = '';
+        data.forEach(item => {
+            // Tentukan gaya badge kategori
+            let badgeStyle = 'bg-blue-50 text-blue-600 border-blue-200';
+            let iconKat = 'fa-info-circle';
+            
+            if (item.kategori === 'Penting') {
+                badgeStyle = 'bg-rose-50 text-rose-600 border-rose-200';
+                iconKat = 'fa-exclamation-triangle';
+            } else if (item.kategori === 'Kegiatan') {
+                badgeStyle = 'bg-emerald-50 text-emerald-600 border-emerald-200';
+                iconKat = 'fa-calendar-star';
+            } else if (item.kategori === 'Akademik') {
+                badgeStyle = 'bg-amber-50 text-amber-700 border-amber-200';
+                iconKat = 'fa-graduation-cap';
+            }
+
+            const tglFormatted = item.created_at ? new Date(item.created_at).toLocaleDateString('id-ID', {
+                day: 'numeric', month: 'short', year: 'numeric'
+            }) : 'Hari ini';
+
+            const card = document.createElement('div');
+            card.className = "bg-white rounded-3xl p-5 shadow-[0_4px_25px_rgba(0,0,0,0.03)] border border-gray-100 hover:shadow-md transition-all";
+            card.innerHTML = `
+                <div class="flex justify-between items-center mb-3">
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold border ${badgeStyle}">
+                        <i class="fas ${iconKat}"></i> ${item.kategori || 'Informasi'}
+                    </span>
+                    <span class="text-[10px] text-gray-400 font-medium flex items-center gap-1">
+                        <i class="far fa-clock"></i> ${tglFormatted}
+                    </span>
+                </div>
+                <h3 class="font-extrabold text-gray-800 text-[15px] leading-snug mb-2">${item.judul}</h3>
+                <p class="text-xs text-gray-600 leading-relaxed mb-4 whitespace-pre-line">${item.isi}</p>
+                <div class="pt-3 border-t border-gray-50 flex justify-between items-center text-[11px] text-gray-400">
+                    <span class="flex items-center gap-1.5">
+                        <i class="fas fa-user-edit text-teal-600"></i> <strong class="text-gray-600 font-semibold">${item.penulis || 'Admin Sekolah'}</strong>
+                    </span>
+                    <span class="bg-gray-100 text-gray-500 px-2.5 py-0.5 rounded-full text-[9px] font-bold">
+                        ${item.target_kelas === 'ALL' ? 'Semua Kelas' : item.target_kelas}
+                    </span>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+
+    } catch (err) {
+        console.error("Gagal memuat pengumuman:", err);
+        if (container) {
+            container.innerHTML = '<p class="text-center text-xs text-red-500 py-6 font-semibold">Gagal memuat pengumuman dari server.</p>';
+        }
+    }
+}
+
+
+// ==========================================
+// 6. FITUR JADWAL PELAJARAN (SISWA)
+// ==========================================
+
+let selectedHariJadwal = 'Senin';
+
+function getNamaHariIndo(dateObj) {
+    const listHari = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+    return listHari[dateObj.getDay()];
+}
+
+function initJadwalSiswa() {
+    const todayIndo = getNamaHariIndo(new Date());
+    // Jika hari ini Sabtu/Minggu, arahkan otomatis ke hari Senin
+    selectedHariJadwal = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'].includes(todayIndo) ? todayIndo : 'Senin';
+    pilihHariJadwal(selectedHariJadwal);
+}
+
+function pilihHariJadwal(hari) {
+    selectedHariJadwal = hari;
+
+    // Perbarui status warna pill tab
+    document.querySelectorAll('.pill-jadwal').forEach(btn => {
+        btn.className = 'pill-jadwal px-4 py-2 rounded-xl text-xs font-bold transition-all bg-white text-gray-500 hover:bg-gray-50 border border-gray-200 shrink-0';
+    });
+    const activePill = document.getElementById(`pill-hari-${hari}`);
+    if (activePill) {
+        activePill.className = 'pill-jadwal px-4 py-2 rounded-xl text-xs font-bold transition-all bg-purple-600 text-white shadow-sm shrink-0';
+    }
+
+    loadJadwalSiswa(hari);
+}
+
+async function loadJadwalSiswa(hari) {
+    if (!currentUser || currentUser.role !== 'siswa') return;
+
+    const container = document.getElementById('jadwal-list-container');
+    const labelKelas = document.getElementById('jadwal-sub-kelas');
+    if (labelKelas) labelKelas.innerText = `Kelas ${currentUser.kelas || '-'}`;
+
+    if (!container) return;
+    container.innerHTML = `<p class="text-center text-xs text-purple-600 py-10 font-medium"><i class="fas fa-spinner fa-spin mr-1"></i> Mengambil jadwal hari ${hari}...</p>`;
+
+    try {
+        const { data, error } = await db.from('tabel_jadwal')
+            .select('*')
+            .eq('kelas', currentUser.kelas)
+            .eq('hari', hari)
+            .order('jam_mulai', { ascending: true });
+
+        if (error) throw error;
+
+        if (!data || data.length === 0) {
+            container.innerHTML = `
+                <div class="bg-white rounded-3xl p-8 text-center border border-gray-100 shadow-sm mt-4">
+                    <div class="w-16 h-16 rounded-full bg-purple-50 text-purple-400 mx-auto flex items-center justify-center text-2xl mb-3">
+                        <i class="far fa-calendar-times"></i>
+                    </div>
+                    <h3 class="font-bold text-sm text-gray-700">Tidak Ada Jadwal</h3>
+                    <p class="text-xs text-gray-400 mt-1">Tidak ada pelajaran yang terdaftar di hari ${hari}.</p>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = '';
+        data.forEach((item, index) => {
+            const card = document.createElement('div');
+            card.className = "bg-white rounded-2xl p-4 shadow-[0_3px_15px_rgba(0,0,0,0.03)] border border-gray-100 flex items-start gap-4 hover:shadow-md transition-all";
+            card.innerHTML = `
+                <div class="flex flex-col items-center justify-center bg-purple-50 text-purple-700 rounded-xl px-3 py-2 min-w-[70px] shrink-0 border border-purple-100">
+                    <span class="text-xs font-extrabold">${item.jam_mulai}</span>
+                    <span class="text-[9px] text-purple-400 font-bold my-0.5">s/d</span>
+                    <span class="text-xs font-extrabold">${item.jam_selesai}</span>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="flex justify-between items-start mb-1">
+                        <h4 class="font-extrabold text-gray-800 text-sm leading-snug truncate" title="${item.mapel}">${item.mapel}</h4>
+                        <span class="bg-slate-100 text-slate-600 px-2 py-0.5 rounded text-[9px] font-bold shrink-0 ml-2">
+                            <i class="fas fa-door-open mr-1"></i>${item.ruang || 'Kelas'}
+                        </span>
+                    </div>
+                    <p class="text-xs text-gray-500 font-medium flex items-center gap-1.5 mt-1">
+                        <i class="fas fa-chalkboard-teacher text-purple-500"></i> ${item.guru || '-'}
+                    </p>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+
+    } catch (err) {
+        console.error("Gagal memuat jadwal:", err);
+        container.innerHTML = '<p class="text-center text-xs text-red-500 py-6 font-semibold">Gagal memuat jadwal dari server.</p>';
+    }
+}
+
+
+// ==========================================
+// 7. PENGATURAN APLIKASI SISWA
+// ==========================================
+
+function syncPengaturanToggles() {
+    const isDark = localStorage.getItem('pref_dark_mode') === 'true';
+    const isSuara = localStorage.getItem('pref_suara') !== 'false';
+    const isVibrasi = localStorage.getItem('pref_vibrasi') !== 'false';
+
+    const tDark = document.getElementById('toggle-dark-mode');
+    const tSuara = document.getElementById('toggle-suara-absen');
+    const tVib = document.getElementById('toggle-vibrasi-absen');
+
+    if (tDark) tDark.checked = isDark;
+    if (tSuara) tSuara.checked = isSuara;
+    if (tVib) tVib.checked = isVibrasi;
+}
+
+function handleToggleDarkMode(enabled) {
+    localStorage.setItem('pref_dark_mode', enabled);
+    const container = document.getElementById('app-container');
+    if (enabled) {
+        container.classList.add('dark-mode-simulated');
+        showToast('Mode Gelap diaktifkan');
+    } else {
+        container.classList.remove('dark-mode-simulated');
+        showToast('Mode Terang diaktifkan');
+    }
+}
+
+function handleToggleSuara(enabled) {
+    localStorage.setItem('pref_suara', enabled);
+    showToast(enabled ? 'Suara presensi aktif' : 'Suara presensi dimatikan');
+}
+
+function handleToggleVibrasi(enabled) {
+    localStorage.setItem('pref_vibrasi', enabled);
+    if (enabled && navigator.vibrate) {
+        navigator.vibrate(50);
+    }
+    showToast(enabled ? 'Getaran aktif' : 'Getaran dimatikan');
+}
+
+function bersihkanCacheAplikasi() {
+    // Bersihkan cache pencarian dan filter tanpa menghapus sesi login
+    localStorage.removeItem('cached_siswa_search');
+    sessionStorage.clear();
+    showToast('Cache aplikasi berhasil dibersihkan!');
+}
+
+// Inisialisasi preferensi saat pertama kali dimuat
+(function initUserPreferences() {
+    if (localStorage.getItem('pref_dark_mode') === 'true') {
+        const container = document.getElementById('app-container');
+        if (container) container.classList.add('dark-mode-simulated');
+    }
+})();
