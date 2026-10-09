@@ -229,7 +229,7 @@
                 </div>
 
                 <div class="grid grid-cols-4 gap-3">
-                    <button class="flex flex-col items-center gap-2 group" onclick="showToast('Fitur Jadwal Pelajaran sedang dikembangkan.')">
+                    <button class="flex flex-col items-center gap-2 group" onclick="switchTabMobile('jadwal')">
                         <div class="w-14 h-14 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center text-xl shadow-sm border border-purple-100 group-hover:scale-105 transition-transform">
                             <i class="far fa-calendar-check"></i>
                         </div>
@@ -255,18 +255,21 @@
                     </button>
                 </div>
 
-                <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex gap-4 items-start mb-4">
-                    <div class="w-10 h-10 rounded-full bg-red-50 text-red-500 flex items-center justify-center text-lg shrink-0">
+                <!-- Kartu Pengumuman di Dashboard -->
+                <div onclick="switchTabMobile('pengumuman')" class="bg-white rounded-2xl p-5 shadow-[0_4px_20px_rgba(0,0,0,0.04)] border border-gray-100 flex gap-4 items-start mb-4 cursor-pointer hover:shadow-md transition-all active:scale-[0.99] group">
+                    <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-rose-500 to-pink-500 text-white flex items-center justify-center text-lg shrink-0 shadow-md shadow-rose-200 group-hover:scale-105 transition-transform">
                         <i class="fas fa-bullhorn"></i>
                     </div>
-                    <div>
+                    <div class="flex-1 min-w-0">
                         <div class="flex justify-between items-center mb-1">
-                            <h4 class="font-bold text-sm text-gray-800">Pengumumkan Terbaru</h4>
-                            <span class="w-4 h-4 bg-red-500 text-white rounded-full text-[8px] flex items-center justify-center font-bold">3</span>
+                            <h4 class="font-bold text-sm text-gray-800 group-hover:text-teal-600 transition-colors">Pengumuman Terbaru</h4>
+                            <span id="badge-pengumuman-dashboard" class="bg-rose-500 text-white rounded-full text-[9px] px-2 py-0.5 font-bold shadow-sm">0</span>
                         </div>
-                        <p class="text-xs text-gray-500 leading-relaxed line-clamp-2">Upacara bendera hari Senin, 12 Oktober 2026 pukul 07.00 di lapangan utama sekolah. Harap hadir tepat waktu.</p>
+                        <p id="preview-pengumuman-dashboard" class="text-xs text-gray-500 leading-relaxed line-clamp-2">Memuat pengumuman sekolah terbaru...</p>
                     </div>
+                    <i class="fas fa-chevron-right text-gray-300 text-xs self-center ml-1 group-hover:text-teal-500 transition-colors"></i>
                 </div>
+
             </div>
         </div>
 
@@ -329,6 +332,172 @@
                 <h3 class="font-bold text-gray-800 mb-3 text-sm px-1">Riwayat Pengajuan Saya</h3>
                 <div class="space-y-3" id="izin-list">
                     <p class="text-center text-xs text-gray-400 mt-4">Belum ada data pengajuan.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Pengumuman Siswa (Stylish & Interaktif) -->
+        <div id="tab-pengumuman" class="flex-1 custom-scroll overflow-y-auto pb-28 hidden bg-[#f8fafc]">
+            <div class="bg-white/90 backdrop-blur-md pt-12 pb-4 px-6 sticky top-0 z-20 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border-b border-gray-100 flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <button onclick="switchTabMobile('dashboard')" class="w-9 h-9 rounded-full bg-gray-50 flex items-center justify-center text-gray-600 hover:bg-gray-100 transition-colors">
+                        <i class="fas fa-arrow-left text-sm"></i>
+                    </button>
+                    <div>
+                        <h2 class="font-extrabold text-lg text-slate-800 tracking-tight leading-tight">Pengumuman</h2>
+                        <p class="text-[10px] text-teal-600 font-bold uppercase tracking-wider">Info & Kegiatan Sekolah</p>
+                    </div>
+                </div>
+                <button onclick="loadPengumumanSiswa()" class="w-9 h-9 rounded-full bg-teal-50 text-teal-600 flex items-center justify-center hover:bg-teal-100 transition-colors shadow-sm">
+                    <i class="fas fa-sync-alt text-xs"></i>
+                </button>
+            </div>
+            
+            <div class="px-6 py-5 space-y-4" id="pengumuman-list-container">
+                <p class="text-center text-xs text-teal-600 py-10 font-medium"><i class="fas fa-spinner fa-spin mr-1"></i> Memuat pengumuman terbaru...</p>
+            </div>
+        </div>
+
+        <!-- Tab: Jadwal Pelajaran Siswa (Stylish Timeline) -->
+        <div id="tab-jadwal" class="flex-1 custom-scroll overflow-y-auto pb-28 hidden bg-[#f8fafc]">
+            <div class="bg-white/90 backdrop-blur-md pt-12 pb-4 px-6 sticky top-0 z-20 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border-b border-gray-100 flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <button onclick="switchTabMobile('dashboard')" class="w-9 h-9 rounded-full bg-gray-50 flex items-center justify-center text-gray-600 hover:bg-gray-100 transition-colors">
+                        <i class="fas fa-arrow-left text-sm"></i>
+                    </button>
+                    <div>
+                        <h2 class="font-extrabold text-lg text-slate-800 tracking-tight leading-tight">Jadwal Pelajaran</h2>
+                        <p class="text-[10px] text-purple-600 font-bold uppercase tracking-wider" id="jadwal-sub-kelas">Kelas Saya</p>
+                    </div>
+                </div>
+                <button onclick="loadJadwalSiswa(selectedHariJadwal)" class="w-9 h-9 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center hover:bg-purple-100 transition-colors shadow-sm">
+                    <i class="fas fa-sync-alt text-xs"></i>
+                </button>
+            </div>
+            
+            <!-- Selector Hari (Pill Tab) -->
+            <div class="px-6 pt-4 pb-2">
+                <div class="flex gap-2 overflow-x-auto custom-scroll pb-1">
+                    <button onclick="pilihHariJadwal('Senin')" id="pill-hari-Senin" class="pill-jadwal px-4 py-2 rounded-xl text-xs font-bold transition-all bg-purple-600 text-white shadow-sm shrink-0">Senin</button>
+                    <button onclick="pilihHariJadwal('Selasa')" id="pill-hari-Selasa" class="pill-jadwal px-4 py-2 rounded-xl text-xs font-bold transition-all bg-white text-gray-500 hover:bg-gray-50 border border-gray-200 shrink-0">Selasa</button>
+                    <button onclick="pilihHariJadwal('Rabu')" id="pill-hari-Rabu" class="pill-jadwal px-4 py-2 rounded-xl text-xs font-bold transition-all bg-white text-gray-500 hover:bg-gray-50 border border-gray-200 shrink-0">Rabu</button>
+                    <button onclick="pilihHariJadwal('Kamis')" id="pill-hari-Kamis" class="pill-jadwal px-4 py-2 rounded-xl text-xs font-bold transition-all bg-white text-gray-500 hover:bg-gray-50 border border-gray-200 shrink-0">Kamis</button>
+                    <button onclick="pilihHariJadwal('Jumat')" id="pill-hari-Jumat" class="pill-jadwal px-4 py-2 rounded-xl text-xs font-bold transition-all bg-white text-gray-500 hover:bg-gray-50 border border-gray-200 shrink-0">Jumat</button>
+                </div>
+            </div>
+
+            <!-- Wadah Timeline Card Jadwal -->
+            <div class="px-6 py-3 space-y-3" id="jadwal-list-container">
+                <p class="text-center text-xs text-purple-600 py-10 font-medium"><i class="fas fa-spinner fa-spin mr-1"></i> Memuat jadwal pelajaran...</p>
+            </div>
+        </div>
+
+        <!-- Tab: Pengaturan Siswa -->
+        <div id="tab-pengaturan-siswa" class="flex-1 custom-scroll overflow-y-auto pb-28 hidden bg-[#f8fafc]">
+            <div class="bg-white/90 backdrop-blur-md pt-12 pb-4 px-6 sticky top-0 z-20 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border-b border-gray-100 flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <button onclick="switchTabMobile('menu')" class="w-9 h-9 rounded-full bg-gray-50 flex items-center justify-center text-gray-600 hover:bg-gray-100 transition-colors">
+                        <i class="fas fa-arrow-left text-sm"></i>
+                    </button>
+                    <div>
+                        <h2 class="font-extrabold text-lg text-slate-800 tracking-tight leading-tight">Pengaturan</h2>
+                        <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Preferensi Aplikasi</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="px-6 py-5 space-y-5">
+                <!-- Grup: Tampilan & Suara -->
+                <div class="bg-white rounded-3xl p-5 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-gray-100 space-y-4">
+                    <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Tampilan & Respons</h3>
+                    
+                    <div class="flex justify-between items-center pb-3 border-b border-gray-50">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-sm">
+                                <i class="fas fa-moon"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-xs text-gray-800">Mode Gelap (Dark Mode)</h4>
+                                <p class="text-[10px] text-gray-400">Tampilan malam hemat baterai</p>
+                            </div>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="toggle-dark-mode" onchange="handleToggleDarkMode(this.checked)" class="sr-only peer">
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                        </label>
+                    </div>
+
+                    <div class="flex justify-between items-center pb-3 border-b border-gray-50">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-sm">
+                                <i class="fas fa-volume-up"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-xs text-gray-800">Suara Konfirmasi</h4>
+                                <p class="text-[10px] text-gray-400">Efek suara saat presensi sukses</p>
+                            </div>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="toggle-suara-absen" onchange="handleToggleSuara(this.checked)" checked class="sr-only peer">
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                        </label>
+                    </div>
+
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-sm">
+                                <i class="fas fa-mobile-alt"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-xs text-gray-800">Getar (Haptic)</h4>
+                                <p class="text-[10px] text-gray-400">Getaran halus saat tombol ditekan</p>
+                            </div>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="toggle-vibrasi-absen" onchange="handleToggleVibrasi(this.checked)" checked class="sr-only peer">
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-600"></div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Grup: Penyimpanan & Sesi -->
+                <div class="bg-white rounded-3xl p-5 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-gray-100 space-y-4">
+                    <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Penyimpanan & Sesi</h3>
+                    
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center text-sm">
+                                <i class="fas fa-broom"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-xs text-gray-800">Hapus Cache Lokal</h4>
+                                <p class="text-[10px] text-gray-400">Segarkan aset aplikasi yang tersimpan</p>
+                            </div>
+                        </div>
+                        <button onclick="bersihkanCacheAplikasi()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-colors">
+                            Bersihkan
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Grup: Informasi Sistem & Bantuan -->
+                <div class="bg-white rounded-3xl p-5 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-gray-100 space-y-3">
+                    <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Tentang Aplikasi</h3>
+                    
+                    <div class="flex justify-between items-center text-xs">
+                        <span class="text-gray-500 font-medium">Versi Aplikasi</span>
+                        <span class="font-bold text-gray-800 bg-gray-100 px-2.5 py-0.5 rounded-full text-[10px]">v3.2 Stable (2026)</span>
+                    </div>
+                    <div class="flex justify-between items-center text-xs">
+                        <span class="text-gray-500 font-medium">Pengembang</span>
+                        <span class="font-bold text-teal-600">sadrammedia</span>
+                    </div>
+                    <div class="flex justify-between items-center text-xs pt-1">
+                        <span class="text-gray-500 font-medium">Bantuan Operator</span>
+                        <a href="https://wa.me/+6285220755611" target="_blank" class="text-blue-600 font-bold hover:underline inline-flex items-center gap-1 text-[11px]">
+                            <i class="fab fa-whatsapp"></i> Hubungi Tim IT
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -454,7 +623,7 @@
             <div class="bg-blue-600 pt-12 pb-20 px-6 text-white relative rounded-b-[2.5rem] shadow-md overflow-hidden">
                 <div class="flex justify-between items-center mb-2 relative z-10">
                     <h1 class="text-2xl font-bold">Menu</h1>
-                    <button onclick="showToast('Pengaturan sedang dikembangkan')" class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-sm hover:bg-white/30 transition-colors">
+                    <button onclick="switchTabMobile('pengaturan-siswa')" class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-sm hover:bg-white/30 transition-colors">
                         <i class="fas fa-cog"></i>
                     </button>
                 </div>
@@ -490,7 +659,7 @@
                     <i class="fas fa-chevron-right text-gray-300 text-xs"></i>
                 </button>
 
-                <button onclick="showToast('Jadwal Pelajaran sedang dikembangkan')" class="w-full bg-white rounded-2xl p-4 flex items-center gap-4 shadow-sm border border-gray-100 active:scale-95 transition-transform text-left">
+                <button onclick="switchTabMobile('jadwal')" class="w-full bg-white rounded-2xl p-4 flex items-center gap-4 shadow-sm border border-gray-100 active:scale-95 transition-transform text-left">
                     <div class="w-12 h-12 rounded-2xl bg-[#a855f7] flex items-center justify-center text-white text-xl shrink-0 shadow-inner">
                         <i class="far fa-calendar-alt"></i>
                     </div>
@@ -523,7 +692,7 @@
                     <i class="fas fa-chevron-right text-gray-300 text-xs"></i>
                 </button>
 
-                <button onclick="showToast('Tidak ada pengumuman baru')" class="w-full bg-white rounded-2xl p-4 flex items-center gap-4 shadow-sm border border-gray-100 active:scale-95 transition-transform text-left">
+                <button onclick="switchTabMobile('pengumuman')" class="w-full bg-white rounded-2xl p-4 flex items-center gap-4 shadow-sm border border-gray-100 active:scale-95 transition-transform text-left">
                     <div class="w-12 h-12 rounded-2xl bg-[#10b981] flex items-center justify-center text-white text-xl shrink-0 shadow-inner relative">
                         <i class="fas fa-bullhorn"></i>
                     </div>
@@ -531,16 +700,16 @@
                         <h3 class="font-bold text-sm text-gray-800">Pengumuman</h3>
                         <p class="text-[10px] text-gray-400 mt-0.5">Info penting sekolah</p>
                     </div>
-                    <span class="bg-red-500 text-white font-bold text-[10px] w-5 h-5 flex items-center justify-center rounded-full shadow-sm">3</span>
+                    <span id="badge-pengumuman-menu" class="bg-red-500 text-white font-bold text-[10px] w-5 h-5 flex items-center justify-center rounded-full shadow-sm">0</span>
                 </button>
 
-                <button onclick="showToast('Pengaturan sedang dikembangkan')" class="w-full bg-white rounded-2xl p-4 flex items-center gap-4 shadow-sm border border-gray-100 active:scale-95 transition-transform text-left">
+                <button onclick="switchTabMobile('pengaturan-siswa')" class="w-full bg-white rounded-2xl p-4 flex items-center gap-4 shadow-sm border border-gray-100 active:scale-95 transition-transform text-left">
                     <div class="w-12 h-12 rounded-2xl bg-[#94a3b8] flex items-center justify-center text-white text-xl shrink-0 shadow-inner">
                         <i class="fas fa-cog"></i>
                     </div>
                     <div class="flex-1">
                         <h3 class="font-bold text-sm text-gray-800">Pengaturan</h3>
-                        <p class="text-[10px] text-gray-400 mt-0.5">Bahasa, notifikasi, dll</p>
+                        <p class="text-[10px] text-gray-400 mt-0.5">Tema, suara, notifikasi & cache</p>
                     </div>
                     <i class="fas fa-chevron-right text-gray-300 text-xs"></i>
                 </button>
@@ -707,6 +876,12 @@
                 </button>
                 <button onclick="switchGuruMenu('izin-admin')" class="guru-nav-btn w-full flex items-center gap-3 px-4 py-3 text-gray-500 hover:bg-gray-50 hover:text-gray-800 rounded-xl text-sm font-medium transition-all" data-target="izin-admin">
                     <i class="fas fa-envelope-open-text w-5"></i> Pengajuan Izin
+                </button>
+                <button onclick="switchGuruMenu('pengumuman-admin')" class="guru-nav-btn w-full flex items-center gap-3 px-4 py-3 text-gray-500 hover:bg-gray-50 hover:text-gray-800 rounded-xl text-sm font-medium transition-all" data-target="pengumuman-admin">
+                    <i class="fas fa-bullhorn w-5"></i> Pengumuman
+                </button>
+                <button onclick="switchGuruMenu('jadwal-admin')" class="guru-nav-btn w-full flex items-center gap-3 px-4 py-3 text-gray-500 hover:bg-gray-50 hover:text-gray-800 rounded-xl text-sm font-medium transition-all" data-target="jadwal-admin">
+                    <i class="fas fa-calendar-alt w-5"></i> Jadwal Pelajaran
                 </button>
                 <button onclick="switchGuruMenu('manajemen')" class="guru-nav-btn admin-only w-full flex items-center gap-3 px-4 py-3 text-gray-500 hover:bg-gray-50 hover:text-gray-800 rounded-xl text-sm font-medium transition-all" data-target="manajemen">
                     <i class="fas fa-database w-5"></i> Kelola Data
@@ -942,6 +1117,199 @@
                     </div>
                 </div>
 
+                <!-- GURU: KELOLA PENGUMUMAN SEKOLAH -->
+                <div id="guru-section-pengumuman-admin" class="guru-section hidden animate-fade-in">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-3">
+                        <div>
+                            <h1 class="text-2xl font-bold text-gray-800">Kelola Pengumuman Sekolah</h1>
+                            <p class="text-xs text-gray-500 font-medium">Buat informasi yang langsung tampil di dashboard siswa</p>
+                        </div>
+                        <button onclick="loadPengumumanAdmin()" class="text-teal-600 text-xs font-semibold border border-teal-200 px-3 py-2 rounded-xl bg-teal-50 shadow-sm hover:bg-teal-100 flex items-center gap-1.5 transition-colors">
+                            <i class="fas fa-sync-alt"></i> Muat Ulang
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <!-- Form Tambah Pengumuman Baru -->
+                        <div class="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 h-fit">
+                            <h3 class="font-bold text-gray-800 text-base mb-4 pb-2 border-b border-gray-100 flex items-center gap-2">
+                                <i class="fas fa-plus-circle text-teal-600"></i> Buat Pengumuman Baru
+                            </h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-600 mb-1">Judul Pengumuman</label>
+                                    <input type="text" id="admin-pengumuman-judul" class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-teal-500 bg-gray-50/50" placeholder="Contoh: Upacara Peringatan Hari Pahlawan">
+                                </div>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-600 mb-1">Kategori</label>
+                                        <select id="admin-pengumuman-kategori" class="w-full border border-gray-200 rounded-xl px-3 py-2 text-xs outline-none focus:border-teal-500 bg-gray-50/50 font-medium">
+                                            <option value="Informasi">Informasi</option>
+                                            <option value="Penting">Penting</option>
+                                            <option value="Kegiatan">Kegiatan</option>
+                                            <option value="Akademik">Akademik</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-600 mb-1">Target Siswa</label>
+                                        <input type="text" id="admin-pengumuman-target" class="w-full border border-gray-200 rounded-xl px-3 py-2 text-xs outline-none focus:border-teal-500 bg-gray-50/50" placeholder="ALL atau kelas misal XII-PF 1" value="ALL">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-600 mb-1">Isi Pengumuman</label>
+                                    <textarea id="admin-pengumuman-isi" rows="4" class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-teal-500 bg-gray-50/50" placeholder="Tulis rincian pesan untuk siswa di sini..."></textarea>
+                                </div>
+                                <button id="btn-tambah-pengumuman" onclick="tambahPengumumanBaru()" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-3 rounded-xl shadow-md transition-colors flex items-center justify-center gap-2 text-xs">
+                                    <i class="fas fa-paper-plane"></i> Publikasikan Pengumuman
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Tabel Daftar Pengumuman Aktif -->
+                        <div class="lg:col-span-2 bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+                            <div class="p-6 border-b border-gray-50">
+                                <h3 class="font-bold text-gray-800 text-base flex items-center gap-2">
+                                    <i class="fas fa-list-alt text-teal-600"></i> Daftar Pengumuman di Database
+                                </h3>
+                            </div>
+                            <div class="overflow-x-auto custom-scroll max-h-[65vh]">
+                                <table class="w-full text-left text-sm whitespace-nowrap">
+                                    <thead class="bg-gray-50 text-gray-600 font-medium border-b border-gray-200 sticky top-0 z-10">
+                                        <tr>
+                                            <th class="px-6 py-4">Kategori</th>
+                                            <th class="px-6 py-4">Judul & Isi</th>
+                                            <th class="px-6 py-4">Target</th>
+                                            <th class="px-6 py-4">Penulis</th>
+                                            <th class="px-6 py-4 text-center">Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-100" id="tabel-data-pengumuman-admin">
+                                        <tr><td colspan="5" class="text-center p-8 text-gray-400">Tekan "Muat Ulang" untuk melihat daftar pengumuman.</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- GURU: KELOLA JADWAL PELAJARAN -->
+                <div id="guru-section-jadwal-admin" class="guru-section hidden animate-fade-in">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-3">
+                        <div>
+                            <h1 class="text-2xl font-bold text-gray-800">Kelola Jadwal Pelajaran</h1>
+                            <p class="text-xs text-gray-500 font-medium">Atur dan pantau jadwal kegiatan belajar mengajar per kelas</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="loadJadwalAdmin(true)" class="text-purple-600 text-xs font-semibold border border-purple-200 px-3 py-2 rounded-xl bg-purple-50 shadow-sm hover:bg-purple-100 flex items-center gap-1.5 transition-colors">
+                                <i class="fas fa-sync-alt"></i> Muat Ulang
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <!-- Form Tambah Jadwal Manual -->
+                        <div class="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 h-fit">
+                            <h3 class="font-bold text-gray-800 text-base mb-4 pb-2 border-b border-gray-100 flex items-center gap-2">
+                                <i class="fas fa-plus-circle text-purple-600"></i> Tambah Jadwal Manual
+                            </h3>
+                            <div class="space-y-3">
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-600 mb-1">Hari</label>
+                                    <select id="form-jadwal-hari" class="w-full border border-gray-200 rounded-xl px-3 py-2 text-xs outline-none focus:border-purple-500 bg-gray-50/50 font-medium">
+                                        <option value="Senin">Senin</option>
+                                        <option value="Selasa">Selasa</option>
+                                        <option value="Rabu">Rabu</option>
+                                        <option value="Kamis">Kamis</option>
+                                        <option value="Jumat">Jumat</option>
+                                    </select>
+                                </div>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-600 mb-1">Jam Mulai</label>
+                                        <input type="time" id="form-jadwal-mulai" class="w-full border border-gray-200 rounded-xl px-3 py-2 text-xs outline-none focus:border-purple-500 bg-gray-50/50 font-semibold" value="07:15">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-600 mb-1">Jam Selesai</label>
+                                        <input type="time" id="form-jadwal-selesai" class="w-full border border-gray-200 rounded-xl px-3 py-2 text-xs outline-none focus:border-purple-500 bg-gray-50/50 font-semibold" value="09:00">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-600 mb-1">Mata Pelajaran</label>
+                                    <input type="text" id="form-jadwal-mapel" class="w-full border border-gray-200 rounded-xl px-3 py-2 text-xs outline-none focus:border-purple-500 bg-gray-50/50" placeholder="Contoh: Tata Kamera & Lighting">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-600 mb-1">Guru Pengajar</label>
+                                    <input type="text" id="form-jadwal-guru" class="w-full border border-gray-200 rounded-xl px-3 py-2 text-xs outline-none focus:border-purple-500 bg-gray-50/50" placeholder="Contoh: Bpk. Mardas, S.Pd">
+                                </div>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-600 mb-1">Kelas Target</label>
+                                        <input type="text" id="form-jadwal-kelas" class="w-full border border-gray-200 rounded-xl px-3 py-2 text-xs outline-none focus:border-purple-500 bg-gray-50/50 font-semibold" placeholder="Contoh: XII-PF 1">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-600 mb-1">Ruangan / Lab</label>
+                                        <input type="text" id="form-jadwal-ruang" class="w-full border border-gray-200 rounded-xl px-3 py-2 text-xs outline-none focus:border-purple-500 bg-gray-50/50" placeholder="Contoh: Studio TV 1" value="Kelas">
+                                    </div>
+                                </div>
+                                <button id="btn-tambah-jadwal" onclick="tambahJadwalBaru()" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-xl shadow-md transition-colors flex items-center justify-center gap-2 text-xs mt-2">
+                                    <i class="fas fa-save"></i> Simpan Jadwal
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Filter & Tabel Daftar Jadwal -->
+                        <div class="lg:col-span-2 space-y-4">
+                            <div class="bg-white p-4 rounded-3xl border border-gray-100 shadow-sm">
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="block text-[11px] font-bold text-gray-500 mb-1">Filter Kelas</label>
+                                        <select id="filter-jadwal-kelas" onchange="applyFilterJadwal()" class="w-full py-2 px-3 border border-gray-200 rounded-xl text-xs outline-none focus:border-purple-500 bg-gray-50/50 font-medium text-gray-700">
+                                            <option value="ALL">Semua Kelas</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-[11px] font-bold text-gray-500 mb-1">Filter Hari</label>
+                                        <select id="filter-jadwal-hari" onchange="applyFilterJadwal()" class="w-full py-2 px-3 border border-gray-200 rounded-xl text-xs outline-none focus:border-purple-500 bg-gray-50/50 font-medium text-gray-700">
+                                            <option value="ALL">Semua Hari</option>
+                                            <option value="Senin">Senin</option>
+                                            <option value="Selasa">Selasa</option>
+                                            <option value="Rabu">Rabu</option>
+                                            <option value="Kamis">Kamis</option>
+                                            <option value="Jumat">Jumat</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+                                <div class="p-5 border-b border-gray-50 flex justify-between items-center">
+                                    <h3 class="font-bold text-gray-800 text-sm flex items-center gap-2">
+                                        <i class="fas fa-list-alt text-purple-600"></i> Daftar Jadwal Tersimpan
+                                    </h3>
+                                    <span id="counter-jadwal-admin" class="text-xs text-gray-400 font-medium">0 jadwal</span>
+                                </div>
+                                <div class="overflow-x-auto custom-scroll max-h-[60vh]">
+                                    <table class="w-full text-left text-sm whitespace-nowrap">
+                                        <thead class="bg-gray-50 text-gray-600 font-medium border-b border-gray-200 sticky top-0 z-10">
+                                            <tr>
+                                                <th class="px-5 py-3.5">Hari & Jam</th>
+                                                <th class="px-5 py-3.5">Mata Pelajaran</th>
+                                                <th class="px-5 py-3.5">Guru</th>
+                                                <th class="px-5 py-3.5">Kelas</th>
+                                                <th class="px-5 py-3.5">Ruang</th>
+                                                <th class="px-5 py-3.5 text-center">Aksi</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y divide-gray-100" id="tabel-data-jadwal-admin">
+                                            <tr><td colspan="6" class="text-center p-8 text-gray-400">Tekan "Muat Ulang" untuk melihat jadwal.</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- GURU: REKAP PRESENSI -->
                 <div id="guru-section-rekap" class="guru-section hidden animate-fade-in">
                     <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-3">
@@ -1065,6 +1433,7 @@
                                     <select id="import-type" class="bg-gray-50 border border-gray-200 text-gray-700 text-xs rounded-xl px-3 py-2 outline-none flex-1 font-semibold">
                                         <option value="siswa">Data Siswa (tabel_siswa)</option>
                                         <option value="guru">Data Guru (tabel_guru)</option>
+                                        <option value="jadwal">Jadwal Pelajaran (tabel_jadwal)</option>
                                     </select>
                                     <button onclick="processImportToCloud()" id="btn-process-import" class="bg-gray-800 hover:bg-gray-900 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-sm opacity-50 cursor-not-allowed transition-colors" disabled>Kirim ke Cloud</button>
                                 </div>
@@ -1089,9 +1458,16 @@
                                         nip, nama, jk, jabatan, wali_kelas, kelas_ajar
                                     </div>
                                 </div>
+                                <div>
+                                    <h4 class="text-sm font-bold text-gray-700 mb-1">Header Data Jadwal (tabel_jadwal):</h4>
+                                    <div class="bg-gray-100 text-gray-600 text-[11px] p-3 rounded-lg font-mono overflow-x-auto custom-scroll border border-gray-200">
+                                        hari, jam_mulai, jam_selesai, mapel, guru, ruang, kelas
+                                    </div>
+                                </div>
                                 <div class="mt-4 flex flex-col gap-2">
                                     <button onclick="downloadTemplate('siswa')" class="bg-blue-50 text-blue-700 px-3 py-2.5 rounded-lg text-xs font-bold border border-blue-200 hover:bg-blue-100 transition-colors text-left flex justify-between items-center"><i class="fas fa-download"></i> Download Template Siswa</button>
                                     <button onclick="downloadTemplate('guru')" class="bg-orange-50 text-orange-700 px-3 py-2.5 rounded-lg text-xs font-bold border border-orange-200 hover:bg-orange-100 transition-colors text-left flex justify-between items-center"><i class="fas fa-download"></i> Download Template Guru</button>
+                                    <button onclick="downloadTemplate('jadwal')" class="bg-purple-50 text-purple-700 px-3 py-2.5 rounded-lg text-xs font-bold border border-purple-200 hover:bg-purple-100 transition-colors text-left flex justify-between items-center"><i class="fas fa-download"></i> Download Template Jadwal</button>
                                 </div>
                             </div>
                         </div>
@@ -1255,6 +1631,22 @@
                             <div class="flex-1">
                                 <h3 class="font-bold text-sm text-gray-800">Pengaturan Sistem</h3>
                                 <p class="text-[10px] text-gray-400">Jam absen, GPS & Tampilan</p>
+                            </div>
+                            <i class="fas fa-chevron-right text-gray-300 text-xs"></i>
+                        </button>
+                        <button onclick="switchGuruMenu('pengumuman-admin')" class="w-full bg-white hover:bg-gray-50 rounded-2xl p-4 flex items-center gap-4 border border-gray-50 transition-colors text-left">
+                            <div class="w-12 h-12 rounded-xl bg-rose-50 flex items-center justify-center text-rose-600 text-xl shadow-inner"><i class="fas fa-bullhorn"></i></div>
+                            <div class="flex-1">
+                                <h3 class="font-bold text-sm text-gray-800">Kelola Pengumuman</h3>
+                                <p class="text-[10px] text-gray-400">Buat & hapus info sekolah</p>
+                            </div>
+                            <i class="fas fa-chevron-right text-gray-300 text-xs"></i>
+                        </button>
+                        <button onclick="switchGuruMenu('jadwal-admin')" class="w-full bg-white hover:bg-gray-50 rounded-2xl p-4 flex items-center gap-4 border border-gray-50 transition-colors text-left">
+                            <div class="w-12 h-12 rounded-xl bg-purple-50 flex items-center justify-center text-purple-600 text-xl shadow-inner"><i class="fas fa-calendar-alt"></i></div>
+                            <div class="flex-1">
+                                <h3 class="font-bold text-sm text-gray-800">Jadwal Pelajaran</h3>
+                                <p class="text-[10px] text-gray-400">Atur mapel, jam & guru</p>
                             </div>
                             <i class="fas fa-chevron-right text-gray-300 text-xs"></i>
                         </button>
