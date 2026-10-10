@@ -490,3 +490,26 @@ input[type="password"]::-ms-clear {
 .dark-mode-simulated .stat-card-guru span[class*="truncate"] {
     color: #94a3b8 !important;
 }
+
+/* ====================================================
+   PENYELARASAN HEADER & DESKTOP GURU DI MODE GELAP
+==================================================== */
+.dark-mode-simulated #header-mobile-guru,
+.dark #header-mobile-guru {
+    background-color: #0f172a !important;
+    border-color: #1e293b !important;
+}
+
+.dark-mode-simulated #card-darkmode-guru {
+    background-color: #1e293b !important;
+    border-color: #334155 !important;
+}
+
+.dark-mode-simulated #screen-desktop,
+.dark #screen-desktop {
+    background-color: #0f172a !important;
+}
+
+.dark-mode-simulated #screen-desktop > div {
+    background-color: #0f172a !important;
+}
