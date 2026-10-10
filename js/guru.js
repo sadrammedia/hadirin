@@ -1259,3 +1259,46 @@ async function hapusJadwal(id) {
         showToast(`Gagal: ${err.message}`, true);
     }
 }
+
+// ==========================================
+// 9. DUKUNGAN TEMA & DARK MODE (ADMIN / GURU)
+// ==========================================
+function toggleDarkModeGuruQuick() {
+    const isDarkCurrent = localStorage.getItem('pref_dark_mode') === 'true';
+    const newState = !isDarkCurrent;
+    
+    // Panggil fungsi pengendali utama tema
+    if (typeof handleToggleDarkMode === 'function') {
+        handleToggleDarkMode(newState);
+    }    
+    syncDarkModeGuruUI(newState);
+}
+
+function syncDarkModeGuruUI(isDark) {
+    const quickIcon = document.getElementById('icon-dark-guru-quick');
+    const toggleGuru = document.getElementById('toggle-dark-mode-guru');    
+    if (quickIcon) {
+        if (isDark) {
+            quickIcon.classList.replace('fa-moon', 'fa-sun');
+            quickIcon.parentElement.classList.replace('text-indigo-600', 'text-amber-400');
+            quickIcon.parentElement.classList.replace('bg-indigo-50', 'bg-amber-400/10');
+        } else {
+            quickIcon.classList.replace('fa-sun', 'fa-moon');
+            quickIcon.parentElement.classList.replace('text-amber-400', 'text-indigo-600');
+            quickIcon.parentElement.classList.replace('bg-amber-400/10', 'bg-indigo-50');
+        }
+    }    
+    if (toggleGuru) {
+        toggleGuru.checked = isDark;
+    }
+}
+
+// Sinkronkan ikon saat dashboard guru pertama kali dimuat
+const originalSetupGuruDashboard = window.setupGuruDashboard;
+if (typeof originalSetupGuruDashboard === 'function') {
+    window.setupGuruDashboard = function(user) {
+        originalSetupGuruDashboard(user);
+        const isDark = localStorage.getItem('pref_dark_mode') === 'true';
+        syncDarkModeGuruUI(isDark);
+    };
+}
