@@ -1055,28 +1055,69 @@
                         </button>
                     </div>
                     
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                        <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
-                            <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mb-3"><i class="fas fa-users"></i></div>
-                            <p class="text-xs text-gray-500 font-medium">Siswa Terdaftar (Akses)</p>
-                            <h3 class="text-2xl font-bold text-gray-800" id="stat-total-siswa">...</h3>
+                    <!-- KARTU STATISTIK RINGKASAN CLOUD (PASTEL GRADIENT & COMPACT) -->
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-3 mb-6">                        
+                        <!-- 1. Siswa Terdaftar (Soft Sky / Blue) -->
+                        <div class="stat-card-guru relative overflow-hidden rounded-2xl p-3 bg-gradient-to-br from-blue-50 via-sky-50/70 to-indigo-100/50 border border-blue-200/60 shadow-sm flex flex-col justify-between min-h-[92px]">
+                            <i class="fas fa-user-graduate absolute -right-2 -bottom-2 text-4xl text-blue-500/10 pointer-events-none"></i>
+                            <div class="flex items-center justify-between relative z-10 mb-1">
+                                <span class="w-6 h-6 rounded-lg bg-blue-600 text-white flex items-center justify-center text-[10px] shadow-sm">
+                                    <i class="fas fa-users"></i>
+                                </span>
+                                <span class="text-[9px] font-extrabold text-blue-700 bg-white/80 px-1.5 py-0.5 rounded-md border border-blue-200/50">Siswa</span>
+                            </div>
+                            <div class="relative z-10 mt-1">
+                                <span class="font-mono font-extrabold text-xl text-blue-950 leading-none block" id="stat-total-siswa">0</span>
+                                <span class="text-[9px] text-blue-700/80 font-semibold block mt-1 truncate">Terdaftar (Akses)</span>
+                            </div>
                         </div>
-                        <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
-                            <div class="w-10 h-10 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center mb-3"><i class="fas fa-chalkboard-teacher"></i></div>
-                            <p class="text-xs text-gray-500 font-medium">Total Guru (DB)</p>
-                            <h3 class="text-2xl font-bold text-gray-800" id="stat-total-guru">...</h3>
+
+                        <!-- 2. Total Guru (Soft Amber / Orange) -->
+                        <div class="stat-card-guru relative overflow-hidden rounded-2xl p-3 bg-gradient-to-br from-amber-50 via-orange-50/70 to-amber-100/50 border border-amber-200/60 shadow-sm flex flex-col justify-between min-h-[92px]">
+                            <i class="fas fa-chalkboard-teacher absolute -right-2 -bottom-2 text-4xl text-amber-500/10 pointer-events-none"></i>
+                            <div class="flex items-center justify-between relative z-10 mb-1">
+                                <span class="w-6 h-6 rounded-lg bg-amber-500 text-white flex items-center justify-center text-[10px] shadow-sm">
+                                    <i class="fas fa-user-tie"></i>
+                                </span>
+                                <span class="text-[9px] font-extrabold text-amber-700 bg-white/80 px-1.5 py-0.5 rounded-md border border-amber-200/50">Guru</span>
+                            </div>
+                            <div class="relative z-10 mt-1">
+                                <span class="font-mono font-extrabold text-xl text-amber-950 leading-none block" id="stat-total-guru">0</span>
+                                <span class="text-[9px] text-amber-700/80 font-semibold block mt-1 truncate">Database Cloud</span>
+                            </div>
                         </div>
-                        <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
-                            <div class="w-10 h-10 rounded-full bg-green-100 text-green-600 flex items-center justify-center mb-3"><i class="fas fa-check-circle"></i></div>
-                            <p class="text-xs text-gray-500 font-medium">Masuk Hari Ini</p>
-                            <h3 class="text-2xl font-bold text-gray-800" id="stat-hadir">...</h3>
+
+                        <!-- 3. Masuk Hari Ini (Soft Emerald / Mint) -->
+                        <div class="stat-card-guru relative overflow-hidden rounded-2xl p-3 bg-gradient-to-br from-emerald-50 via-teal-50/70 to-emerald-100/50 border border-emerald-200/60 shadow-sm flex flex-col justify-between min-h-[92px]">
+                            <i class="fas fa-check-circle absolute -right-2 -bottom-2 text-4xl text-emerald-500/10 pointer-events-none"></i>
+                            <div class="flex items-center justify-between relative z-10 mb-1">
+                                <span class="w-6 h-6 rounded-lg bg-emerald-500 text-white flex items-center justify-center text-[10px] shadow-sm">
+                                    <i class="fas fa-sign-in-alt"></i>
+                                </span>
+                                <span class="text-[9px] font-extrabold text-emerald-700 bg-white/80 px-1.5 py-0.5 rounded-md border border-emerald-200/50">Masuk</span>
+                            </div>
+                            <div class="relative z-10 mt-1">
+                                <span class="font-mono font-extrabold text-xl text-emerald-950 leading-none block" id="stat-hadir">0</span>
+                                <span class="text-[9px] text-emerald-700/80 font-semibold block mt-1 truncate">Hadir Hari Ini</span>
+                            </div>
                         </div>
-                        <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
-                            <div class="w-10 h-10 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center mb-3"><i class="fas fa-sign-out-alt"></i></div>
-                            <p class="text-xs text-gray-500 font-medium">Pulang Hari Ini</p>
-                            <h3 class="text-2xl font-bold text-gray-800" id="stat-pulang">...</h3>
+
+                        <!-- 4. Pulang Hari Ini (Soft Purple / Violet) -->
+                        <div class="stat-card-guru relative overflow-hidden rounded-2xl p-3 bg-gradient-to-br from-purple-50 via-fuchsia-50/70 to-purple-100/50 border border-purple-200/60 shadow-sm flex flex-col justify-between min-h-[92px]">
+                            <i class="fas fa-door-open absolute -right-2 -bottom-2 text-4xl text-purple-500/10 pointer-events-none"></i>
+                            <div class="flex items-center justify-between relative z-10 mb-1">
+                                <span class="w-6 h-6 rounded-lg bg-purple-600 text-white flex items-center justify-center text-[10px] shadow-sm">
+                                    <i class="fas fa-sign-out-alt"></i>
+                                </span>
+                                <span class="text-[9px] font-extrabold text-purple-700 bg-white/80 px-1.5 py-0.5 rounded-md border border-purple-200/50">Pulang</span>
+                            </div>
+                            <div class="relative z-10 mt-1">
+                                <span class="font-mono font-extrabold text-xl text-purple-950 leading-none block" id="stat-pulang">0</span>
+                                <span class="text-[9px] text-purple-700/80 font-semibold block mt-1 truncate">Terekam Pulang</span>
+                            </div>
                         </div>
                     </div>
+
                     <div class="bg-blue-50 border border-blue-100 rounded-xl p-4 text-xs text-blue-700 hidden" id="banner-role-guru">
                         <i class="fas fa-info-circle mr-1"></i> Data yang ditampilkan difilter otomatis berdasarkan Kelas Ajar / Wali Kelas Anda.
                     </div>
