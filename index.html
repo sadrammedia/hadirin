@@ -1031,42 +1031,51 @@
         <!-- Main Content Area (Guru) -->
         <div class="flex-1 flex flex-col h-full bg-gray-50 w-full relative">
             <!-- HEADER MOBILE GURU DENGAN TOMBOL CEPAT DARK MODE -->
-            <div class="md:hidden bg-white px-4 pt-10 pb-3 shadow-sm flex justify-between items-center z-10 sticky top-0 shrink-0 border-b border-gray-100" id="header-mobile-guru">
+            <!-- 1. HEADER MOBILE GURU COMPACT (HILANGKAN SPACE TERBUANG) -->
+            <div class="md:hidden bg-white px-4 pt-3.5 pb-2.5 shadow-sm flex justify-between items-center z-10 sticky top-0 shrink-0 border-b border-gray-100" id="header-mobile-guru">
                 <div>
-                    <h2 class="font-extrabold text-base text-gray-800 tracking-tight leading-tight">Panel Admin</h2>
-                    <p id="guru-name-mob" class="text-[10px] text-teal-600 font-bold flex items-center gap-1"><i class="fas fa-circle text-[6px] animate-pulse"></i> Supabase Connected</p>
+                    <h2 class="font-extrabold text-sm text-gray-800 tracking-tight leading-tight">Panel Admin</h2>
+                    <p id="guru-name-mob" class="text-[9px] text-teal-600 font-bold flex items-center gap-1 mt-0.5">
+                        <i class="fas fa-circle text-[5px] animate-pulse"></i> Supabase Connected
+                    </p>
                 </div>
                 <div class="flex items-center gap-2">
-                     <!-- Tombol Cepat Dark Mode -->
-                     <button onclick="toggleDarkModeGuruQuick()" class="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center hover:bg-indigo-100 transition-colors border border-indigo-100/70 shadow-sm" title="Beralih Tema">
-                         <i class="fas fa-moon text-xs" id="icon-dark-guru-quick"></i>
+                     <!-- Tombol Cepat Dark Mode (Fix Chrome Touch) -->
+                     <button type="button" onclick="window.toggleDarkModeGuruQuick()" class="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center hover:bg-indigo-100 active:scale-95 transition-all border border-indigo-100/70 shadow-sm cursor-pointer select-none" title="Beralih Tema">
+                         <i class="fas fa-moon text-xs pointer-events-none" id="icon-dark-guru-quick"></i>
                      </button>
                      <!-- Tombol Profil -->
-                     <button onclick="switchGuruMenu('profil-guru')" class="w-8 h-8 rounded-xl bg-gray-50 text-gray-600 flex items-center justify-center overflow-hidden border border-gray-200 shadow-sm relative">
+                     <button type="button" onclick="switchGuruMenu('profil-guru')" class="w-8 h-8 rounded-xl bg-gray-50 text-gray-600 flex items-center justify-center overflow-hidden border border-gray-200 shadow-sm active:scale-95 transition-transform relative">
                          <img id="guru-foto-topmob" src="" onerror="this.style.display='none'; document.getElementById('guru-icon-topmob').style.display='block';" class="absolute inset-0 w-full h-full object-cover z-10 hidden">
                          <i id="guru-icon-topmob" class="fas fa-user text-xs"></i>
                      </button>
                      <!-- Tombol Logout -->
-                     <button onclick="handleLogout()" class="w-8 h-8 rounded-xl bg-red-50 text-red-600 hover:bg-red-100 flex items-center justify-center border border-red-100 shadow-sm transition-colors" title="Keluar">
+                     <button type="button" onclick="handleLogout()" class="w-8 h-8 rounded-xl bg-red-50 text-red-600 hover:bg-red-100 flex items-center justify-center border border-red-100 shadow-sm active:scale-95 transition-transform" title="Keluar">
                          <i class="fas fa-sign-out-alt text-xs"></i>
                      </button>
                 </div>
             </div>
 
-            <div class="flex-1 overflow-y-auto custom-scroll p-4 md:p-8 pb-28 md:pb-8">
+            <div class="flex-1 overflow-y-auto custom-scroll p-4 md:p-8 pb-32 md:pb-8">
                 
                 <!-- GURU: DASHBOARD -->
                 <div id="guru-section-dashboard" class="guru-section animate-fade-in block">
-                    <div class="flex justify-between items-center mb-6">
-                        <h1 class="text-2xl font-bold text-gray-800">Ringkasan Cloud Hari Ini</h1>
-                        <button onclick="loadDashboardGuruData()" class="bg-white border border-gray-200 px-3 py-1.5 rounded-lg text-sm text-gray-600 hover:bg-gray-50 flex items-center gap-2 shadow-sm">
-                            <i class="fas fa-sync-alt"></i> Refresh Data
+                    
+                    <!-- BARIS JUDUL & TOMBOL REFRESH MINIMALIS -->
+                    <div class="flex justify-between items-center mb-3 px-0.5">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-teal-500"></span>
+                            <h3 class="text-xs font-extrabold text-slate-700 uppercase tracking-wider">Ringkasan Cloud Hari Ini</h3>
+                        </div>
+                        <button type="button" onclick="loadDashboardGuruData()" class="h-7 px-2.5 bg-white border border-gray-200 rounded-lg text-[10px] font-bold text-gray-600 hover:bg-gray-50 active:scale-95 flex items-center gap-1.5 shadow-sm transition-all" title="Perbarui Data">
+                            <i class="fas fa-sync-alt text-[9px] text-teal-600" id="icon-spin-refresh"></i> Refresh
                         </button>
                     </div>
                     
-                    <!-- KARTU STATISTIK RINGKASAN CLOUD (PASTEL GRADIENT & COMPACT) -->
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-3 mb-6">                        
-                        <!-- 1. Siswa Terdaftar (Soft Sky / Blue) -->
+                    <!-- KARTU STATISTIK (PASTEL GRADIENT & COMPACT) -->
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-3 mb-4">
+                        
+                        <!-- Siswa Terdaftar -->
                         <div class="stat-card-guru relative overflow-hidden rounded-2xl p-3 bg-gradient-to-br from-blue-50 via-sky-50/70 to-indigo-100/50 border border-blue-200/60 shadow-sm flex flex-col justify-between min-h-[92px]">
                             <i class="fas fa-user-graduate absolute -right-2 -bottom-2 text-4xl text-blue-500/10 pointer-events-none"></i>
                             <div class="flex items-center justify-between relative z-10 mb-1">
@@ -1081,7 +1090,7 @@
                             </div>
                         </div>
 
-                        <!-- 2. Total Guru (Soft Amber / Orange) -->
+                        <!-- Total Guru -->
                         <div class="stat-card-guru relative overflow-hidden rounded-2xl p-3 bg-gradient-to-br from-amber-50 via-orange-50/70 to-amber-100/50 border border-amber-200/60 shadow-sm flex flex-col justify-between min-h-[92px]">
                             <i class="fas fa-chalkboard-teacher absolute -right-2 -bottom-2 text-4xl text-amber-500/10 pointer-events-none"></i>
                             <div class="flex items-center justify-between relative z-10 mb-1">
@@ -1096,7 +1105,7 @@
                             </div>
                         </div>
 
-                        <!-- 3. Masuk Hari Ini (Soft Emerald / Mint) -->
+                        <!-- Masuk Hari Ini -->
                         <div class="stat-card-guru relative overflow-hidden rounded-2xl p-3 bg-gradient-to-br from-emerald-50 via-teal-50/70 to-emerald-100/50 border border-emerald-200/60 shadow-sm flex flex-col justify-between min-h-[92px]">
                             <i class="fas fa-check-circle absolute -right-2 -bottom-2 text-4xl text-emerald-500/10 pointer-events-none"></i>
                             <div class="flex items-center justify-between relative z-10 mb-1">
@@ -1111,7 +1120,7 @@
                             </div>
                         </div>
 
-                        <!-- 4. Pulang Hari Ini (Soft Purple / Violet) -->
+                        <!-- Pulang Hari Ini -->
                         <div class="stat-card-guru relative overflow-hidden rounded-2xl p-3 bg-gradient-to-br from-purple-50 via-fuchsia-50/70 to-purple-100/50 border border-purple-200/60 shadow-sm flex flex-col justify-between min-h-[92px]">
                             <i class="fas fa-door-open absolute -right-2 -bottom-2 text-4xl text-purple-500/10 pointer-events-none"></i>
                             <div class="flex items-center justify-between relative z-10 mb-1">
@@ -1125,10 +1134,50 @@
                                 <span class="text-[9px] text-purple-700/80 font-semibold block mt-1 truncate">Terekam Pulang</span>
                             </div>
                         </div>
+
                     </div>
 
-                    <div class="bg-blue-50 border border-blue-100 rounded-xl p-4 text-xs text-blue-700 hidden" id="banner-role-guru">
+                    <!-- BANNER ROLE FILTER KELAS -->
+                    <div class="bg-blue-50 border border-blue-100 rounded-xl p-3 text-[11px] text-blue-700 hidden mb-4" id="banner-role-guru">
                         <i class="fas fa-info-circle mr-1"></i> Data yang ditampilkan difilter otomatis berdasarkan Kelas Ajar / Wali Kelas Anda.
+                    </div>
+
+                    <!-- KOMPONEN TAMBAHAN: MENGISI RUANG KOSONG DENGAN LIVE LOG & VERIFIKASI IZIN -->
+                    <div class="space-y-3">
+                        <!-- Kartu Notifikasi Verifikasi Izin Cepat -->
+                        <div onclick="switchGuruMenu('izin-admin')" class="bg-gradient-to-r from-amber-500 to-orange-500 rounded-2xl p-3.5 text-white shadow-sm flex items-center justify-between cursor-pointer active:scale-98 transition-transform">
+                            <div class="flex items-center gap-3">
+                                <div class="w-9 h-9 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center text-sm shadow-sm">
+                                    <i class="fas fa-envelope-open-text"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-extrabold text-xs leading-tight">Pengajuan Izin Siswa</h4>
+                                    <p class="text-[10px] text-amber-100 mt-0.5">Pantau & verifikasi berkas izin yang masuk</p>
+                                </div>
+                            </div>
+                            <span class="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-[10px]">
+                                <i class="fas fa-chevron-right"></i>
+                            </span>
+                        </div>
+
+                        <!-- Kartu Presensi Masuk Terbaru (Live Log Ringkas) -->
+                        <div class="bg-white rounded-2xl p-3.5 shadow-sm border border-gray-100" id="card-recent-activity">
+                            <div class="flex justify-between items-center mb-2.5">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-6 h-6 rounded-lg bg-teal-50 text-teal-600 flex items-center justify-center text-xs">
+                                        <i class="fas fa-history"></i>
+                                    </div>
+                                    <h4 class="font-extrabold text-xs text-slate-800">Aktivitas Presensi Terbaru</h4>
+                                </div>
+                                <button onclick="switchGuruMenu('rekap')" class="text-[10px] font-bold text-teal-600 hover:text-teal-700 flex items-center gap-1">
+                                    Lihat Semua <i class="fas fa-chevron-right text-[8px]"></i>
+                                </button>
+                            </div>
+                            <!-- Wadah List Siswa Terakhir Absen -->
+                            <div id="live-recent-absen-list" class="space-y-2">
+                                <p class="text-center text-[11px] text-gray-400 py-3"><i class="fas fa-spinner fa-spin mr-1"></i> Menarik aktivitas...</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
