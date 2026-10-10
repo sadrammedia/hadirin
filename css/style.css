@@ -367,3 +367,28 @@ input[type="password"]::-ms-clear {
     opacity: 1 !important;
     filter: none !important;
 }
+
+/* ====================================================
+   FIX LAYAR PENUH 100% DI HP (HILANGKAN CELAH KOSONG)
+==================================================== */
+@media (max-width: 768px) {
+    html, body {
+        width: 100% !important;
+        height: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow-x: hidden !important;
+        background-color: #0f172a; /* Warna latar belakang selaras saat dimuat */
+    }
+
+    #app-container.device-frame {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-height: 100vh !important;
+        height: 100% !important;
+        border-radius: 0 !important;
+        border: none !important;
+        box-shadow: none !important;
+        margin: 0 !important;
+    }
+}
