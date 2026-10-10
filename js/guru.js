@@ -156,6 +156,41 @@ async function loadDashboardGuruData() {
         }
         document.getElementById('stat-hadir').innerText = hadir;
         document.getElementById('stat-pulang').innerText = pulang;
+
+        // Ambil 3 riwayat presensi terbaru hari ini
+        const listContainer = document.getElementById('live-recent-absen-list');
+        if (listContainer) {
+            let queryRecent = db.from('tabel_presensi')
+                .select('nama, kelas, jam_masuk, jam_pulang')
+                .eq('tanggal', tglHariIni)
+                .order('jam_masuk', { ascending: false })
+                .limit(3);
+
+            if (isFilter) queryRecent = queryRecent.in('kelas', authClasses);
+            const { data: recentList } = await queryRecent;
+
+            if (recentList && recentList.length > 0) {
+                listContainer.innerHTML = recentList.map(r => `
+                    <div class="flex items-center justify-between p-2 rounded-xl bg-gray-50/70 border border-gray-100">
+                        <div class="flex items-center gap-2.5 min-w-0">
+                            <div class="w-7 h-7 rounded-lg bg-teal-50 text-teal-600 flex items-center justify-center text-xs font-bold shrink-0">
+                                <i class="fas fa-user-check"></i>
+                            </div>
+                            <div class="min-w-0">
+                                <h5 class="font-bold text-[11px] text-gray-800 truncate">${r.nama}</h5>
+                                <span class="text-[9px] text-gray-400 font-semibold block">${r.kelas}</span>
+                            </div>
+                        </div>
+                        <div class="text-right shrink-0">
+                            <span class="font-mono font-bold text-[10px] text-teal-600 bg-teal-50 px-2 py-0.5 rounded-md border border-teal-100">${r.jam_masuk || r.jam_pulang}</span>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                listContainer.innerHTML = '<p class="text-center text-[10px] text-gray-400 py-2">Belum ada siswa yang absen hari ini.</p>';
+            }
+        }
+
     } catch (e) {
         console.error(e);
         showToast('Gagal memuat statistik dashboard.', true);
@@ -1261,33 +1296,51 @@ async function hapusJadwal(id) {
 }
 
 // ==========================================
-// 9. DUKUNGAN TEMA & DARK MODE (ADMIN / GURU)
+// 9. DUKUNGAN TEMA & DARK MODE (CHROME ROBUST)
 // ==========================================
-function toggleDarkModeGuruQuick() {
-    const isDarkCurrent = localStorage.getItem('pref_dark_mode') === 'true';
-    const newState = !isDarkCurrent;
-    
-    // Panggil fungsi pengendali utama tema
+
+window.toggleDarkModeGuruQuick = function() {
+    // Deteksi status aktif murni dari class root <html>
+    const isDark = document.documentElement.classList.contains('dark') || 
+                   document.documentElement.classList.contains('dark-mode-simulated');
+    const newState = !isDark;
+
+    // Eksekusi fungsi toggle utama
     if (typeof handleToggleDarkMode === 'function') {
         handleToggleDarkMode(newState);
-    }    
+    } else {
+        // Fallback langsung jika belum terikat
+        const root = document.documentElement;
+        const body = document.body;
+        const container = document.getElementById('app-container');
+        if (newState) {
+            root.classList.add('dark', 'dark-mode-simulated');
+            body.classList.add('dark', 'dark-mode-simulated');
+            if (container) container.classList.add('dark-mode-simulated');
+            localStorage.setItem('pref_dark_mode', 'true');
+        } else {
+            root.classList.remove('dark', 'dark-mode-simulated');
+            body.classList.remove('dark-mode-simulated');
+            if (container) container.classList.remove('dark-mode-simulated');
+            localStorage.setItem('pref_dark_mode', 'false');
+        }
+    }
+
     syncDarkModeGuruUI(newState);
-}
+};
 
 function syncDarkModeGuruUI(isDark) {
     const quickIcon = document.getElementById('icon-dark-guru-quick');
-    const toggleGuru = document.getElementById('toggle-dark-mode-guru');    
+    const toggleGuru = document.getElementById('toggle-dark-mode-guru');
     if (quickIcon) {
         if (isDark) {
-            quickIcon.classList.replace('fa-moon', 'fa-sun');
-            quickIcon.parentElement.classList.replace('text-indigo-600', 'text-amber-400');
-            quickIcon.parentElement.classList.replace('bg-indigo-50', 'bg-amber-400/10');
+            quickIcon.className = 'fas fa-sun text-xs pointer-events-none';
+            quickIcon.parentElement.className = 'w-8 h-8 rounded-xl bg-amber-400/20 text-amber-400 flex items-center justify-center border border-amber-400/30 shadow-sm active:scale-95 transition-all';
         } else {
-            quickIcon.classList.replace('fa-sun', 'fa-moon');
-            quickIcon.parentElement.classList.replace('text-amber-400', 'text-indigo-600');
-            quickIcon.parentElement.classList.replace('bg-amber-400/10', 'bg-indigo-50');
+            quickIcon.className = 'fas fa-moon text-xs pointer-events-none';
+            quickIcon.parentElement.className = 'w-8 h-8 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-100/70 shadow-sm active:scale-95 transition-all';
         }
-    }    
+    }
     if (toggleGuru) {
         toggleGuru.checked = isDark;
     }
