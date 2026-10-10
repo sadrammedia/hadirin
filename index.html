@@ -735,113 +735,113 @@
                 </div>
             </div>
 
-            <div class="px-4 mt-4 pb-4">
-                <div class="grid grid-cols-2 gap-3">
+            <!-- Grid Menu Siswa Versi Ramping & Kompak -->
+            <div class="px-4 mt-3 pb-4">
+                <div class="grid grid-cols-2 gap-2.5">
                     
                     <!-- 1. Presensi -->
-                    <button onclick="switchTabMobile('dashboard')" class="relative overflow-hidden rounded-2xl p-3.5 text-left text-white shadow-md active:scale-95 transition-all bg-gradient-to-br from-blue-500 to-indigo-600 flex flex-col justify-between h-[122px] group">
+                    <button onclick="switchTabMobile('dashboard')" class="relative overflow-hidden rounded-xl p-2.5 text-left text-white shadow-sm active:scale-95 transition-all bg-gradient-to-br from-blue-500 to-indigo-600 flex flex-col justify-between h-[102px] group">
                         <div class="flex justify-between items-start">
-                            <div class="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center text-lg shadow-sm border border-white/20">
+                            <div class="w-8 h-8 rounded-lg bg-white/20 backdrop-blur-md flex items-center justify-center text-sm shadow-sm border border-white/20">
                                 <i class="fas fa-clock"></i>
                             </div>
-                            <span class="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center text-[10px] text-white/70 group-hover:bg-white/20 transition-colors">
+                            <span class="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-[9px] text-white/70">
                                 <i class="fas fa-chevron-right"></i>
                             </span>
                         </div>
                         <div>
-                            <h3 class="font-extrabold text-[13px] leading-tight">Presensi</h3>
-                            <p class="text-[10px] text-blue-100/80 mt-0.5 font-medium truncate">Scan QR & Lokasi</p>
+                            <h3 class="font-extrabold text-xs leading-tight">Presensi</h3>
+                            <p class="text-[9px] text-blue-100/80 mt-0.5 font-medium truncate">Scan QR & Lokasi</p>
                         </div>
                     </button>
 
                     <!-- 2. Jadwal Pelajaran -->
-                    <button onclick="switchTabMobile('jadwal')" class="relative overflow-hidden rounded-2xl p-3.5 text-left text-white shadow-md active:scale-95 transition-all bg-gradient-to-br from-purple-500 to-fuchsia-600 flex flex-col justify-between h-[122px] group">
+                    <button onclick="switchTabMobile('jadwal')" class="relative overflow-hidden rounded-xl p-2.5 text-left text-white shadow-sm active:scale-95 transition-all bg-gradient-to-br from-purple-500 to-fuchsia-600 flex flex-col justify-between h-[102px] group">
                         <div class="flex justify-between items-start">
-                            <div class="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center text-lg shadow-sm border border-white/20">
+                            <div class="w-8 h-8 rounded-lg bg-white/20 backdrop-blur-md flex items-center justify-center text-sm shadow-sm border border-white/20">
                                 <i class="far fa-calendar-alt"></i>
                             </div>
-                            <span class="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center text-[10px] text-white/70 group-hover:bg-white/20 transition-colors">
+                            <span class="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-[9px] text-white/70">
                                 <i class="fas fa-chevron-right"></i>
                             </span>
                         </div>
                         <div>
-                            <h3 class="font-extrabold text-[13px] leading-tight">Jadwal Pelajaran</h3>
-                            <p class="text-[10px] text-purple-100/80 mt-0.5 font-medium truncate">Lihat jadwal harian</p>
+                            <h3 class="font-extrabold text-xs leading-tight">Jadwal Pelajaran</h3>
+                            <p class="text-[9px] text-purple-100/80 mt-0.5 font-medium truncate">Lihat jadwal harian</p>
                         </div>
                     </button>
 
                     <!-- 3. Riwayat Presensi -->
-                    <button onclick="switchTabMobile('histori')" class="relative overflow-hidden rounded-2xl p-3.5 text-left text-white shadow-md active:scale-95 transition-all bg-gradient-to-br from-teal-500 to-emerald-600 flex flex-col justify-between h-[122px] group">
+                    <button onclick="switchTabMobile('histori')" class="relative overflow-hidden rounded-xl p-2.5 text-left text-white shadow-sm active:scale-95 transition-all bg-gradient-to-br from-teal-500 to-emerald-600 flex flex-col justify-between h-[102px] group">
                         <div class="flex justify-between items-start">
-                            <div class="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center text-lg shadow-sm border border-white/20">
+                            <div class="w-8 h-8 rounded-lg bg-white/20 backdrop-blur-md flex items-center justify-center text-sm shadow-sm border border-white/20">
                                 <i class="fas fa-history"></i>
                             </div>
-                            <span class="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center text-[10px] text-white/70 group-hover:bg-white/20 transition-colors">
+                            <span class="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-[9px] text-white/70">
                                 <i class="fas fa-chevron-right"></i>
                             </span>
                         </div>
                         <div>
-                            <h3 class="font-extrabold text-[13px] leading-tight">Riwayat Presensi</h3>
-                            <p class="text-[10px] text-teal-100/80 mt-0.5 font-medium truncate">Log kehadiran siswa</p>
+                            <h3 class="font-extrabold text-xs leading-tight">Riwayat Presensi</h3>
+                            <p class="text-[9px] text-teal-100/80 mt-0.5 font-medium truncate">Log kehadiran siswa</p>
                         </div>
                     </button>
 
                     <!-- 4. Izin / Sakit -->
-                    <button onclick="switchTabMobile('izin')" class="relative overflow-hidden rounded-2xl p-3.5 text-left text-white shadow-md active:scale-95 transition-all bg-gradient-to-br from-amber-500 to-orange-600 flex flex-col justify-between h-[122px] group">
+                    <button onclick="switchTabMobile('izin')" class="relative overflow-hidden rounded-xl p-2.5 text-left text-white shadow-sm active:scale-95 transition-all bg-gradient-to-br from-amber-500 to-orange-600 flex flex-col justify-between h-[102px] group">
                         <div class="flex justify-between items-start">
-                            <div class="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center text-lg shadow-sm border border-white/20">
+                            <div class="w-8 h-8 rounded-lg bg-white/20 backdrop-blur-md flex items-center justify-center text-sm shadow-sm border border-white/20">
                                 <i class="fas fa-envelope-open-text"></i>
                             </div>
-                            <span class="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center text-[10px] text-white/70 group-hover:bg-white/20 transition-colors">
+                            <span class="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-[9px] text-white/70">
                                 <i class="fas fa-chevron-right"></i>
                             </span>
                         </div>
                         <div>
-                            <h3 class="font-extrabold text-[13px] leading-tight">Izin / Sakit</h3>
-                            <p class="text-[10px] text-amber-100/80 mt-0.5 font-medium truncate">Pengajuan presensi</p>
+                            <h3 class="font-extrabold text-xs leading-tight">Izin / Sakit</h3>
+                            <p class="text-[9px] text-amber-100/80 mt-0.5 font-medium truncate">Pengajuan presensi</p>
                         </div>
                     </button>
 
                     <!-- 5. Pengumuman -->
-                    <button onclick="switchTabMobile('pengumuman')" class="relative overflow-hidden rounded-2xl p-3.5 text-left text-white shadow-md active:scale-95 transition-all bg-gradient-to-br from-rose-500 to-red-600 flex flex-col justify-between h-[122px] group">
+                    <button onclick="switchTabMobile('pengumuman')" class="relative overflow-hidden rounded-xl p-2.5 text-left text-white shadow-sm active:scale-95 transition-all bg-gradient-to-br from-rose-500 to-red-600 flex flex-col justify-between h-[102px] group">
                         <div class="flex justify-between items-start">
-                            <div class="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center text-lg shadow-sm border border-white/20">
+                            <div class="w-8 h-8 rounded-lg bg-white/20 backdrop-blur-md flex items-center justify-center text-sm shadow-sm border border-white/20">
                                 <i class="fas fa-bullhorn"></i>
                             </div>
-                            <!-- Badge Count Pengumuman -->
-                            <div class="flex items-center gap-1.5">
-                                <span id="badge-pengumuman-menu" class="bg-white text-rose-600 font-extrabold text-[10px] min-w-[20px] h-5 px-1.5 flex items-center justify-center rounded-full shadow-sm">0</span>
-                                <span class="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-[9px] text-white/70 group-hover:bg-white/20 transition-colors">
+                            <div class="flex items-center gap-1">
+                                <span id="badge-pengumuman-menu" class="bg-white text-rose-600 font-extrabold text-[9px] min-w-[18px] h-4 px-1 flex items-center justify-center rounded-full shadow-sm">0</span>
+                                <span class="w-4 h-4 rounded-full bg-white/10 flex items-center justify-center text-[8px] text-white/70">
                                     <i class="fas fa-chevron-right"></i>
                                 </span>
                             </div>
                         </div>
                         <div>
-                            <h3 class="font-extrabold text-[13px] leading-tight">Pengumuman</h3>
-                            <p class="text-[10px] text-rose-100/80 mt-0.5 font-medium truncate">Info penting sekolah</p>
+                            <h3 class="font-extrabold text-xs leading-tight">Pengumuman</h3>
+                            <p class="text-[9px] text-rose-100/80 mt-0.5 font-medium truncate">Info penting sekolah</p>
                         </div>
                     </button>
 
                     <!-- 6. Pengaturan -->
-                    <button onclick="switchTabMobile('pengaturan-siswa')" class="relative overflow-hidden rounded-2xl p-3.5 text-left text-white shadow-md active:scale-95 transition-all bg-gradient-to-br from-cyan-500 to-teal-600 flex flex-col justify-between h-[122px] group">
+                    <button onclick="switchTabMobile('pengaturan-siswa')" class="relative overflow-hidden rounded-xl p-2.5 text-left text-white shadow-sm active:scale-95 transition-all bg-gradient-to-br from-cyan-500 to-teal-600 flex flex-col justify-between h-[102px] group">
                         <div class="flex justify-between items-start">
-                            <div class="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center text-lg shadow-sm border border-white/20">
+                            <div class="w-8 h-8 rounded-lg bg-white/20 backdrop-blur-md flex items-center justify-center text-sm shadow-sm border border-white/20">
                                 <i class="fas fa-cog"></i>
                             </div>
-                            <span class="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center text-[10px] text-white/70 group-hover:bg-white/20 transition-colors">
+                            <span class="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-[9px] text-white/70">
                                 <i class="fas fa-chevron-right"></i>
                             </span>
                         </div>
                         <div>
-                            <h3 class="font-extrabold text-[13px] leading-tight">Pengaturan</h3>
-                            <p class="text-[10px] text-cyan-100/80 mt-0.5 font-medium truncate">Tema, nada & cache</p>
+                            <h3 class="font-extrabold text-xs leading-tight">Pengaturan</h3>
+                            <p class="text-[9px] text-cyan-100/80 mt-0.5 font-medium truncate">Tema, nada & cache</p>
                         </div>
                     </button>
 
                 </div>
 
-                <!-- Tombol Keluar / Logout Kompak -->
-                <button onclick="handleLogout()" class="w-full bg-red-50 hover:bg-red-100 text-red-600 rounded-xl py-3 flex items-center justify-center gap-2 font-bold text-xs shadow-sm transition-colors mt-3 border border-red-100">
+                <!-- Tombol Keluar / Logout Ramping -->
+                <button onclick="handleLogout()" class="w-full bg-red-50 hover:bg-red-100 text-red-600 rounded-xl py-2.5 flex items-center justify-center gap-2 font-bold text-xs shadow-sm transition-colors mt-2.5 border border-red-100">
                     <i class="fas fa-sign-out-alt"></i> Keluar Sistem
                 </button>
             </div>
