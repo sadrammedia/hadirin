@@ -513,3 +513,21 @@ input[type="password"]::-ms-clear {
 .dark-mode-simulated #screen-desktop > div {
     background-color: #0f172a !important;
 }
+
+/* Styling Aktivitas Terbaru di Mode Gelap */
+.dark-mode-simulated #card-recent-activity,
+.dark #card-recent-activity {
+    background-color: #1e293b !important;
+    border-color: #334155 !important;
+}
+
+.dark-mode-simulated #card-recent-activity .bg-gray-50\/70,
+.dark #card-recent-activity .bg-gray-50\/70 {
+    background-color: rgba(15, 23, 42, 0.6) !important;
+    border-color: #334155 !important;
+}
+
+.dark-mode-simulated #card-recent-activity h4,
+.dark-mode-simulated #card-recent-activity h5 {
+    color: #f8fafc !important;
+}
