@@ -1030,17 +1030,26 @@
 
         <!-- Main Content Area (Guru) -->
         <div class="flex-1 flex flex-col h-full bg-gray-50 w-full relative">
-            <div class="md:hidden bg-white px-6 pt-10 pb-4 shadow-sm flex justify-between items-center z-10 sticky top-0 shrink-0">
+            <!-- HEADER MOBILE GURU DENGAN TOMBOL CEPAT DARK MODE -->
+            <div class="md:hidden bg-white px-4 pt-10 pb-3 shadow-sm flex justify-between items-center z-10 sticky top-0 shrink-0 border-b border-gray-100" id="header-mobile-guru">
                 <div>
-                    <h2 class="font-bold text-lg text-gray-800">Panel Admin</h2>
-                    <p id="guru-name-mob" class="text-xs text-teal-600 font-bold"><i class="fas fa-circle text-[8px]"></i> Supabase Connected</p>
+                    <h2 class="font-extrabold text-base text-gray-800 tracking-tight leading-tight">Panel Admin</h2>
+                    <p id="guru-name-mob" class="text-[10px] text-teal-600 font-bold flex items-center gap-1"><i class="fas fa-circle text-[6px] animate-pulse"></i> Supabase Connected</p>
                 </div>
-                <div class="flex gap-2">
-                     <button onclick="switchGuruMenu('profil-guru')" class="w-8 h-8 rounded-full bg-gray-100 text-gray-600 flex items-center justify-center overflow-hidden border border-gray-200 relative">
-                         <img id="guru-foto-topmob" src="" onerror="this.style.display='none'; document.getElementById('guru-icon-topmob').style.display='block';" class="absolute inset-0 w-full h-full object-cover z-10 hidden">
-                         <i id="guru-icon-topmob" class="fas fa-user text-sm"></i>
+                <div class="flex items-center gap-2">
+                     <!-- Tombol Cepat Dark Mode -->
+                     <button onclick="toggleDarkModeGuruQuick()" class="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center hover:bg-indigo-100 transition-colors border border-indigo-100/70 shadow-sm" title="Beralih Tema">
+                         <i class="fas fa-moon text-xs" id="icon-dark-guru-quick"></i>
                      </button>
-                     <button onclick="handleLogout()" class="w-8 h-8 rounded-full bg-red-100 text-red-600 flex items-center justify-center"><i class="fas fa-sign-out-alt text-sm"></i></button>
+                     <!-- Tombol Profil -->
+                     <button onclick="switchGuruMenu('profil-guru')" class="w-8 h-8 rounded-xl bg-gray-50 text-gray-600 flex items-center justify-center overflow-hidden border border-gray-200 shadow-sm relative">
+                         <img id="guru-foto-topmob" src="" onerror="this.style.display='none'; document.getElementById('guru-icon-topmob').style.display='block';" class="absolute inset-0 w-full h-full object-cover z-10 hidden">
+                         <i id="guru-icon-topmob" class="fas fa-user text-xs"></i>
+                     </button>
+                     <!-- Tombol Logout -->
+                     <button onclick="handleLogout()" class="w-8 h-8 rounded-xl bg-red-50 text-red-600 hover:bg-red-100 flex items-center justify-center border border-red-100 shadow-sm transition-colors" title="Keluar">
+                         <i class="fas fa-sign-out-alt text-xs"></i>
+                     </button>
                 </div>
             </div>
 
@@ -1775,62 +1784,135 @@
                 </div>      
 
                 <!-- GURU: MENU LAINNYA (MOBILE) -->
-                <div id="guru-section-menu" class="guru-section hidden animate-fade-in">
-                    <h1 class="text-2xl font-bold text-gray-800 mb-6">Menu Lainnya</h1>
-                    <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-2 space-y-2">
-                        <button onclick="switchGuruMenu('guru')" class="admin-only w-full bg-white hover:bg-gray-50 rounded-2xl p-4 flex items-center gap-4 border border-gray-50 transition-colors text-left">
-                            <div class="w-12 h-12 rounded-xl bg-orange-50 flex items-center justify-center text-orange-600 text-xl shadow-inner"><i class="fas fa-chalkboard-teacher"></i></div>
-                            <div class="flex-1">
-                                <h3 class="font-bold text-sm text-gray-800">Data Guru</h3>
-                                <p class="text-[10px] text-gray-400">Manajemen akses pengajar</p>
+                <!-- GURU: MENU LAINNYA (MODERN GRID 2 KOLOM RAMPING) -->
+                <div id="guru-section-menu" class="guru-section hidden animate-fade-in pb-10">
+                    <div class="flex justify-between items-center mb-3 px-1">
+                        <div>
+                            <h1 class="text-xl font-extrabold text-gray-800 leading-tight">Menu Pengajar</h1>
+                            <p class="text-[10px] text-gray-400 font-semibold uppercase tracking-wider">Akses Cepat & Preferensi</p>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-2.5">
+                        <!-- 1. Data Guru (Admin Only) - Amber Gradient -->
+                        <button onclick="switchGuruMenu('guru')" class="admin-only relative overflow-hidden rounded-xl p-2.5 text-left text-white shadow-sm active:scale-95 transition-all bg-gradient-to-br from-amber-500 to-orange-600 flex flex-col justify-between h-[102px] group">
+                            <div class="flex justify-between items-start">
+                                <div class="w-8 h-8 rounded-lg bg-white/20 backdrop-blur-md flex items-center justify-center text-sm shadow-sm border border-white/20">
+                                    <i class="fas fa-chalkboard-teacher"></i>
+                                </div>
+                                <span class="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-[9px] text-white/70">
+                                    <i class="fas fa-chevron-right"></i>
+                                </span>
                             </div>
-                            <i class="fas fa-chevron-right text-gray-300 text-xs"></i>
-                        </button>
-                        <button onclick="switchGuruMenu('manajemen')" class="admin-only w-full bg-white hover:bg-gray-50 rounded-2xl p-4 flex items-center gap-4 border border-gray-50 transition-colors text-left">
-                            <div class="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 text-xl shadow-inner"><i class="fas fa-database"></i></div>
-                            <div class="flex-1">
-                                <h3 class="font-bold text-sm text-gray-800">Kelola Data Cloud</h3>
-                                <p class="text-[10px] text-gray-400">Import Excel ke database</p>
+                            <div>
+                                <h3 class="font-extrabold text-xs leading-tight">Data Guru</h3>
+                                <p class="text-[9px] text-amber-100/80 mt-0.5 font-medium truncate">Akses & Wali Kelas</p>
                             </div>
-                            <i class="fas fa-chevron-right text-gray-300 text-xs"></i>
                         </button>
-                        <button onclick="switchGuruMenu('pengaturan')" class="admin-only w-full bg-white hover:bg-gray-50 rounded-2xl p-4 flex items-center gap-4 border border-gray-50 transition-colors text-left">
-                            <div class="w-12 h-12 rounded-xl bg-purple-50 flex items-center justify-center text-purple-600 text-xl shadow-inner"><i class="fas fa-cog"></i></div>
-                            <div class="flex-1">
-                                <h3 class="font-bold text-sm text-gray-800">Pengaturan Sistem</h3>
-                                <p class="text-[10px] text-gray-400">Jam absen, GPS & Tampilan</p>
+
+                        <!-- 2. Kelola Data Cloud (Admin Only) - Blue Gradient -->
+                        <button onclick="switchGuruMenu('manajemen')" class="admin-only relative overflow-hidden rounded-xl p-2.5 text-left text-white shadow-sm active:scale-95 transition-all bg-gradient-to-br from-blue-500 to-indigo-600 flex flex-col justify-between h-[102px] group">
+                            <div class="flex justify-between items-start">
+                                <div class="w-8 h-8 rounded-lg bg-white/20 backdrop-blur-md flex items-center justify-center text-sm shadow-sm border border-white/20">
+                                    <i class="fas fa-database"></i>
+                                </div>
+                                <span class="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-[9px] text-white/70">
+                                    <i class="fas fa-chevron-right"></i>
+                                </span>
                             </div>
-                            <i class="fas fa-chevron-right text-gray-300 text-xs"></i>
-                        </button>
-                        <button onclick="switchGuruMenu('pengumuman-admin')" class="w-full bg-white hover:bg-gray-50 rounded-2xl p-4 flex items-center gap-4 border border-gray-50 transition-colors text-left">
-                            <div class="w-12 h-12 rounded-xl bg-rose-50 flex items-center justify-center text-rose-600 text-xl shadow-inner"><i class="fas fa-bullhorn"></i></div>
-                            <div class="flex-1">
-                                <h3 class="font-bold text-sm text-gray-800">Kelola Pengumuman</h3>
-                                <p class="text-[10px] text-gray-400">Buat & hapus info sekolah</p>
+                            <div>
+                                <h3 class="font-extrabold text-xs leading-tight">Kelola Data</h3>
+                                <p class="text-[9px] text-blue-100/80 mt-0.5 font-medium truncate">Import Excel Cloud</p>
                             </div>
-                            <i class="fas fa-chevron-right text-gray-300 text-xs"></i>
                         </button>
-                        <button onclick="switchGuruMenu('jadwal-admin')" class="w-full bg-white hover:bg-gray-50 rounded-2xl p-4 flex items-center gap-4 border border-gray-50 transition-colors text-left">
-                            <div class="w-12 h-12 rounded-xl bg-purple-50 flex items-center justify-center text-purple-600 text-xl shadow-inner"><i class="fas fa-calendar-alt"></i></div>
-                            <div class="flex-1">
-                                <h3 class="font-bold text-sm text-gray-800">Jadwal Pelajaran</h3>
-                                <p class="text-[10px] text-gray-400">Atur mapel, jam & guru</p>
+
+                        <!-- 3. Pengaturan Sistem (Admin Only) - Cyan / Teal Gradient -->
+                        <button onclick="switchGuruMenu('pengaturan')" class="admin-only relative overflow-hidden rounded-xl p-2.5 text-left text-white shadow-sm active:scale-95 transition-all bg-gradient-to-br from-cyan-500 to-teal-600 flex flex-col justify-between h-[102px] group">
+                            <div class="flex justify-between items-start">
+                                <div class="w-8 h-8 rounded-lg bg-white/20 backdrop-blur-md flex items-center justify-center text-sm shadow-sm border border-white/20">
+                                    <i class="fas fa-sliders-h"></i>
+                                </div>
+                                <span class="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-[9px] text-white/70">
+                                    <i class="fas fa-chevron-right"></i>
+                                </span>
                             </div>
-                            <i class="fas fa-chevron-right text-gray-300 text-xs"></i>
-                        </button>
-                        <button onclick="switchGuruMenu('profil-guru')" class="w-full bg-white hover:bg-gray-50 rounded-2xl p-4 flex items-center gap-4 border border-gray-50 transition-colors text-left">
-                            <div class="w-12 h-12 rounded-xl bg-teal-50 flex items-center justify-center text-teal-600 text-xl shadow-inner"><i class="fas fa-user-circle"></i></div>
-                            <div class="flex-1">
-                                <h3 class="font-bold text-sm text-gray-800">Akun Saya</h3>
-                                <p class="text-[10px] text-gray-400">Edit foto dan kata sandi</p>
+                            <div>
+                                <h3 class="font-extrabold text-xs leading-tight">Pengaturan</h3>
+                                <p class="text-[9px] text-cyan-100/80 mt-0.5 font-medium truncate">Jam & Titik Lokasi</p>
                             </div>
-                            <i class="fas fa-chevron-right text-gray-300 text-xs"></i>
                         </button>
-                        <button onclick="handleLogout()" class="w-full bg-red-50 hover:bg-red-100 rounded-2xl p-4 flex items-center justify-center gap-2 border border-red-100 transition-colors text-red-600 font-bold text-sm mt-4">
-                            <i class="fas fa-sign-out-alt"></i> Keluar Sistem
+
+                        <!-- 4. Kelola Pengumuman - Rose Gradient -->
+                        <button onclick="switchGuruMenu('pengumuman-admin')" class="relative overflow-hidden rounded-xl p-2.5 text-left text-white shadow-sm active:scale-95 transition-all bg-gradient-to-br from-rose-500 to-red-600 flex flex-col justify-between h-[102px] group">
+                            <div class="flex justify-between items-start">
+                                <div class="w-8 h-8 rounded-lg bg-white/20 backdrop-blur-md flex items-center justify-center text-sm shadow-sm border border-white/20">
+                                    <i class="fas fa-bullhorn"></i>
+                                </div>
+                                <span class="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-[9px] text-white/70">
+                                    <i class="fas fa-chevron-right"></i>
+                                </span>
+                            </div>
+                            <div>
+                                <h3 class="font-extrabold text-xs leading-tight">Pengumuman</h3>
+                                <p class="text-[9px] text-rose-100/80 mt-0.5 font-medium truncate">Publikasi ke Siswa</p>
+                            </div>
+                        </button>
+
+                        <!-- 5. Jadwal Pelajaran - Purple Gradient -->
+                        <button onclick="switchGuruMenu('jadwal-admin')" class="relative overflow-hidden rounded-xl p-2.5 text-left text-white shadow-sm active:scale-95 transition-all bg-gradient-to-br from-purple-500 to-fuchsia-600 flex flex-col justify-between h-[102px] group">
+                            <div class="flex justify-between items-start">
+                                <div class="w-8 h-8 rounded-lg bg-white/20 backdrop-blur-md flex items-center justify-center text-sm shadow-sm border border-white/20">
+                                    <i class="far fa-calendar-alt"></i>
+                                </div>
+                                <span class="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-[9px] text-white/70">
+                                    <i class="fas fa-chevron-right"></i>
+                                </span>
+                            </div>
+                            <div>
+                                <h3 class="font-extrabold text-xs leading-tight">Jadwal KBM</h3>
+                                <p class="text-[9px] text-purple-100/80 mt-0.5 font-medium truncate">Atur mapel & ruang</p>
+                            </div>
+                        </button>
+
+                        <!-- 6. Akun Saya - Teal Gradient -->
+                        <button onclick="switchGuruMenu('profil-guru')" class="relative overflow-hidden rounded-xl p-2.5 text-left text-white shadow-sm active:scale-95 transition-all bg-gradient-to-br from-teal-500 to-emerald-600 flex flex-col justify-between h-[102px] group">
+                            <div class="flex justify-between items-start">
+                                <div class="w-8 h-8 rounded-lg bg-white/20 backdrop-blur-md flex items-center justify-center text-sm shadow-sm border border-white/20">
+                                    <i class="fas fa-user-circle"></i>
+                                </div>
+                                <span class="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-[9px] text-white/70">
+                                    <i class="fas fa-chevron-right"></i>
+                                </span>
+                            </div>
+                            <div>
+                                <h3 class="font-extrabold text-xs leading-tight">Akun Saya</h3>
+                                <p class="text-[9px] text-teal-100/80 mt-0.5 font-medium truncate">Foto & Kata Sandi</p>
+                            </div>
                         </button>
                     </div>
-                 </div>        
+
+                    <!-- Kartu Preferensi Tema Cepat (Dark Mode Switch) -->
+                    <div class="bg-white rounded-2xl p-3.5 shadow-sm border border-gray-100 mt-3 flex justify-between items-center" id="card-darkmode-guru">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-sm shrink-0">
+                                <i class="fas fa-moon"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-xs text-gray-800">Mode Gelap (Dark Mode)</h4>
+                                <p class="text-[10px] text-gray-400">Tampilan malam hemat baterai</p>
+                            </div>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer shrink-0">
+                            <input type="checkbox" id="toggle-dark-mode-guru" onchange="handleToggleDarkMode(this.checked)" class="sr-only peer">
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                        </label>
+                    </div>
+
+                    <!-- Tombol Keluar Sistem -->
+                    <button onclick="handleLogout()" class="w-full bg-red-50 hover:bg-red-100 text-red-600 rounded-xl py-2.5 flex items-center justify-center gap-2 font-bold text-xs shadow-sm transition-colors mt-3 border border-red-100">
+                        <i class="fas fa-sign-out-alt"></i> Keluar Sistem
+                    </button>
+                </div>        
              </div>
 
             <!-- Bottom Navigation (Guru/Admin Mobile) -->
