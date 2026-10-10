@@ -977,17 +977,42 @@ function syncPengaturanToggles() {
     if (tVib) tVib.checked = isVibrasi;
 }
 
+// 1. Pengendali Switch Dark Mode
 function handleToggleDarkMode(enabled) {
     localStorage.setItem('pref_dark_mode', enabled);
     const container = document.getElementById('app-container');
+    const root = document.documentElement; // tag <html>
+    const body = document.body;            // tag <body>
+
     if (enabled) {
-        container.classList.add('dark-mode-simulated');
+        if (container) container.classList.add('dark-mode-simulated');
+        root.classList.add('dark-mode-simulated', 'dark');
+        body.classList.add('dark-mode-simulated', 'dark');
         showToast('Mode Gelap diaktifkan');
     } else {
-        container.classList.remove('dark-mode-simulated');
+        if (container) container.classList.remove('dark-mode-simulated');
+        root.classList.remove('dark-mode-simulated', 'dark');
+        body.classList.remove('dark-mode-simulated', 'dark');
         showToast('Mode Terang diaktifkan');
     }
 }
+
+// 2. Inisialisasi Otomatis saat Halaman Dibuka di Chrome / Browser Lain
+(function initSavedTheme() {
+    const isDark = localStorage.getItem('pref_dark_mode') === 'true';
+    const toggleEl = document.getElementById('toggle-dark-mode');
+    const container = document.getElementById('app-container');
+    const root = document.documentElement;
+    const body = document.body;
+
+    if (isDark) {
+        if (container) container.classList.add('dark-mode-simulated');
+        root.classList.add('dark-mode-simulated', 'dark');
+        body.classList.add('dark-mode-simulated', 'dark');
+        if (toggleEl) toggleEl.checked = true;
+    }
+})();
+
 
 // Generator suara konfirmasi presensi tanpa file eksternal (Web Audio API)
 function playBeepSuccess() {
