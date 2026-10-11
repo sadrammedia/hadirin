@@ -874,7 +874,8 @@ const editFotoGuruFileEl = document.getElementById('edit-foto-guru-file');
 if (editFotoGuruFileEl) {
     editFotoGuruFileEl.addEventListener('change', async function(e) {
         const file = e.target.files[0];
-        if (!file || !currentUser || currentUser.role !== 'guru') return;
+        // PERBAIKAN: Izinkan guru DAN admin untuk ganti foto
+        if (!file || !currentUser || (currentUser.role !== 'guru' && currentUser.role !== 'admin')) return;
         
         const statusEl = document.getElementById('status-foto-guru-upload');
         statusEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mengunggah foto...';
@@ -938,7 +939,8 @@ function loadProfilGuru() {
 }
 
 async function simpanProfilGuru() {
-    if (!currentUser || currentUser.role !== 'guru') return;
+    // PERBAIKAN: Izinkan guru DAN admin untuk menyimpan data profil/kata sandi
+    if (!currentUser || (currentUser.role !== 'guru' && currentUser.role !== 'admin')) return;
 
     const btn = document.getElementById('btn-simpan-profil-guru');
     const fotoUrl = document.getElementById('edit-foto-guru-url').value.trim();
@@ -965,10 +967,17 @@ async function simpanProfilGuru() {
 
         if (error) throw error;
 
-        if (fotoUrl !== '') currentUser.foto_profil = fotoUrl;
-        if (passBaru !== '') currentUser.password = passBaru;
+        // Sinkronisasi data di memori agar password baru bisa langsung dipakai login nanti
+        if (fotoUrl !== '') {
+            currentUser.foto_profil = fotoUrl;
+            updateFotoGuruUI(fotoUrl); 
+        }
+        if (passBaru !== '') {
+            currentUser.password = passBaru;
+        }
 
-        updateFotoGuruUI(fotoUrl);
+        // PERBAIKAN PENTING: Perbarui localStorage agar saat halaman dimuat ulang, data akun tidak kadaluarsa
+        localStorage.setItem('app_session', JSON.stringify(currentUser));
         
         showToast('Profil akun berhasil diperbarui!');
         document.getElementById('edit-password-guru').value = ''; 
@@ -977,10 +986,8 @@ async function simpanProfilGuru() {
         
         let errMsg = "Gagal menyimpan profil!";
         if (error.message) {
-             if (error.message.includes("does not exist")) {
-                 errMsg = "Error DB: Kolom 'foto_profil' atau 'password' belum dibuat di tabel_guru.";
-             } else if (error.message.includes("row-level security")) {
-                 errMsg = "Akses ditolak: Aturan RLS di tabel_guru belum mengizinkan Update.";
+             if (error.message.includes("row-level security") || error.code === '42501') {
+                 errMsg = "Akses ditolak database (Cek RLS tabel_guru untuk Update).";
              } else {
                  errMsg = error.message;
              }
