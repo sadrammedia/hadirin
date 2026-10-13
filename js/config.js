@@ -119,8 +119,13 @@ window.onload = async () => {
     
     // Terapkan Logo & Background dari tabel_pengaturan
     try {
-        const { data: peng } = await db.from('tabel_pengaturan').select('logo_url, bg_url, logo_sekolah_url').limit(1).single();
+        // PERBAIKAN 1: Ubah select(...) menjadi select('*') agar menarik semua kolom
+        const { data: peng } = await db.from('tabel_pengaturan').select('*').limit(1).single();
+        
         if (peng) {
+            // PERBAIKAN 2: Simpan data ke variabel global agar dibaca oleh fungsi auth.js & guru.js
+            cachedPengaturan = peng;
+            
             const splashScreen = document.getElementById('screen-splash');
             const splashWrap = splashScreen ? splashScreen.querySelector('.relative.w-full.h-full') : null;
            
