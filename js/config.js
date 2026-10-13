@@ -193,6 +193,8 @@ window.onload = async () => {
                 if (typeof setupGuruDashboard === 'function') setupGuruDashboard(userData);
             }
             
+            setTimeout(() => { if(typeof cekUlangTahun === 'function') cekUlangTahun(userData); }, 1500);
+
             const splashEl = document.getElementById('screen-splash');
             if (splashEl) {
                 splashEl.classList.add('hidden');
