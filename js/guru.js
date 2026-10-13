@@ -1035,6 +1035,9 @@ async function loadPengaturan() {
     const btn = document.getElementById('btn-save-pengaturan');
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memuat...';
     
+    // Tarik daftar template terlebih dahulu untuk mengisi opsi Dropdown L & P
+    await loadDaftarTemplate();
+    
     try {
         const { data, error } = await db.from('tabel_pengaturan').select('*').limit(1).single();
         if (data) {
@@ -1053,9 +1056,12 @@ async function loadPengaturan() {
             document.getElementById('set-akses-jadwal').checked = data.akses_guru_jadwal || false;
             document.getElementById('set-akses-kelas').checked = data.akses_guru_kelas || false;
 
-            document.getElementById('set-ultah-aktif').checked = cachedPengaturan.fitur_ultah_aktif !== false; // Default true
-            document.getElementById('set-ultah-ucapan').value = cachedPengaturan.ucapan_ultah || '';
-            document.getElementById('set-ultah-gambar').value = cachedPengaturan.gambar_ultah || '';
+            // Pengaturan Fitur Ulang Tahun
+            document.getElementById('set-ultah-aktif').checked = cachedPengaturan.fitur_ultah_aktif !== false; 
+            
+            // Pilih template aktif dari database
+            if(cachedPengaturan.template_l) document.getElementById('select-template-l').value = cachedPengaturan.template_l;
+            if(cachedPengaturan.template_p) document.getElementById('select-template-p').value = cachedPengaturan.template_p;
             
             if (data.logo_url) {
                 document.getElementById('preview-logo-setting').src = data.logo_url;
@@ -1136,34 +1142,29 @@ async function simpanPengaturan() {
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
     btn.disabled = true;
     
-    const payload = {
-        id: 1, 
-        jam_masuk_mulai: document.getElementById('set-jam-masuk-buka').value,
-        jam_masuk_akhir: document.getElementById('set-jam-masuk-tutup').value,
-        jam_pulang_mulai: document.getElementById('set-jam-pulang').value,
-        lokasi_lat: document.getElementById('set-lat').value,
-        lokasi_lng: document.getElementById('set-lng').value,
-        radius: document.getElementById('set-radius').value,
-        logo_url: document.getElementById('set-logo-url').value, 
-        bg_url: document.getElementById('set-bg-url').value,
-        logo_sekolah_url: document.getElementById('set-logo-sekolah-url').value,  
-        akses_guru_jadwal: document.getElementById('set-akses-jadwal').checked,
-        akses_guru_kelas: document.getElementById('set-akses-kelas').checked,
-        // --- DATA FITUR ULANG TAHUN ---
-        fitur_ultah_aktif: document.getElementById('set-ultah-aktif').checked,
-        ucapan_ultah: document.getElementById('set-ultah-ucapan').value,
-        gambar_ultah: document.getElementById('set-ultah-gambar').value
-    };
-
     try {
+        const payload = {
+            id: 1, 
+            jam_masuk_mulai: document.getElementById('set-jam-masuk-buka').value,
+            jam_masuk_akhir: document.getElementById('set-jam-masuk-tutup').value,
+            jam_pulang_mulai: document.getElementById('set-jam-pulang').value,
+            lokasi_lat: document.getElementById('set-lat').value,
+            lokasi_lng: document.getElementById('set-lng').value,
+            radius: document.getElementById('set-radius').value,
+            logo_url: document.getElementById('set-logo-url').value, 
+            bg_url: document.getElementById('set-bg-url').value,
+            logo_sekolah_url: document.getElementById('set-logo-sekolah-url').value,  
+            akses_guru_jadwal: document.getElementById('set-akses-jadwal').checked,
+            akses_guru_kelas: document.getElementById('set-akses-kelas').checked,
+            // HANYA simpan status aktif sakelar. Data template_l dan template_p sudah 
+            // disimpan secara otomatis oleh fungsi simpanTemplateAktif()
+            fitur_ultah_aktif: document.getElementById('set-ultah-aktif').checked
+        };
+
         const { error } = await db.from('tabel_pengaturan').upsert(payload);
-        if (error) {
-            if (error.message && error.message.includes("does not exist")) {
-               throw new Error("Ada kolom baru (seperti fitur_ultah_aktif) yang belum dibuat di tabel_pengaturan Supabase!");
-            }
-            throw error;
-        }
-        cachedPengaturan = payload;
+        if (error) throw error;
+        
+        cachedPengaturan = { ...cachedPengaturan, ...payload };
         showToast('Pengaturan berhasil disimpan ke Cloud!');
     } catch (err) {
         const errorMsg = err.message || 'Terjadi kesalahan saat menyimpan.';
@@ -1682,6 +1683,308 @@ async function promptTambahMapel() {
         initDropdownJadwal(); // Segarkan dropdown mapel
     } catch (e) {
         showToast("Gagal menambah mapel (Cek RLS tabel_mapel)", true);
+    }
+}
+
+
+// ==========================================
+// 8.5 MANAJEMEN TEMPLATE ULANG TAHUN
+// ==========================================
+
+let daftarTemplateL = [];
+let daftarTemplateP = [];
+
+function bukaModalKelolaTemplate() {
+    const modal = document.getElementById('modal-template-ultah');
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    loadDaftarTemplate(true);
+}
+
+function tutupModalTemplateUltah() {
+    const modal = document.getElementById('modal-template-ultah');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+}
+
+async function loadDaftarTemplate(isFromModal = false) {
+    try {
+        const { data, error } = await db.from('tabel_template_ultah').select('*').order('id', { ascending: false });
+        if (error) throw error;
+        
+        daftarTemplateL = data ? data.filter(t => t.jenis_kelamin === 'L') : [];
+        daftarTemplateP = data ? data.filter(t => t.jenis_kelamin === 'P') : [];
+        
+        const selCardL = document.getElementById('select-template-l');
+        const selCardP = document.getElementById('select-template-p');
+        const selModalL = document.getElementById('aktif-template-l');
+        const selModalP = document.getElementById('aktif-template-p');
+        
+        let optL = '<option value="">-- Pilih Template Laki-laki --</option>';
+        daftarTemplateL.forEach(t => optL += `<option value="${t.id}">${t.nama_template}</option>`);
+        if(selCardL) selCardL.innerHTML = optL;
+        if(selModalL) selModalL.innerHTML = optL;
+
+        let optP = '<option value="">-- Pilih Template Perempuan --</option>';
+        daftarTemplateP.forEach(t => optP += `<option value="${t.id}">${t.nama_template}</option>`);
+        if(selCardP) selCardP.innerHTML = optP;
+        if(selModalP) selModalP.innerHTML = optP;
+        
+        if (cachedPengaturan) {
+            if(cachedPengaturan.template_l && selModalL) selModalL.value = cachedPengaturan.template_l;
+            if(cachedPengaturan.template_p && selModalP) selModalP.value = cachedPengaturan.template_p;
+        }
+
+        if (isFromModal) {
+            const tbody = document.getElementById('tabel-daftar-template');
+            let rows = '';
+            if (!data || data.length === 0) {
+                rows = '<tr><td colspan="4" class="text-center py-4">Belum ada template.</td></tr>';
+            } else {
+                data.forEach(t => {
+                    const badgeJK = t.jenis_kelamin === 'L' 
+                        ? '<span class="bg-blue-100 text-blue-700 font-bold px-2 py-0.5 rounded text-[9px]">Laki-Laki</span>' 
+                        : '<span class="bg-pink-100 text-pink-700 font-bold px-2 py-0.5 rounded text-[9px]">Perempuan</span>';
+                    
+                    // PERBAIKAN: Menambahkan tombol Edit berwarna biru
+                    rows += `
+                    <tr class="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                        <td class="px-4 py-3 font-bold text-gray-800">${t.nama_template}</td>
+                        <td class="px-4 py-3">${badgeJK}</td>
+                        <td class="px-4 py-3 text-center">
+                            <div class="flex items-center justify-center gap-2">
+                                <button onclick="editTemplate(${t.id})" class="text-blue-500 hover:text-blue-700 hover:bg-blue-50 w-8 h-8 rounded-full transition-all" title="Edit Template"><i class="fas fa-pencil-alt text-xs"></i></button>
+                                <button onclick="hapusTemplate(${t.id})" class="text-red-400 hover:text-red-600 hover:bg-red-50 w-8 h-8 rounded-full transition-all" title="Hapus Template"><i class="fas fa-trash-alt text-xs"></i></button>
+                            </div>
+                        </td>
+                    </tr>`;
+                });
+            }
+            tbody.innerHTML = rows;
+        }
+
+    } catch(err) {
+        console.error("Gagal memuat template:", err);
+    }
+}
+
+// FUNGSI BARU: Tarik data ke form untuk di-edit
+function editTemplate(id) {
+    const semuaTpl = [...daftarTemplateL, ...daftarTemplateP];
+    const dataTpl = semuaTpl.find(t => String(t.id) === String(id));
+    
+    if (dataTpl) {
+        document.getElementById('form-tpl-id').value = dataTpl.id; // Simpan ID
+        document.getElementById('form-tpl-nama').value = dataTpl.nama_template;
+        document.getElementById('form-tpl-jk').value = dataTpl.jenis_kelamin;
+        document.getElementById('form-tpl-pesan').value = dataTpl.pesan_utama || '';
+        document.getElementById('form-tpl-kutipan').value = dataTpl.pesan_kutipan || '';
+        document.getElementById('form-tpl-bg').value = dataTpl.bg_url || '';
+        
+        // Ubah Judul & Tombol Form
+        document.getElementById('title-form-template').innerHTML = `<i class="fas fa-edit text-blue-500"></i> Edit Template`;
+        document.getElementById('area-form-template').classList.add('border-blue-300', 'bg-blue-50/20');
+        const btnSave = document.getElementById('btn-save-tpl');
+        btnSave.className = 'bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-6 rounded-xl transition-colors text-sm shadow-md flex items-center gap-2';
+        btnSave.innerHTML = '<i class="fas fa-check"></i> <span>Perbarui Template</span>';
+        
+        // Munculkan tombol Batal
+        document.getElementById('btn-batal-edit-tpl').classList.remove('hidden');
+    }
+}
+
+// FUNGSI BARU: Kembalikan form ke mode Tambah Baru
+function resetFormTemplate() {
+    document.getElementById('form-tpl-id').value = '';
+    document.getElementById('form-tpl-nama').value = '';
+    document.getElementById('form-tpl-pesan').value = '';
+    document.getElementById('form-tpl-kutipan').value = '';
+    document.getElementById('form-tpl-bg').value = '';
+    document.getElementById('form-tpl-jk').value = 'L';
+    
+    // Kembalikan Judul & Tombol
+    document.getElementById('title-form-template').innerHTML = `<i class="fas fa-plus-circle text-rose-500"></i> Buat Template Baru`;
+    document.getElementById('area-form-template').classList.remove('border-blue-300', 'bg-blue-50/20');
+    const btnSave = document.getElementById('btn-save-tpl');
+    btnSave.className = 'bg-teal-600 hover:bg-teal-700 text-white font-bold py-2.5 px-6 rounded-xl transition-colors text-sm shadow-md flex items-center gap-2';
+    btnSave.innerHTML = '<i class="fas fa-save"></i> <span>Simpan ke Bank Template</span>';
+    
+    // Sembunyikan tombol Batal
+    document.getElementById('btn-batal-edit-tpl').classList.add('hidden');
+}
+
+async function simpanTemplateBaru() {
+    const idTpl = document.getElementById('form-tpl-id').value; // Jika ada, berarti mode Update
+    const nama = document.getElementById('form-tpl-nama').value.trim();
+    const jk = document.getElementById('form-tpl-jk').value;
+    const pesan = document.getElementById('form-tpl-pesan').value.trim();
+    const kutipan = document.getElementById('form-tpl-kutipan').value.trim();
+    const bgUrl = document.getElementById('form-tpl-bg').value.trim();
+    const btn = document.getElementById('btn-save-tpl');
+
+    if (!nama || !pesan || !bgUrl) {
+        return showToast("Nama, Pesan, dan URL Gambar wajib diisi!", true);
+    }
+
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
+    btn.disabled = true;
+
+    try {
+        const payload = {
+            nama_template: nama,
+            jenis_kelamin: jk,
+            pesan_utama: pesan,
+            pesan_kutipan: kutipan,
+            bg_url: bgUrl
+        };
+
+        if (idTpl) {
+            // MODE UPDATE
+            const { error } = await db.from('tabel_template_ultah').update(payload).eq('id', idTpl);
+            if (error) throw error;
+            showToast("Template berhasil diperbarui!");
+        } else {
+            // MODE INSERT BARU
+            const { error } = await db.from('tabel_template_ultah').insert([payload]);
+            if (error) throw error;
+            showToast("Template berhasil ditambahkan!");
+        }
+        
+        resetFormTemplate();
+        loadDaftarTemplate(true);
+    } catch(err) {
+        showToast("Gagal menyimpan template. (Periksa Koneksi/RLS)", true);
+        console.error(err);
+    } finally {
+        // Karena kita memanggil resetFormTemplate() jika berhasil, tombol sudah dikembalikan.
+        // Tapi kita pastikan disabled false di sini jika error.
+        btn.disabled = false;
+        if(document.getElementById('form-tpl-id').value === '') {
+            btn.innerHTML = '<i class="fas fa-save"></i> <span>Simpan ke Bank Template</span>';
+        } else {
+            btn.innerHTML = '<i class="fas fa-check"></i> <span>Perbarui Template</span>';
+        }
+    }
+}
+
+async function hapusTemplate(id) {
+    if(!confirm("Yakin ingin menghapus template ini?\nPeringatan: Jika template sedang digunakan, penghapusan mungkin digagalkan oleh database.")) return;
+    try {
+        // Modifikasi pesan error agar lebih jelas jika gagal karena dipakai
+        const { error } = await db.from('tabel_template_ultah').delete().eq('id', id);
+        if (error) throw error;
+        
+        showToast("Template berhasil dihapus!");
+        loadDaftarTemplate(true);
+    } catch(err) { 
+        console.error("Error Delete:", err); 
+        if (err.message && err.message.includes('foreign key constraint')) {
+            showToast("Gagal! Template sedang dipakai/aktif. Ubah template aktif terlebih dahulu.", true);
+        } else {
+            showToast("Gagal menghapus template. Akses ditolak atau terjadi kesalahan jaringan.", true);
+        }
+    }
+}
+
+async function uploadGambarTemplate(inputEl) {
+    const file = inputEl.files[0];
+    if (!file) return;
+
+    const statusEl = document.getElementById('status-upload-tpl');
+    const urlInput = document.getElementById('form-tpl-bg');
+    
+    statusEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mengunggah ke Cloud...';
+    statusEl.className = 'text-[10px] text-teal-600 mt-1 font-bold';
+
+    try {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `template_ultah_${Date.now()}.${fileExt}`;
+        
+        // Memanfaatkan fungsi uploadFileToSupabase yang sudah ada di config.js
+        const publicUrl = await uploadFileToSupabase(file, 'aset_aplikasi', fileName); 
+        
+        urlInput.value = publicUrl;
+        
+        statusEl.innerHTML = '<i class="fas fa-check-circle"></i> Gambar berhasil diunggah!';
+        statusEl.className = 'text-[10px] text-green-600 mt-1 font-bold';
+    } catch (error) {
+        statusEl.innerHTML = `<i class="fas fa-times-circle"></i> Gagal unggah. Cek koneksi atau izin RLS Supabase.`;
+        statusEl.className = 'text-[10px] text-red-500 mt-1 font-bold';
+        console.error("Gagal Upload Gambar Template:", error);
+    }
+}
+
+async function simpanTemplateAktif(templateId, gender) {
+    // Fungsi ini dipicu otomatis saat dropdown diubah
+    const kolom = gender === 'L' ? 'template_l' : 'template_p';
+    
+    // Perbarui UI di tempat lain agar sinkron
+    if (gender === 'L') {
+        const dropCard = document.getElementById('select-template-l');
+        const dropModal = document.getElementById('aktif-template-l');
+        if(dropCard && dropCard.value !== templateId) dropCard.value = templateId;
+        if(dropModal && dropModal.value !== templateId) dropModal.value = templateId;
+        if (cachedPengaturan) cachedPengaturan.template_l = templateId;
+    } else {
+        const dropCard = document.getElementById('select-template-p');
+        const dropModal = document.getElementById('aktif-template-p');
+        if(dropCard && dropCard.value !== templateId) dropCard.value = templateId;
+        if(dropModal && dropModal.value !== templateId) dropModal.value = templateId;
+        if (cachedPengaturan) cachedPengaturan.template_p = templateId;
+    }
+    
+    // Simpan langsung ke database (Tabel Pengaturan)
+    try {
+        const payload = { id: 1 };
+        payload[kolom] = templateId;
+        await db.from('tabel_pengaturan').upsert(payload);
+        showToast(`Template ${gender === 'L' ? 'Laki-Laki' : 'Perempuan'} Aktif diperbarui!`);
+    } catch(err) {
+        console.error(err);
+        showToast("Gagal mengatur template aktif (Pastikan kolom template_l/p ada di Supabase)", true);
+    }
+}
+
+function previewTemplate(gender) {
+    const idTemplate = gender === 'L' 
+        ? document.getElementById('select-template-l').value 
+        : document.getElementById('select-template-p').value;
+        
+    if (!idTemplate) return showToast("Pilih template terlebih dahulu!", true);
+    
+    const arrayTpl = gender === 'L' ? daftarTemplateL : daftarTemplateP;
+    const dataTpl = arrayTpl.find(t => String(t.id) === String(idTemplate));
+    
+    if (dataTpl) {
+        // Simulasi User Dummy untuk Preview
+        const userDummy = {
+            nama: "Fulan bin Fulan (Preview)",
+            jk: gender,
+            tgl_lahir: new Date().toISOString().slice(0, 10) // Hari ini
+        };
+        
+        // Setel nilai sementara ke elemen
+        document.getElementById('ultah-nama').innerText = "Contoh Nama Siswa";
+        document.getElementById('ultah-pesan').innerHTML = dataTpl.pesan_utama || '';
+        
+        if (dataTpl.pesan_kutipan) {
+            document.getElementById('ultah-kutipan').innerHTML = `"${dataTpl.pesan_kutipan}"`;
+            document.getElementById('ultah-kutipan').style.display = 'block';
+        } else {
+            document.getElementById('ultah-kutipan').style.display = 'none';
+        }
+        
+        document.getElementById('ultah-gambar').src = dataTpl.bg_url;
+        
+        // Tampilkan Modal
+        const modal = document.getElementById('modal-ultah');
+        const content = document.getElementById('modal-ultah-content');
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        setTimeout(() => {
+            content.classList.remove('scale-95', 'opacity-0');
+            content.classList.add('scale-100', 'opacity-100');
+        }, 50);
     }
 }
 
