@@ -28,6 +28,32 @@
     <span id="toast-msg" class="text-sm font-semibold">Pesan sistem</span>
 </div>
 
+<!-- ========================================== -->
+<!-- MODAL UCAPAN ULANG TAHUN (ELEGANT/FEMININE) -->
+<!-- ========================================== -->
+<div id="modal-ultah" class="fixed inset-0 z-[110] hidden items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm transition-opacity">
+    <div class="bg-white w-full max-w-sm rounded-[32px] shadow-2xl overflow-hidden transform scale-95 transition-transform duration-300 relative" id="modal-ultah-content">
+        <div class="absolute inset-0 bg-gradient-to-br from-pink-50 via-rose-50/50 to-purple-50 pointer-events-none"></div>
+        <div class="absolute -top-10 -right-10 w-32 h-32 bg-pink-200/40 rounded-full blur-2xl"></div>
+        <div class="absolute -bottom-10 -left-10 w-32 h-32 bg-purple-200/40 rounded-full blur-2xl"></div>
+
+        <div class="relative z-10 p-6 text-center flex flex-col items-center">
+            <div class="w-24 h-24 mb-4 relative">
+                <div class="absolute inset-0 bg-pink-300/30 rounded-full blur-xl animate-pulse"></div>
+                <img id="ultah-gambar" src="https://fonts.gstatic.com/s/e/notoemoji/latest/1f389/512.gif" alt="Konfeti Ulang Tahun" class="w-full h-full object-contain relative z-10 drop-shadow-md scale-125">
+            </div>
+            <h2 class="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-rose-500 to-purple-600 mb-1" style="font-family: 'Comic Sans MS', 'Chalkboard SE', 'Marker Felt', cursive;">Selamat Ulang Tahun!</h2>
+            <h3 id="ultah-nama" class="text-lg font-bold text-gray-800 mb-3">Nama Pengguna</h3>
+            <p id="ultah-pesan" class="text-sm text-gray-600 leading-relaxed mb-6 px-2">
+                Semoga hari ini dipenuhi dengan kebahagiaan, kesehatan, dan langkah yang semakin berkah. Teruslah bersinar! ✨
+            </p>
+            <button onclick="tutupModalUltah()" class="w-full bg-gradient-to-r from-rose-400 to-pink-500 hover:from-rose-500 hover:to-pink-600 text-white font-bold py-3.5 rounded-full shadow-[0_8px_20px_rgba(244,63,94,0.3)] hover:shadow-[0_8px_25px_rgba(244,63,94,0.4)] transition-all active:scale-95">
+                Terima Kasih! 💕
+            </button>
+        </div>
+    </div>
+</div>
+
 <!-- Modal Edit Guru (Khusus Admin) -->
 <div id="modal-edit-guru" class="fixed inset-0 bg-slate-900/50 z-[100] hidden items-center justify-center backdrop-blur-sm px-4">
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-fade-in">
@@ -42,18 +68,24 @@
                 <input type="text" id="edit-guru-nama" readonly class="w-full border border-gray-200 bg-gray-50 rounded-xl px-4 py-2.5 text-sm outline-none text-gray-500 font-medium">
             </div>
             <div>
-                <label class="block text-xs font-bold text-gray-600 mb-1">Jabatan</label>
-                <input type="text" id="edit-guru-jabatan" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-teal-500" placeholder="Contoh: Guru Mapel, Wali Kelas">
+                <label class="block text-xs font-bold text-gray-600 mb-1">Jabatan & Akses Utama</label>
+                <select id="edit-guru-jabatan" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-teal-500 bg-white font-medium">
+                    <option value="Guru Mapel">Guru / Tenaga Pendidik</option>
+                    <option value="Admin">Admin / Operator Sekolah</option>
+                </select>
             </div>
             <div>
                 <label class="block text-xs font-bold text-gray-600 mb-1">Wali Kelas (Khusus Tugas Struktural)</label>
-                <input type="text" id="edit-guru-walikelas" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-teal-500" placeholder="Kosongkan jika bukan Wali. Cth: X-BDF 1">
-                <p class="text-[10px] text-gray-400 mt-1">Mengisi 1 nama kelas spesifik.</p>
+                <select id="edit-guru-walikelas" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-teal-500 bg-white font-medium">
+                    <option value="">Bukan Wali Kelas</option>
+                </select>
+                <p class="text-[10px] text-gray-400 mt-1">Jika diset, guru bisa memantau data khusus kelas tersebut.</p>
             </div>
             <div>
-                <label class="block text-xs font-bold text-gray-600 mb-1">Kelas yang Diajarkan (Hak Akses Monitor)</label>
-                <textarea id="edit-guru-kelasajar" rows="2" class="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm outline-none focus:border-teal-500" placeholder="Contoh: X-BDF 1, XI-PF 2, XII-AKL 1"></textarea>
-                <p class="text-[10px] text-orange-500 mt-1 font-medium"><i class="fas fa-info-circle"></i> Pisahkan dengan koma jika lebih dari satu.</p>
+                <label class="block text-xs font-bold text-gray-600 mb-1">Kelas yang Diajarkan (Bisa Pilih Banyak)</label>
+                <div id="wrap-edit-guru-kelasajar" class="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-40 overflow-y-auto custom-scroll p-3 bg-gray-50/50 rounded-xl border border-gray-300">
+                    <p class="text-[11px] text-gray-400 col-span-full text-center py-2"><i class="fas fa-spinner fa-spin"></i> Menarik daftar kelas...</p>
+                </div>
             </div>
             <div class="pt-4 flex justify-end gap-2 border-t border-gray-100">
                 <button onclick="closeModalEditGuru()" class="px-5 py-2.5 rounded-xl text-sm font-bold text-gray-500 bg-gray-100 hover:bg-gray-200 transition-colors">Batal</button>
@@ -399,6 +431,8 @@
                             <select id="izin-jenis" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-teal-500 bg-white">
                                 <option value="Sakit">Sakit</option>
                                 <option value="Izin" selected>Izin</option>
+                                <option value="Lupa Absen Masuk">Lupa Absen Masuk</option>
+                                <option value="Lupa Absen Pulang">Lupa Absen Pulang</option>
                             </select>
                         </div>
                         <div>
@@ -1061,15 +1095,29 @@
                 <!-- GURU: DASHBOARD -->
                 <div id="guru-section-dashboard" class="guru-section animate-fade-in block">
                     
-                    <!-- BARIS JUDUL & TOMBOL REFRESH MINIMALIS -->
-                    <div class="flex justify-between items-center mb-3 px-0.5">
-                        <div class="flex items-center gap-2">
-                            <span class="w-2 h-2 rounded-full bg-teal-500"></span>
-                            <h3 class="text-xs font-extrabold text-slate-700 uppercase tracking-wider">Ringkasan Cloud Hari Ini</h3>
+                    <!-- 1. GREETING CARD (Sapaan Personal) -->
+                    <div class="flex justify-between items-start mb-5 px-1 mt-2">
+                        <div>
+                            <h2 class="text-xl md:text-2xl font-extrabold text-gray-800 tracking-tight" id="dash-guru-greeting">Selamat Pagi!</h2>
+                            <p class="text-[11px] md:text-xs text-gray-500 font-medium mt-1 italic" id="dash-guru-quote">"Memuat kata mutiara..."</p>
                         </div>
-                        <button type="button" onclick="loadDashboardGuruData()" class="h-7 px-2.5 bg-white border border-gray-200 rounded-lg text-[10px] font-bold text-gray-600 hover:bg-gray-50 active:scale-95 flex items-center gap-1.5 shadow-sm transition-all" title="Perbarui Data">
-                            <i class="fas fa-sync-alt text-[9px] text-teal-600" id="icon-spin-refresh"></i> Refresh
+                        <button type="button" onclick="loadDashboardGuruData()" class="h-8 px-3 bg-white border border-gray-200 rounded-xl text-[10px] font-bold text-gray-600 hover:bg-teal-50 hover:text-teal-600 hover:border-teal-200 active:scale-95 flex items-center gap-1.5 shadow-sm transition-all shrink-0">
+                            <i class="fas fa-sync-alt text-[10px]" id="icon-spin-refresh"></i> Refresh
                         </button>
+                    </div>
+
+                    <!-- 2. WIDGET JADWAL MENGAJAR HARI INI -->
+                    <div class="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-3xl p-4 text-white shadow-md mb-5 relative overflow-hidden">
+                        <div class="absolute -right-6 -top-6 w-32 h-32 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
+                        <div class="absolute -left-4 -bottom-4 w-24 h-24 bg-indigo-400/20 rounded-full blur-xl pointer-events-none"></div>
+                        
+                        <div class="flex justify-between items-center mb-3 relative z-10">
+                            <h3 class="font-bold text-sm flex items-center gap-2"><i class="fas fa-calendar-day text-purple-200"></i> Jadwal Mengajar Anda Hari Ini</h3>
+                            <span class="text-[10px] bg-white/20 px-2 py-0.5 rounded-full font-semibold border border-white/20 backdrop-blur-sm" id="dash-badge-hari">Hari Ini</span>
+                        </div>
+                        <div id="widget-jadwal-guru" class="space-y-2 relative z-10">
+                            <p class="text-xs text-purple-100 py-2"><i class="fas fa-spinner fa-spin"></i> Mencari jadwal mengajar Anda...</p>
+                        </div>
                     </div>
                     
                     <!-- KARTU STATISTIK (PASTEL GRADIENT & COMPACT) -->
@@ -1112,7 +1160,8 @@
                                 <span class="w-6 h-6 rounded-lg bg-emerald-500 text-white flex items-center justify-center text-[10px] shadow-sm">
                                     <i class="fas fa-sign-in-alt"></i>
                                 </span>
-                                <span class="text-[9px] font-extrabold text-emerald-700 bg-white/80 px-1.5 py-0.5 rounded-md border border-emerald-200/50">Masuk</span>
+                                <!-- PERHATIKAN BARIS INI: Penambahan id="stat-persen-hadir" -->
+                                <span id="stat-persen-hadir" class="text-[9px] font-extrabold text-emerald-700 bg-white/80 px-1.5 py-0.5 rounded-md border border-emerald-200/50">Masuk</span>
                             </div>
                             <div class="relative z-10 mt-1">
                                 <span class="font-mono font-extrabold text-xl text-emerald-950 leading-none block" id="stat-hadir">0</span>
@@ -1134,48 +1183,53 @@
                                 <span class="text-[9px] text-purple-700/80 font-semibold block mt-1 truncate">Terekam Pulang</span>
                             </div>
                         </div>
-
                     </div>
 
                     <!-- BANNER ROLE FILTER KELAS -->
                     <div class="bg-blue-50 border border-blue-100 rounded-xl p-3 text-[11px] text-blue-700 hidden mb-4" id="banner-role-guru">
-                        <i class="fas fa-info-circle mr-1"></i> Data yang ditampilkan difilter otomatis berdasarkan Kelas Ajar / Wali Kelas Anda.
+                        <i class="fas fa-info-circle mr-1"></i> Data difilter berdasarkan Kelas Ajar / Wali Kelas Anda.
                     </div>
 
-                    <!-- KOMPONEN TAMBAHAN: MENGISI RUANG KOSONG DENGAN LIVE LOG & VERIFIKASI IZIN -->
-                    <div class="space-y-3">
-                        <!-- Kartu Notifikasi Verifikasi Izin Cepat -->
-                        <div onclick="switchGuruMenu('izin-admin')" class="bg-gradient-to-r from-amber-500 to-orange-500 rounded-2xl p-3.5 text-white shadow-sm flex items-center justify-between cursor-pointer active:scale-98 transition-transform">
-                            <div class="flex items-center gap-3">
-                                <div class="w-9 h-9 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center text-sm shadow-sm">
+                    <div class="space-y-4">
+                        <!-- 4. KARTU IZIN (DENGAN SMART BADGE) -->
+                        <div onclick="switchGuruMenu('izin-admin')" class="bg-gradient-to-r from-amber-500 to-orange-500 rounded-2xl p-4 text-white shadow-[0_4px_15px_rgba(245,158,11,0.3)] flex items-center justify-between cursor-pointer hover:scale-[1.02] transition-transform relative overflow-hidden">
+                            <div class="absolute -right-4 -bottom-4 w-16 h-16 bg-white/20 rounded-full blur-lg"></div>
+                            <div class="flex items-center gap-4 relative z-10">
+                                <div class="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center text-lg shadow-sm border border-white/20">
                                     <i class="fas fa-envelope-open-text"></i>
                                 </div>
                                 <div>
-                                    <h4 class="font-extrabold text-xs leading-tight">Pengajuan Izin Siswa</h4>
-                                    <p class="text-[10px] text-amber-100 mt-0.5">Pantau & verifikasi berkas izin yang masuk</p>
+                                    <h4 class="font-extrabold text-sm leading-tight">Pengajuan Izin & Klaim</h4>
+                                    <p class="text-[10px] text-amber-100 mt-0.5">Tinjau permohonan siswa</p>
                                 </div>
                             </div>
-                            <span class="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-[10px]">
+                            <!-- Badge Menunggu -->
+                            <div id="badge-izin-pending-wrap" class="relative z-10 hidden">
+                                <span class="bg-red-500 text-white border-2 border-orange-400 font-extrabold text-[11px] px-2.5 py-1 rounded-full shadow-md animate-pulse flex items-center gap-1">
+                                    <span id="badge-izin-pending">0</span> Menunggu
+                                </span>
+                            </div>
+                            <span id="icon-izin-arrow" class="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center text-[10px] relative z-10">
                                 <i class="fas fa-chevron-right"></i>
                             </span>
                         </div>
 
-                        <!-- Kartu Presensi Masuk Terbaru (Live Log Ringkas) -->
-                        <div class="bg-white rounded-2xl p-3.5 shadow-sm border border-gray-100" id="card-recent-activity">
-                            <div class="flex justify-between items-center mb-2.5">
+                        <!-- 5. LIVE LOG (DENGAN FOTO & TAG KETERLAMBATAN) -->
+                        <div class="bg-white rounded-3xl p-4 shadow-sm border border-gray-100" id="card-recent-activity">
+                            <div class="flex justify-between items-center mb-4">
                                 <div class="flex items-center gap-2">
-                                    <div class="w-6 h-6 rounded-lg bg-teal-50 text-teal-600 flex items-center justify-center text-xs">
-                                        <i class="fas fa-history"></i>
+                                    <div class="w-7 h-7 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center text-xs">
+                                        <i class="fas fa-bolt"></i>
                                     </div>
-                                    <h4 class="font-extrabold text-xs text-slate-800">Aktivitas Presensi Terbaru</h4>
+                                    <h4 class="font-extrabold text-sm text-slate-800">Aktivitas Presensi Live</h4>
                                 </div>
-                                <button onclick="switchGuruMenu('rekap')" class="text-[10px] font-bold text-teal-600 hover:text-teal-700 flex items-center gap-1">
-                                    Lihat Semua <i class="fas fa-chevron-right text-[8px]"></i>
+                                <button onclick="switchGuruMenu('rekap')" class="text-[10px] font-bold text-teal-600 bg-teal-50 px-2 py-1 rounded-lg hover:bg-teal-100 transition-colors">
+                                    Rekap Lengkap
                                 </button>
                             </div>
                             <!-- Wadah List Siswa Terakhir Absen -->
-                            <div id="live-recent-absen-list" class="space-y-2">
-                                <p class="text-center text-[11px] text-gray-400 py-3"><i class="fas fa-spinner fa-spin mr-1"></i> Menarik aktivitas...</p>
+                            <div id="live-recent-absen-list" class="space-y-3">
+                                <p class="text-center text-xs text-gray-400 py-6">Memantau aktivitas gerbang...</p>
                             </div>
                         </div>
                     </div>
@@ -1460,21 +1514,33 @@
                                     </div>
                                 </div>
                                 <div>
+                                    <!-- PERUBAHAN OTONOMI: Dropdown Mapel -->
                                     <label class="block text-xs font-bold text-gray-600 mb-1">Mata Pelajaran</label>
-                                    <input type="text" id="form-jadwal-mapel" class="w-full border border-gray-200 rounded-xl px-3 py-2 text-xs outline-none focus:border-purple-500 bg-gray-50/50" placeholder="Contoh: Tata Kamera & Lighting">
+                                    <div class="flex gap-2">
+                                        <select id="form-jadwal-mapel" class="w-full border border-gray-200 rounded-xl px-3 py-2 text-xs outline-none focus:border-purple-500 bg-gray-50/50">
+                                            <option value="">Pilih Mapel...</option>
+                                        </select>
+                                        <button onclick="promptTambahMapel()" class="bg-purple-50 text-purple-600 px-3 py-2 rounded-xl text-xs font-bold hover:bg-purple-100 transition-colors shadow-sm" title="Tambah Mapel Baru"><i class="fas fa-plus"></i></button>
+                                    </div>
                                 </div>
+                                <!-- PERUBAHAN OTONOMI: Guru Pengajar Terkunci otomatis jika bukan Admin -->
                                 <div>
                                     <label class="block text-xs font-bold text-gray-600 mb-1">Guru Pengajar</label>
-                                    <input type="text" id="form-jadwal-guru" class="w-full border border-gray-200 rounded-xl px-3 py-2 text-xs outline-none focus:border-purple-500 bg-gray-50/50" placeholder="Contoh: Bpk. Mardas, S.Pd">
+                                    <select id="form-jadwal-guru" class="w-full border border-gray-200 rounded-xl px-3 py-2 text-xs outline-none focus:border-purple-500 bg-gray-50/50">
+                                        <option value="">Pilih Guru Pengajar...</option>
+                                    </select>
                                 </div>
                                 <div class="grid grid-cols-2 gap-3">
+                                    <!-- PERUBAHAN OTONOMI: Dropdown Kelas dari tabel_siswa -->
                                     <div>
                                         <label class="block text-xs font-bold text-gray-600 mb-1">Kelas Target</label>
-                                        <input type="text" id="form-jadwal-kelas" class="w-full border border-gray-200 rounded-xl px-3 py-2 text-xs outline-none focus:border-purple-500 bg-gray-50/50 font-semibold" placeholder="Contoh: XII-PF 1">
+                                        <select id="form-jadwal-kelas" class="w-full border border-gray-200 rounded-xl px-3 py-2 text-xs outline-none focus:border-purple-500 bg-gray-50/50 font-semibold">
+                                            <option value="">Pilih Kelas...</option>
+                                        </select>
                                     </div>
                                     <div>
                                         <label class="block text-xs font-bold text-gray-600 mb-1">Ruangan / Lab</label>
-                                        <input type="text" id="form-jadwal-ruang" class="w-full border border-gray-200 rounded-xl px-3 py-2 text-xs outline-none focus:border-purple-500 bg-gray-50/50" placeholder="Contoh: Studio TV 1" value="Kelas">
+                                        <input type="text" id="form-jadwal-ruang" class="w-full border border-gray-200 rounded-xl px-3 py-2 text-xs outline-none focus:border-purple-500 bg-gray-50/50" placeholder="Contoh: Lab 1" value="Kelas">
                                     </div>
                                 </div>
                                 <button id="btn-tambah-jadwal" onclick="tambahJadwalBaru()" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-xl shadow-md transition-colors flex items-center justify-center gap-2 text-xs mt-2">
@@ -1749,6 +1815,33 @@
                             </div>
                         </div>
 
+                        <!-- KARTU SAKELAR OTONOMI GURU -->
+                        <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden p-6">
+                            <h3 class="font-bold text-gray-800 text-lg mb-4"><i class="fas fa-toggle-on text-indigo-500 mr-2"></i> Otonomi Guru (Akses Fitur)</h3>
+                            <div class="space-y-4">
+                                <div class="flex justify-between items-center pb-3 border-b border-gray-50">
+                                    <div>
+                                        <h4 class="font-bold text-sm text-gray-800">Akses Kelola Jadwal</h4>
+                                        <p class="text-[10px] text-gray-500 mt-0.5">Guru bisa membuat jadwal mengajarnya sendiri</p>
+                                    </div>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" id="set-akses-jadwal" class="sr-only peer">
+                                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:border-white after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-teal-600 peer-checked:after:translate-x-full"></div>
+                                    </label>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <div>
+                                        <h4 class="font-bold text-sm text-gray-800">Akses Pilih Kelas</h4>
+                                        <p class="text-[10px] text-gray-500 mt-0.5">Guru bisa memilih kelas ajar di menu Profilnya</p>
+                                    </div>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" id="set-akses-kelas" class="sr-only peer">
+                                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:border-white after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-teal-600 peer-checked:after:translate-x-full"></div>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden p-6 md:col-span-2">
                             <h3 class="font-bold text-gray-800 text-lg mb-4"><i class="fas fa-image text-purple-600 mr-2"></i> Tampilan Layar Awal & Halaman Login</h3>
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -1787,6 +1880,34 @@
                                 </div>
                             </div>
                         </div>
+
+                        <!-- KARTU PENGATURAN ULANG TAHUN (BARU) -->
+                        <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden p-6 md:col-span-2 mt-6">
+                            <div class="flex justify-between items-center mb-4 pb-3 border-b border-gray-50">
+                                <h3 class="font-bold text-gray-800 text-lg flex items-center gap-2">
+                                    <i class="fas fa-birthday-cake text-rose-500"></i> Fitur Kejutan Ulang Tahun
+                                </h3>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="set-ultah-aktif" class="sr-only peer" checked>
+                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:border-white after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-rose-500 peer-checked:after:translate-x-full"></div>
+                                </label>
+                            </div>
+                            <div class="space-y-4">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-600 mb-1">Pesan Ucapan (Teks)</label>
+                                        <textarea id="set-ultah-ucapan" rows="3" class="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm outline-none focus:border-rose-500 bg-gray-50/50" placeholder="Semoga panjang umur dan sehat selalu..."></textarea>
+                                        <p class="text-[10px] text-gray-400 mt-1">Kosongkan untuk menggunakan ucapan bawaan sistem.</p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-600 mb-1">URL Animasi / Gambar (Opsional)</label>
+                                        <input type="text" id="set-ultah-gambar" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-rose-500 bg-gray-50/50" placeholder="https://contoh.com/animasi.gif">
+                                        <p class="text-[10px] text-gray-400 mt-1">Masukkan link GIF/Lottie transparan. Kosongkan untuk animasi bawaan (Party Popper Google).</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                     
                     <div class="mt-6 flex justify-end">
@@ -1818,6 +1939,19 @@
                                 <input type="hidden" id="edit-foto-guru-url">
                                 <p class="text-xs text-gray-500 mt-1" id="status-foto-guru-upload"></p>
                             </div>
+
+                            <!-- FITUR PILIH KELAS AJAR -->
+                            <div class="pt-4 border-t border-gray-100" id="container-edit-kelas-ajar">
+                                <h3 class="font-bold text-gray-800 mb-2 text-sm flex items-center justify-between">
+                                    <span>Pilih Kelas yang Anda Ajar</span>
+                                    <span class="text-[9px] bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded border border-indigo-100 font-bold"><i class="fas fa-unlock"></i> Otonomi Aktif</span>
+                                </h3>
+                                <p class="text-[10px] text-gray-500 mb-3">Centang kelas untuk memfilter otomatis data presensi dan jadwal Anda.</p>
+                                <div id="wrap-checkbox-kelas-ajar" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 max-h-40 overflow-y-auto custom-scroll p-3 bg-gray-50/50 rounded-xl border border-gray-100">
+                                    <p class="text-[11px] text-gray-400 col-span-full text-center py-2"><i class="fas fa-spinner fa-spin"></i> Memuat daftar kelas...</p>
+                                </div>
+                            </div>
+
                             <div class="pt-4 border-t border-gray-100">
                                 <h3 class="font-bold text-gray-800 mb-3 text-sm">Keamanan</h3>
                                 <label class="block text-sm font-bold text-gray-700 mb-1">Kata Sandi Baru (Kosongkan jika tidak ingin diubah)</label>
