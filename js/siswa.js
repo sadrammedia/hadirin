@@ -349,8 +349,10 @@ async function loadIzinSiswa() {
 
     container.innerHTML = '';
     data.forEach(izin => {
-        const statusColor = izin.status === 'Disetujui' ? 'bg-green-100 text-green-700 border-green-200' : (izin.status === 'Ditolak' ? 'bg-red-100 text-red-700 border-red-200' : 'bg-orange-100 text-orange-700 border-orange-200');
-        const icon = izin.jenis === 'Sakit' ? 'fa-notes-medical' : 'fa-envelope-open-text';
+        const statusColor = izin.status === 'Disetujui' ? 'bg-green-100 text-green-700 border-green-200' : (izin.status === 'Ditolak' ? 'bg-red-100 text-red-700 border-red-200' : 'bg-orange-100 text-orange-700 border-orange-200');        
+        let icon = 'fa-envelope-open-text';
+            if (izin.jenis === 'Sakit') icon = 'fa-notes-medical';
+            else if (izin.jenis.includes('Lupa Absen')) icon = 'fa-user-clock'; // Ikon khusus lupa absen
         const lampiranIcon = izin.lampiran ? `<br><a href="${izin.lampiran}" target="_blank" class="text-blue-500 hover:underline text-[10px]"><i class="fas fa-paperclip"></i> Bukti Lampiran</a>` : '';
         
         container.innerHTML += `
