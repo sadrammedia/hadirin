@@ -44,6 +44,7 @@ async function handleLogin() {
             currentUser = { role: 'siswa', ...siswa };
             localStorage.setItem('app_session', JSON.stringify(currentUser));
             setupSiswaDashboard(currentUser);
+            setTimeout(() => { cekUlangTahun(currentUser); }, 1500);
             return;
         }
 
@@ -80,6 +81,7 @@ async function handleLogin() {
             currentUser = { role: userRole, ...guru };
             localStorage.setItem('app_session', JSON.stringify(currentUser));
             setupGuruDashboard(currentUser);
+            setTimeout(() => { cekUlangTahun(currentUser); }, 1500);
             return;
         }
 
@@ -155,5 +157,107 @@ async function resetDeviceBinding(tabel, kolomId, nilaiId) {
     } catch (error) {
         console.error(error);
         showToast('Gagal me-reset ikatan perangkat (Cek RLS/Koneksi).', true);
+    }
+}
+
+// Fungsi untuk Reset Password Siswa oleh Admin
+async function resetPasswordSiswa(nis, nama) {
+    if (!confirm(`Yakin ingin me-reset kata sandi untuk siswa:\nNama: ${nama}\nNIS: ${nis} ?\n\nKata sandi akan dikembalikan ke bawaan sistem (123456).`)) {
+        return;
+    }
+    
+    showToast('Memproses reset kata sandi...');
+    
+    try {
+        const { error } = await db.from('tabel_siswa')
+            .update({ password: '123456' })
+            .eq('nis', nis);
+            
+        if (error) throw error;
+        
+        showToast(`Sandi ${nama} berhasil di-reset ke 123456!`);
+        
+    } catch (error) {
+        console.error("Detail Error Reset Pass:", error);
+        let errMsg = "Gagal me-reset kata sandi.";
+        if (error.message && (error.message.includes("row-level security") || error.code === '42501')) {
+             errMsg = "Akses ditolak database (Cek RLS tabel_siswa untuk Update).";
+        }
+        showToast(errMsg, true);
+    }
+}
+
+// ==========================================
+// FITUR UCAPAN ULANG TAHUN
+// ==========================================
+function cekUlangTahun(user) {
+    // 1. CEK SAKELAR ADMIN DULU (Jika fitur dimatikan, batalkan semua proses di bawahnya)
+    if (typeof cachedPengaturan !== 'undefined' && cachedPengaturan && cachedPengaturan.fitur_ultah_aktif === false) {
+        return; 
+    }
+
+    // 2. PASTIKAN DATA USER VALID
+    if (!user || !user.tgl_lahir) return; 
+
+    const tglLahirDB = user.tgl_lahir;
+    if (tglLahirDB.length < 10) return;
+
+    // 3. COCOKKAN TANGGAL DAN BULAN
+    const bulanLahir = tglLahirDB.substring(5, 7);
+    const tanggalLahir = tglLahirDB.substring(8, 10);
+
+    const hariIni = new Date();
+    const bulanIni = String(hariIni.getMonth() + 1).padStart(2, '0');
+    const tanggalIni = String(hariIni.getDate()).padStart(2, '0');
+
+    // 4. JIKA HARI INI ULANG TAHUN
+    if (bulanLahir === bulanIni && tanggalLahir === tanggalIni) {
+        // Tampilkan Nama
+        document.getElementById('ultah-nama').innerText = user.nama.split(',')[0]; 
+        
+        // Tampilkan Ucapan/Gambar Kustom dari Admin (jika ada)
+        if (typeof cachedPengaturan !== 'undefined' && cachedPengaturan) {
+            // Kita harus pastikan isinya tidak kosong string ('') baru diganti
+            if (cachedPengaturan.ucapan_ultah && cachedPengaturan.ucapan_ultah.trim() !== '') {
+                document.getElementById('ultah-pesan').innerHTML = cachedPengaturan.ucapan_ultah;
+            }
+            if (cachedPengaturan.gambar_ultah && cachedPengaturan.gambar_ultah.trim() !== '') {
+                document.getElementById('ultah-gambar').src = cachedPengaturan.gambar_ultah;
+            }
+        }
+
+        // Tampilkan Modal
+        const modal = document.getElementById('modal-ultah');
+        const content = document.getElementById('modal-ultah-content');
+        
+        if(modal && content) {
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            
+            setTimeout(() => {
+                content.classList.remove('scale-95', 'opacity-0');
+                content.classList.add('scale-100', 'opacity-100');
+            }, 50);
+            
+            // Efek Getar HP
+            if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 200]);
+        }
+    }
+}
+
+function tutupModalUltah() {
+    const modal = document.getElementById('modal-ultah');
+    const content = document.getElementById('modal-ultah-content');
+    
+    if(content) {
+        content.classList.remove('scale-100');
+        content.classList.add('scale-95');
+    }
+    
+    if(modal) {
+        setTimeout(() => {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }, 200);
     }
 }
