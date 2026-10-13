@@ -25,6 +25,60 @@ function getGuruAuthClasses(user) {
     return Array.from(allowedClasses);
 }
 
+
+// --- TAMBAHKAN FUNGSI ENGINE OTONOMI ---
+async function terapkanOtonomiGuru() {
+    try {
+        const { data } = await db.from('tabel_pengaturan').select('akses_guru_jadwal, akses_guru_kelas').single();
+        const isGuru = currentUser.role === 'guru';
+        
+        // Atur Sembunyi/Tampil Tombol Jadwal KBM (Sidebar & Grid Menu)
+        const tombolJadwals = document.querySelectorAll('button[onclick*="jadwal-admin"]');
+        tombolJadwals.forEach(btn => {
+            if (isGuru && !data?.akses_guru_jadwal) {
+                btn.classList.add('hidden'); // Sembunyikan jika akses ditutup
+            } else {
+                btn.classList.remove('hidden'); 
+            }
+        });
+
+        // Atur Sembunyi/Tampil Fitur Centang Kelas di Profil
+        const containerKelas = document.getElementById('container-edit-kelas-ajar');
+        if (containerKelas) {
+            if (isGuru && !data?.akses_guru_kelas) {
+                containerKelas.classList.add('hidden');
+            } else {
+                containerKelas.classList.remove('hidden');
+                muatPilihanKelasAjar(); // Tarik data kelas dari tabel_siswa
+            }
+        }
+    } catch(e) { console.error("Gagal memuat aturan otonomi", e); }
+}
+
+async function muatPilihanKelasAjar() {
+    const wrap = document.getElementById('wrap-checkbox-kelas-ajar');
+    if(!wrap) return;
+    try {
+        const { data } = await db.from('tabel_siswa').select('kelas');
+        if(!data || data.length === 0) {
+            wrap.innerHTML = '<p class="text-[10px] text-gray-400 col-span-full">Belum ada kelas di database siswa.</p>';
+            return;
+        }
+        
+        // Ambil kelas unik dan urutkan
+        const unikKelas = [...new Set(data.map(s => s.kelas).filter(Boolean))].sort();
+        const currentAjar = (currentUser.kelas_ajar || '').split(',').map(k => k.trim());
+        
+        wrap.innerHTML = unikKelas.map(k => `
+            <label class="flex items-center gap-2 p-2 bg-white border border-gray-200 rounded-lg cursor-pointer hover:bg-teal-50 transition-colors shadow-sm">
+                <input type="checkbox" value="${k}" class="cb-kelas-ajar text-teal-600 rounded focus:ring-teal-500 w-3.5 h-3.5" ${currentAjar.includes(k) ? 'checked' : ''}>
+                <span class="text-[10px] font-bold text-gray-700 truncate">${k}</span>
+            </label>
+        `).join('');
+    } catch(e) { wrap.innerHTML = '<p class="text-[10px] text-red-500 col-span-full">Gagal memuat kelas.</p>'; }
+}
+
+
 function setupGuruDashboard(user) {
     document.getElementById('guru-name-side').innerText = user.nama;
     document.getElementById('guru-nip-side').innerText = `NIP: ${user.nip}`;
@@ -58,6 +112,7 @@ function setupGuruDashboard(user) {
     }
 
     loadDashboardGuruData();
+    terapkanOtonomiGuru();
 }
 
 function updateFotoGuruUI(url) {
@@ -112,32 +167,58 @@ function switchGuruMenu(targetId) {
     if (targetId === 'guru') loadDataGuru();
     if (targetId === 'rekap') loadDataRekap();
     if (targetId === 'izin-admin') loadIzinAdmin();
-    if (targetId === 'pengumuman-admin') loadPengumumanAdmin();
-    if (targetId === 'jadwal-admin') loadJadwalAdmin();
+    if (targetId === 'pengumuman-admin') loadPengumumanAdmin();    
+    if (targetId === 'jadwal-admin') { loadJadwalAdmin(); initDropdownJadwal(); }
     if (targetId === 'pengaturan') loadPengaturan();
     if (targetId === 'profil-guru') loadProfilGuru();
 }
 
+
 async function loadDashboardGuruData() {
+    if (!currentUser) return;
+    const btnRefresh = document.getElementById('icon-spin-refresh');
+    if(btnRefresh) btnRefresh.classList.add('fa-spin');
+
     const dateObj = new Date();
     const yyyy = dateObj.getFullYear();
     const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
     const dd = String(dateObj.getDate()).padStart(2, '0');
     const tglHariIni = `${yyyy}-${mm}-${dd}`;
+    
+    // Sapaan Berdasarkan Waktu
+    const jam = dateObj.getHours();
+    let sapaan = 'Selamat Pagi';
+    if(jam >= 11 && jam < 15) sapaan = 'Selamat Siang';
+    else if(jam >= 15 && jam < 18) sapaan = 'Selamat Sore';
+    else if(jam >= 18) sapaan = 'Selamat Malam';
+    
+    // Kata Mutiara Acak
+    const quotes = [
+        "Pendidikan adalah paspor untuk masa depan.",
+        "Guru yang baik itu seperti lilin, rela membakar dirinya untuk menerangi orang lain.",
+        "Bukan tentang seberapa pintar mereka, tapi seberapa besar kita peduli.",
+        "Satu buku, satu pena, dan satu guru dapat mengubah dunia.",
+        "Mengajar adalah belajar dua kali."
+    ];
+    const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
 
-    document.getElementById('stat-total-siswa').innerText = '...';
-    document.getElementById('stat-total-guru').innerText = '...';
-    document.getElementById('stat-hadir').innerText = '...';
-    document.getElementById('stat-pulang').innerText = '...';
+    document.getElementById('dash-guru-greeting').innerText = `${sapaan}, ${currentUser.nama.split(' ')[0]}!`;
+    document.getElementById('dash-guru-quote').innerText = `"${randomQuote}"`;
+
+    // Ambil Batas Jam Masuk untuk Deteksi Terlambat
+    let batasJamMasuk = '07:15';
+    if(cachedPengaturan && cachedPengaturan.jam_masuk_akhir) {
+        batasJamMasuk = cachedPengaturan.jam_masuk_akhir;
+    }
 
     try {
         const authClasses = getGuruAuthClasses(currentUser);
         const isFilter = authClasses[0] !== 'ALL';
         
+        // 1. STATISTIK UTAMA
         let querySiswa = db.from('tabel_siswa').select('*', { count: 'exact', head: true });
         if (isFilter) querySiswa = querySiswa.in('kelas', authClasses);
         const { count: countSiswa } = await querySiswa;
-        
         document.getElementById('stat-total-siswa').innerText = countSiswa || 0;
 
         const { count: countGuru } = await db.from('tabel_guru').select('*', { count: 'exact', head: true });
@@ -156,44 +237,148 @@ async function loadDashboardGuruData() {
         }
         document.getElementById('stat-hadir').innerText = hadir;
         document.getElementById('stat-pulang').innerText = pulang;
+        
+        // Kalkulasi Persentase Kehadiran
+        const persenEl = document.getElementById('stat-persen-hadir');
+        if (countSiswa > 0) {
+            const pct = Math.round((hadir / countSiswa) * 100);
+            persenEl.innerText = `${pct}%`;
+            if(pct >= 90) { persenEl.className = "text-[9px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100"; }
+            else if(pct >= 70) { persenEl.className = "text-[9px] font-bold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-100"; }
+            else { persenEl.className = "text-[9px] font-bold text-red-600 bg-red-50 px-1.5 py-0.5 rounded border border-red-100"; }
+        } else {
+            persenEl.innerText = "0%";
+        }
 
-        // Ambil 3 riwayat presensi terbaru hari ini
+        // 2. WIDGET JADWAL MENGAJAR HARI INI
+        const listHari = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+        const hariIniIndo = listHari[dateObj.getDay()];
+        document.getElementById('dash-badge-hari').innerText = hariIniIndo;
+        
+        const wrapJadwal = document.getElementById('widget-jadwal-guru');
+        if(hariIniIndo === 'Minggu' || hariIniIndo === 'Sabtu') {
+            wrapJadwal.innerHTML = `<p class="text-xs text-purple-200 py-1"><i class="fas fa-couch"></i> Yeay! Hari libur, tidak ada jadwal mengajar.</p>`;
+        } else {
+            // Tarik jadwal dimana 'guru' mengandung nama user (mengakomodasi gelar)
+            const { data: jadwalKu } = await db.from('tabel_jadwal')
+                .select('*')
+                .eq('hari', hariIniIndo)
+                .ilike('guru', `%${currentUser.nama.split(',')[0]}%`)
+                .order('jam_mulai', { ascending: true });
+                
+            if(jadwalKu && jadwalKu.length > 0) {
+                wrapJadwal.innerHTML = jadwalKu.map(j => `
+                    <div class="bg-white/10 border border-white/20 rounded-xl p-2.5 flex items-center justify-between backdrop-blur-sm">
+                        <div class="flex items-center gap-3">
+                            <span class="bg-white text-purple-700 font-extrabold text-[10px] px-2 py-1 rounded-lg shadow-sm">${j.jam_mulai}</span>
+                            <div>
+                                <h4 class="font-bold text-xs text-white leading-tight">${j.kelas}</h4>
+                                <p class="text-[9px] text-purple-200">${j.mapel} • ${j.ruang || 'Kelas'}</p>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                wrapJadwal.innerHTML = `<p class="text-xs text-purple-200 py-1"><i class="fas fa-mug-hot"></i> Anda tidak memiliki jam mengajar hari ini.</p>`;
+            }
+        }
+
+        // 3. SMART BADGE IZIN
+        let queryIzin = db.from('tabel_izin').select('id').eq('status', 'Menunggu');
+        // Jika bukan admin, hanya hitung yang kelasnya masuk hak akses
+        if(currentUser.role !== 'admin' && isFilter) {
+            const { data: siswaKu } = await db.from('tabel_siswa').select('nis').in('kelas', authClasses);
+            if(siswaKu && siswaKu.length > 0) {
+                queryIzin = queryIzin.in('nis', siswaKu.map(s => s.nis));
+            } else {
+                // Paksa return 0 jika tidak punya siswa
+                queryIzin = queryIzin.eq('nis', 'xxx'); 
+            }
+        }
+        const { data: pendingIzin } = await queryIzin;
+        
+        const badgeWrap = document.getElementById('badge-izin-pending-wrap');
+        const badgeNum = document.getElementById('badge-izin-pending');
+        const iconArr = document.getElementById('icon-izin-arrow');
+        
+        if(pendingIzin && pendingIzin.length > 0) {
+            badgeNum.innerText = pendingIzin.length;
+            badgeWrap.classList.remove('hidden');
+            iconArr.classList.add('hidden');
+        } else {
+            badgeWrap.classList.add('hidden');
+            iconArr.classList.remove('hidden');
+        }
+
+        // 4. LIVE LOG (DENGAN TAG KETERLAMBATAN & FOTO)
         const listContainer = document.getElementById('live-recent-absen-list');
         if (listContainer) {
+            // Ambil data terbaru (termasuk join sederhana untuk cek foto, tapi kita pakai nama dulu)
             let queryRecent = db.from('tabel_presensi')
-                .select('nama, kelas, jam_masuk, jam_pulang')
+                .select('nama, kelas, jam_masuk, jam_pulang, foto_masuk')
                 .eq('tanggal', tglHariIni)
-                .order('jam_masuk', { ascending: false })
-                .limit(3);
+                .order('id', { ascending: false })
+                .limit(4);
 
             if (isFilter) queryRecent = queryRecent.in('kelas', authClasses);
             const { data: recentList } = await queryRecent;
 
             if (recentList && recentList.length > 0) {
-                listContainer.innerHTML = recentList.map(r => `
-                    <div class="flex items-center justify-between p-2 rounded-xl bg-gray-50/70 border border-gray-100">
-                        <div class="flex items-center gap-2.5 min-w-0">
-                            <div class="w-7 h-7 rounded-lg bg-teal-50 text-teal-600 flex items-center justify-center text-xs font-bold shrink-0">
-                                <i class="fas fa-user-check"></i>
-                            </div>
+                listContainer.innerHTML = recentList.map(r => {
+                    // Penentuan Jam Tampil (Prioritas jam masuk, kalau ada pulang ya pulang)
+                    const jamTampil = r.jam_pulang || r.jam_masuk;
+                    const isPulang = !!r.jam_pulang;
+                    
+                    // Deteksi Terlambat (Jika jam masuk lebih besar dari batas dan BUKAN Klaim guru)
+                    let statusTag = '';
+                    if(!isPulang && r.jam_masuk) {
+                        if(r.jam_masuk.includes('(Klaim)')) {
+                            statusTag = `<span class="text-[8px] bg-blue-50 text-blue-600 border border-blue-200 px-1.5 py-0.5 rounded font-bold">Klaim Guru</span>`;
+                        } else if(r.jam_masuk > batasJamMasuk) {
+                            statusTag = `<span class="text-[8px] bg-red-50 text-red-600 border border-red-200 px-1.5 py-0.5 rounded font-bold">Terlambat</span>`;
+                        } else {
+                            statusTag = `<span class="text-[8px] bg-emerald-50 text-emerald-600 border border-emerald-200 px-1.5 py-0.5 rounded font-bold">Tepat Waktu</span>`;
+                        }
+                    } else if (isPulang) {
+                        statusTag = `<span class="text-[8px] bg-purple-50 text-purple-600 border border-purple-200 px-1.5 py-0.5 rounded font-bold">Pulang</span>`;
+                    }
+
+                    // Thumbnail Foto
+                    const thumb = r.foto_masuk 
+                        ? `<img src="${r.foto_masuk}" class="w-9 h-9 rounded-xl object-cover border border-gray-200 shadow-sm" alt="Foto">`
+                        : `<div class="w-9 h-9 rounded-xl bg-slate-100 text-slate-400 flex items-center justify-center text-sm border border-slate-200"><i class="fas fa-user"></i></div>`;
+
+                    return `
+                    <div class="flex items-center justify-between p-2.5 rounded-2xl bg-gray-50/50 border border-gray-100 hover:bg-white hover:shadow-sm transition-all">
+                        <div class="flex items-center gap-3 min-w-0">
+                            ${thumb}
                             <div class="min-w-0">
-                                <h5 class="font-bold text-[11px] text-gray-800 truncate">${r.nama}</h5>
-                                <span class="text-[9px] text-gray-400 font-semibold block">${r.kelas}</span>
+                                <h5 class="font-bold text-[12px] text-gray-800 truncate">${r.nama}</h5>
+                                <div class="flex items-center gap-1.5 mt-0.5">
+                                    <span class="text-[9px] text-gray-500 font-semibold">${r.kelas}</span>
+                                    ${statusTag}
+                                </div>
                             </div>
                         </div>
                         <div class="text-right shrink-0">
-                            <span class="font-mono font-bold text-[10px] text-teal-600 bg-teal-50 px-2 py-0.5 rounded-md border border-teal-100">${r.jam_masuk || r.jam_pulang}</span>
+                            <span class="font-mono font-bold text-[11px] text-slate-700 bg-white px-2 py-1 rounded-lg border border-gray-200 shadow-sm">${jamTampil.replace('(Klaim)','')}</span>
                         </div>
-                    </div>
-                `).join('');
+                    </div>`;
+                }).join('');
             } else {
-                listContainer.innerHTML = '<p class="text-center text-[10px] text-gray-400 py-2">Belum ada siswa yang absen hari ini.</p>';
+                listContainer.innerHTML = `
+                    <div class="text-center py-6">
+                        <div class="w-12 h-12 bg-slate-50 text-slate-300 rounded-full flex items-center justify-center mx-auto mb-2 text-xl"><i class="fas fa-mug-hot"></i></div>
+                        <p class="text-xs text-gray-400 font-medium">Belum ada siswa yang melakukan presensi hari ini.</p>
+                    </div>`;
             }
         }
 
     } catch (e) {
         console.error(e);
-        showToast('Gagal memuat statistik dashboard.', true);
+        showToast('Gagal memuat data live dashboard.', true);
+    } finally {
+        if(btnRefresh) btnRefresh.classList.remove('fa-spin');
     }
 }
 
@@ -328,7 +513,10 @@ function applyFilterSiswa() {
             : `<span class="bg-gray-100 text-gray-500 px-2 py-1 rounded text-[10px] font-bold border border-gray-200"><i class="fas fa-unlock"></i> Bebas</span>`;
 
         const btnAksi = isAdmin 
-            ? `<button onclick="resetDeviceBinding('tabel_siswa', 'nis', '${s.nis}')" class="bg-red-50 text-red-600 hover:bg-red-100 px-2.5 py-1.5 rounded-lg text-[10px] font-bold transition-colors border border-red-200" title="Lepaskan Perangkat"><i class="fas fa-mobile-alt"></i> Reset HP</button>`
+            ? `<div class="flex justify-center gap-1">
+                   <button onclick="resetPasswordSiswa('${s.nis}', '${(s.nama || '').replace(/'/g, "\\'")}')" class="bg-amber-50 text-amber-700 hover:bg-amber-100 px-2.5 py-1.5 rounded-lg text-[10px] font-bold transition-colors border border-amber-200" title="Kembalikan Sandi ke 123456"><i class="fas fa-key"></i> Reset Pass</button>
+                   <button onclick="resetDeviceBinding('tabel_siswa', 'nis', '${s.nis}')" class="bg-red-50 text-red-600 hover:bg-red-100 px-2.5 py-1.5 rounded-lg text-[10px] font-bold transition-colors border border-red-200" title="Lepaskan Perangkat"><i class="fas fa-mobile-alt"></i> Reset HP</button>
+               </div>`
             : '-';
 
         htmlRows += `
@@ -509,15 +697,64 @@ function applyFilterGuru() {
     tbody.innerHTML = htmlRows;
 }
 
-function openModalEditGuru(nip, nama, jabatan, walikelas, kelasajar) {
+async function openModalEditGuru(nip, nama, jabatan, walikelas, kelasajar) {
+    // 1. Set Identitas Dasar
     document.getElementById('edit-guru-nip').value = nip;
     document.getElementById('edit-guru-nama').value = nama;
-    document.getElementById('edit-guru-jabatan').value = jabatan === 'null' ? '' : jabatan;
-    document.getElementById('edit-guru-walikelas').value = walikelas === 'null' ? '' : walikelas;
-    document.getElementById('edit-guru-kelasajar').value = kelasajar === 'null' ? '' : kelasajar;
     
+    // 2. Set Dropdown Jabatan
+    const selJabatan = document.getElementById('edit-guru-jabatan');
+    if (jabatan && (jabatan.toLowerCase().includes('admin') || jabatan.toLowerCase().includes('operator'))) {
+        selJabatan.value = 'Admin';
+    } else {
+        selJabatan.value = 'Guru Mapel';
+    }
+
+    // Tampilkan Modal UI Terlebih Dahulu
     document.getElementById('modal-edit-guru').classList.remove('hidden');
     document.getElementById('modal-edit-guru').classList.add('flex');
+
+    const selWali = document.getElementById('edit-guru-walikelas');
+    const wrapKelasAjar = document.getElementById('wrap-edit-guru-kelasajar');
+    
+    selWali.innerHTML = '<option value="">Memuat kelas...</option>';
+    wrapKelasAjar.innerHTML = '<p class="text-[11px] text-gray-400 col-span-full text-center py-2"><i class="fas fa-spinner fa-spin"></i> Memuat kelas...</p>';
+
+    // 3. Tarik Data Kelas Unik dari Database Siswa
+    try {
+        const { data } = await db.from('tabel_siswa').select('kelas');
+        let unikKelas = [];
+        if (data && data.length > 0) {
+            // Ambil daftar kelas dan hilangkan duplikasi, lalu urutkan
+            unikKelas = [...new Set(data.map(s => s.kelas).filter(Boolean))].sort();
+        }
+
+        // --- Render Dropdown Wali Kelas ---
+        let optWali = '<option value="">Bukan Wali Kelas</option>';
+        unikKelas.forEach(k => {
+            const isSelected = (walikelas === k) ? 'selected' : '';
+            optWali += `<option value="${k}" ${isSelected}>${k}</option>`;
+        });
+        selWali.innerHTML = optWali;
+
+        // --- Render Checkbox Kelas Ajar ---
+        const currentAjar = (kelasajar === 'null' || !kelasajar) ? [] : kelasajar.split(',').map(k => k.trim());
+        if (unikKelas.length > 0) {
+            wrapKelasAjar.innerHTML = unikKelas.map(k => `
+                <label class="flex items-center gap-2 p-2 bg-white border border-gray-200 rounded-lg cursor-pointer hover:bg-teal-50 transition-colors shadow-sm">
+                    <input type="checkbox" value="${k}" class="cb-admin-kelas-ajar text-teal-600 rounded focus:ring-teal-500 w-3.5 h-3.5" ${currentAjar.includes(k) ? 'checked' : ''}>
+                    <span class="text-[10px] font-bold text-gray-700 truncate">${k}</span>
+                </label>
+            `).join('');
+        } else {
+            wrapKelasAjar.innerHTML = '<p class="text-[11px] text-gray-400 col-span-full text-center py-2">Belum ada kelas terdaftar.</p>';
+        }
+
+    } catch (e) {
+        console.error("Gagal menarik data kelas:", e);
+        selWali.innerHTML = '<option value="">Gagal memuat kelas</option>';
+        wrapKelasAjar.innerHTML = '<p class="text-[11px] text-red-500 col-span-full text-center py-2">Gagal memuat kelas.</p>';
+    }
 }
 
 function closeModalEditGuru() {
@@ -528,9 +765,12 @@ function closeModalEditGuru() {
 async function simpanEditGuru() {
     const btn = document.getElementById('btn-save-edit-guru');
     const nip = document.getElementById('edit-guru-nip').value;
-    const jabatan = document.getElementById('edit-guru-jabatan').value.trim();
-    const walikelas = document.getElementById('edit-guru-walikelas').value.trim();
-    const kelasajar = document.getElementById('edit-guru-kelasajar').value.trim();
+    const jabatan = document.getElementById('edit-guru-jabatan').value;
+    const walikelas = document.getElementById('edit-guru-walikelas').value;
+    
+    // Ambil Data Checkbox Kelas Ajar yang Dicentang
+    const cbs = document.querySelectorAll('.cb-admin-kelas-ajar:checked');
+    const kelasajar = Array.from(cbs).map(cb => cb.value).join(',');
 
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
     btn.disabled = true;
@@ -543,9 +783,9 @@ async function simpanEditGuru() {
         if (error) throw error;
         showToast('Hak akses guru berhasil diperbarui!');
         closeModalEditGuru();
-        loadDataGuru(true);
+        loadDataGuru(true); // Paksa segarkan tabel guru
     } catch (error) {
-        console.error(error);
+        console.error("Gagal simpan edit guru:", error);
         showToast('Gagal menyimpan perubahan hak akses.', true);
     } finally {
         btn.innerHTML = '<i class="fas fa-save"></i> Simpan Hak Akses';
@@ -611,12 +851,64 @@ async function loadIzinAdmin() {
 
 async function updateStatusIzin(id, statusBaru) {
     try {
-        const { error } = await db.from('tabel_izin').update({ status: statusBaru }).eq('id', id);
-        if (error) throw error;
+        // 1. Tarik detail pengajuan untuk mengetahui NIS, Tanggal, dan Jenisnya
+        const { data: izin, error: errGet } = await db.from('tabel_izin')
+            .select('*')
+            .eq('id', id)
+            .single();
+            
+        if (errGet) throw errGet;
+
+        // 2. Perbarui status di tabel_izin menjadi Disetujui/Ditolak
+        const { error: errUpdate } = await db.from('tabel_izin')
+            .update({ status: statusBaru })
+            .eq('id', id);
+            
+        if (errUpdate) throw errUpdate;
+
+        // ===============================================================
+        // 3. AUTO-INJECT PRESENSI (JIKA DISETUJUI & MERUPAKAN LUPA ABSEN)
+        // ===============================================================
+        if (statusBaru === 'Disetujui' && izin.jenis.includes('Lupa Absen')) {
+            // Cek apakah siswa sudah punya baris presensi di tanggal tersebut
+            const { data: presensi } = await db.from('tabel_presensi')
+                .select('*')
+                .eq('nis', izin.nis)
+                .eq('tanggal', izin.tanggal)
+                .maybeSingle();
+
+            let payloadPresensi = {};
+            
+            // Kita beri tanda khusus "(Klaim)" agar admin tahu itu hasil ACC
+            if (izin.jenis === 'Lupa Absen Masuk') {
+                payloadPresensi.jam_masuk = '07:00 (Klaim)'; 
+                payloadPresensi.status_masuk = 'Hadir';
+            } else if (izin.jenis === 'Lupa Absen Pulang') {
+                payloadPresensi.jam_pulang = '14:30 (Klaim)';
+                payloadPresensi.status_pulang = 'Hadir';
+            }
+
+            if (presensi) {
+                // Jika baris presensi sudah ada, cukup tambahkan jam/status yang kurang
+                await db.from('tabel_presensi').update(payloadPresensi).eq('id', presensi.id);
+            } else {
+                // Jika hari itu dia sama sekali tidak absen, buatkan baris baru
+                payloadPresensi.nis = izin.nis;
+                payloadPresensi.nama = izin.nama;
+                payloadPresensi.tanggal = izin.tanggal;
+                
+                // Cari data kelas siswa untuk dimasukkan ke log presensi
+                const { data: siswa } = await db.from('tabel_siswa').select('kelas').eq('nis', izin.nis).maybeSingle();
+                payloadPresensi.kelas = siswa ? siswa.kelas : '-';
+                
+                await db.from('tabel_presensi').insert([payloadPresensi]);
+            }
+        }
+
         showToast(`Pengajuan berhasil ${statusBaru.toLowerCase()}!`);
         loadIzinAdmin(); 
     } catch (error) {
-        console.error(error);
+        console.error("Gagal update status izin:", error);
         showToast('Gagal mengubah status', true);
     }
 }
@@ -757,6 +1049,13 @@ async function loadPengaturan() {
             document.getElementById('set-logo-url').value = data.logo_url || '';
             document.getElementById('set-logo-sekolah-url').value = data.logo_sekolah_url || '';
             document.getElementById('set-bg-url').value = data.bg_url || '';
+
+            document.getElementById('set-akses-jadwal').checked = data.akses_guru_jadwal || false;
+            document.getElementById('set-akses-kelas').checked = data.akses_guru_kelas || false;
+
+            document.getElementById('set-ultah-aktif').checked = cachedPengaturan.fitur_ultah_aktif !== false; // Default true
+            document.getElementById('set-ultah-ucapan').value = cachedPengaturan.ucapan_ultah || '';
+            document.getElementById('set-ultah-gambar').value = cachedPengaturan.gambar_ultah || '';
             
             if (data.logo_url) {
                 document.getElementById('preview-logo-setting').src = data.logo_url;
@@ -847,14 +1146,20 @@ async function simpanPengaturan() {
         radius: document.getElementById('set-radius').value,
         logo_url: document.getElementById('set-logo-url').value, 
         bg_url: document.getElementById('set-bg-url').value,
-        logo_sekolah_url: document.getElementById('set-logo-sekolah-url').value      
+        logo_sekolah_url: document.getElementById('set-logo-sekolah-url').value,  
+        akses_guru_jadwal: document.getElementById('set-akses-jadwal').checked,
+        akses_guru_kelas: document.getElementById('set-akses-kelas').checked,
+        // --- DATA FITUR ULANG TAHUN ---
+        fitur_ultah_aktif: document.getElementById('set-ultah-aktif').checked,
+        ucapan_ultah: document.getElementById('set-ultah-ucapan').value,
+        gambar_ultah: document.getElementById('set-ultah-gambar').value
     };
 
     try {
         const { error } = await db.from('tabel_pengaturan').upsert(payload);
         if (error) {
             if (error.message && error.message.includes("does not exist")) {
-               throw new Error("Kolom logo_url atau bg_url belum dibuat di tabel_pengaturan Supabase!");
+               throw new Error("Ada kolom baru (seperti fitur_ultah_aktif) yang belum dibuat di tabel_pengaturan Supabase!");
             }
             throw error;
         }
@@ -939,7 +1244,7 @@ function loadProfilGuru() {
 }
 
 async function simpanProfilGuru() {
-    // PERBAIKAN: Izinkan guru DAN admin untuk menyimpan data profil/kata sandi
+    // Izinkan guru DAN admin untuk menyimpan data profil/kata sandi
     if (!currentUser || (currentUser.role !== 'guru' && currentUser.role !== 'admin')) return;
 
     const btn = document.getElementById('btn-simpan-profil-guru');
@@ -952,6 +1257,16 @@ async function simpanProfilGuru() {
     let dataUpdate = {};
     if (fotoUrl !== '') dataUpdate.foto_profil = fotoUrl;
     if (passBaru !== '') dataUpdate.password = passBaru;
+
+    // --- TARIK DATA KELAS AJAR DARI CHECKBOX ---
+    const containerKelas = document.getElementById('container-edit-kelas-ajar');
+    if (containerKelas && !containerKelas.classList.contains('hidden')) {
+        const cbs = document.querySelectorAll('.cb-kelas-ajar:checked');
+        // Gabungkan array menjadi string dipisah koma (tanpa spasi berlebih)
+        const kelasAjarStr = Array.from(cbs).map(cb => cb.value).join(',');
+        dataUpdate.kelas_ajar = kelasAjarStr;
+    }
+    // -------------------------------------------
 
     if (Object.keys(dataUpdate).length === 0) {
          showToast('Tidak ada perubahan yang disimpan.');
@@ -967,7 +1282,7 @@ async function simpanProfilGuru() {
 
         if (error) throw error;
 
-        // Sinkronisasi data di memori agar password baru bisa langsung dipakai login nanti
+        // --- SINKRONISASI MEMORI (AGAR LANGSUNG EFEK TANPA LOGOUT) ---
         if (fotoUrl !== '') {
             currentUser.foto_profil = fotoUrl;
             updateFotoGuruUI(fotoUrl); 
@@ -975,9 +1290,20 @@ async function simpanProfilGuru() {
         if (passBaru !== '') {
             currentUser.password = passBaru;
         }
+        if (dataUpdate.kelas_ajar !== undefined) {
+            currentUser.kelas_ajar = dataUpdate.kelas_ajar; // <--- INI KUNCI UTAMANYA
+        }
 
-        // PERBAIKAN PENTING: Perbarui localStorage agar saat halaman dimuat ulang, data akun tidak kadaluarsa
+        // Simpan sesi baru ke memori peramban
         localStorage.setItem('app_session', JSON.stringify(currentUser));
+        
+        // --- PAKSA RESET CACHE TABEL ---
+        // Kosongkan list memori agar menu Siswa & Jadwal menarik data baru dari Cloud
+        if (typeof rawSiswaList !== 'undefined') rawSiswaList = [];
+        if (typeof rawJadwalList !== 'undefined') rawJadwalList = [];
+        
+        // Segarkan angka statistik di Dashboard
+        if (typeof loadDashboardGuruData === 'function') loadDashboardGuruData();
         
         showToast('Profil akun berhasil diperbarui!');
         document.getElementById('edit-password-guru').value = ''; 
@@ -1299,6 +1625,63 @@ async function hapusJadwal(id) {
     } catch (err) {
         console.error("Gagal menghapus jadwal:", err);
         showToast(`Gagal: ${err.message}`, true);
+    }
+}
+
+async function initDropdownJadwal() {
+    const selMapel = document.getElementById('form-jadwal-mapel');
+    const selKelas = document.getElementById('form-jadwal-kelas');
+    const selGuru = document.getElementById('form-jadwal-guru'); // Sekarang ini adalah elemen <select>
+
+    // 1. Atur Kolom Guru berdasarkan Role
+    if (currentUser.role === 'guru') {
+        selGuru.innerHTML = `<option value="${currentUser.nama}" selected>${currentUser.nama}</option>`;
+        selGuru.disabled = true; // Kunci pilihan
+        selGuru.className = "w-full border border-gray-200 rounded-xl px-3 py-2 text-xs bg-gray-100 text-gray-500 font-bold cursor-not-allowed outline-none appearance-none";
+    } else {
+        selGuru.disabled = false;
+        selGuru.className = "w-full border border-gray-200 rounded-xl px-3 py-2 text-xs outline-none focus:border-purple-500 bg-gray-50/50";
+        // Tarik Daftar Guru untuk Admin
+        try {
+            const { data: guruData } = await db.from('tabel_guru').select('nama').order('nama');
+            let optGuru = '<option value="">Pilih Guru Pengajar...</option>';
+            if (guruData) guruData.forEach(g => optGuru += `<option value="${g.nama}">${g.nama}</option>`);
+            selGuru.innerHTML = optGuru;
+        } catch(e) { console.error("Gagal memuat guru:", e); }
+    }
+
+    // 2. Tarik Daftar Mapel
+    try {
+        const { data: mapel } = await db.from('tabel_mapel').select('nama_mapel').order('nama_mapel');
+        let optMapel = '<option value="">Pilih Mapel...</option>';
+        if (mapel) mapel.forEach(m => optMapel += `<option value="${m.nama_mapel}">${m.nama_mapel}</option>`);
+        selMapel.innerHTML = optMapel;
+    } catch(e) { console.error("Gagal memuat mapel:", e); }
+
+    // 3. Tarik Daftar Kelas
+    try {
+        const { data: siswa } = await db.from('tabel_siswa').select('kelas');
+        let optKelas = '<option value="">Pilih Kelas Target...</option>';
+        if (siswa) {
+            const unik = [...new Set(siswa.map(s => s.kelas).filter(Boolean))].sort();
+            unik.forEach(k => optKelas += `<option value="${k}">${k}</option>`);
+        }
+        selKelas.innerHTML = optKelas;
+    } catch(e) { console.error("Gagal memuat kelas:", e); }
+}
+
+// Fungsi Pemicu Tambah Mapel Instan
+async function promptTambahMapel() {
+    const nama = prompt("Masukkan nama Mata Pelajaran baru (Cth: Bahasa Indonesia):");
+    if (!nama || nama.trim() === '') return;
+    try {
+        showToast("Menyimpan mata pelajaran...");
+        const { error } = await db.from('tabel_mapel').insert([{ nama_mapel: nama.trim() }]);
+        if (error) throw error;
+        showToast("Mata pelajaran berhasil ditambahkan!");
+        initDropdownJadwal(); // Segarkan dropdown mapel
+    } catch (e) {
+        showToast("Gagal menambah mapel (Cek RLS tabel_mapel)", true);
     }
 }
 
