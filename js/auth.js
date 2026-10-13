@@ -190,60 +190,104 @@ async function resetPasswordSiswa(nis, nama) {
 // ==========================================
 // FITUR UCAPAN ULANG TAHUN
 // ==========================================
-function cekUlangTahun(user) {
-    // 1. CEK SAKELAR ADMIN DULU (Jika fitur dimatikan, batalkan semua proses di bawahnya)
+async function cekUlangTahun(user) {
+    // 1. Cek apakah fitur diaktifkan oleh Admin
     if (typeof cachedPengaturan !== 'undefined' && cachedPengaturan && cachedPengaturan.fitur_ultah_aktif === false) {
         return; 
     }
 
-    // 2. PASTIKAN DATA USER VALID
+    // 2. Validasi Tanggal Lahir Siswa
     if (!user || !user.tgl_lahir) return; 
-
     const tglLahirDB = user.tgl_lahir;
     if (tglLahirDB.length < 10) return;
 
-    // 3. COCOKKAN TANGGAL DAN BULAN
     const bulanLahir = tglLahirDB.substring(5, 7);
     const tanggalLahir = tglLahirDB.substring(8, 10);
-
     const hariIni = new Date();
     const bulanIni = String(hariIni.getMonth() + 1).padStart(2, '0');
     const tanggalIni = String(hariIni.getDate()).padStart(2, '0');
 
-    // 4. JIKA HARI INI ULANG TAHUN
+    // 3. Jika hari ini Ulang Tahun
     if (bulanLahir === bulanIni && tanggalLahir === tanggalIni) {
-        // Tampilkan Nama
+        // Tampilkan nama pendek siswa
         document.getElementById('ultah-nama').innerText = user.nama.split(',')[0]; 
         
-        // Tampilkan Ucapan/Gambar Kustom dari Admin (jika ada)
-        if (typeof cachedPengaturan !== 'undefined' && cachedPengaturan) {
-            // Kita harus pastikan isinya tidak kosong string ('') baru diganti
-            if (cachedPengaturan.ucapan_ultah && cachedPengaturan.ucapan_ultah.trim() !== '') {
-                document.getElementById('ultah-pesan').innerHTML = cachedPengaturan.ucapan_ultah;
-            }
-            if (cachedPengaturan.gambar_ultah && cachedPengaturan.gambar_ultah.trim() !== '') {
-                document.getElementById('ultah-gambar').src = cachedPengaturan.gambar_ultah;
-            }
-        }
-
-        // Tampilkan Modal
-        const modal = document.getElementById('modal-ultah');
-        const content = document.getElementById('modal-ultah-content');
+        const isPerempuan = (user.jk === 'P' || user.jk === 'Perempuan');
         
-        if(modal && content) {
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
+        if (typeof cachedPengaturan !== 'undefined' && cachedPengaturan) {
+            try {
+                // Tentukan ID Template mana yang harus ditarik (L atau P)
+                const templateAktifId = isPerempuan ? cachedPengaturan.template_p : cachedPengaturan.template_l;
+
+                if (templateAktifId) {
+                    // Tarik data template spesifik dari tabel_template_ultah berdasarkan ID
+                    const { data: tplData, error } = await db.from('tabel_template_ultah').select('*').eq('id', templateAktifId).single();
+                    
+                    if (tplData && !error) {
+                        // Terapkan data dari Bank Template ke UI Modal
+                        document.getElementById('ultah-pesan').innerHTML = tplData.pesan_utama || '';
+                        
+                        if (tplData.pesan_kutipan) {
+                            document.getElementById('ultah-kutipan').innerHTML = `"${tplData.pesan_kutipan}"`;
+                            document.getElementById('ultah-kutipan').style.display = 'block';
+                        } else {
+                            document.getElementById('ultah-kutipan').style.display = 'none';
+                        }
+                        
+                        if (tplData.bg_url) {
+                            document.getElementById('ultah-gambar').src = tplData.bg_url;
+                        }
+
+                        // JIKA BERHASIL MEMUAT TEMPLATE, TAMPILKAN MODAL LALU HENTIKAN FUNGSI DI SINI.
+                        tampilkanModalUI();
+                        return; 
+                    }
+                }
+            } catch (err) {
+                console.error("Gagal menarik template ulang tahun dari database:", err);
+            }
             
-            setTimeout(() => {
-                content.classList.remove('scale-95', 'opacity-0');
-                content.classList.add('scale-100', 'opacity-100');
-            }, 50);
+            // ==========================================
+            // KODE CADANGAN (FALLBACK) - HANYA BERJALAN JIKA:
+            // 1. Admin belum memilih template sama sekali di pengaturan. ATAU
+            // 2. Koneksi ke tabel_template_ultah gagal/error.
+            // ==========================================
+            console.log("Menggunakan template cadangan...");
             
-            // Efek Getar HP
-            if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 200]);
+            if (isPerempuan) {
+                document.getElementById('ultah-pesan').innerHTML = "Semoga di hari yang istimewa ini, langkahmu selalu diberkahi, dan kebahagiaan menyertaimu.";
+                document.getElementById('ultah-kutipan').innerHTML = `"Jadi versi terbaik dari dirimu" 🤍`;
+                document.getElementById('ultah-gambar').src = "https://placehold.co/600x800/ffecf2/ff6b9d.png?text=Selamat+Ulang+Tahun"; 
+            } else {
+                document.getElementById('ultah-pesan').innerHTML = "Selamat ulang tahun! Jadikan usia barumu ini sebagai momentum untuk terus berkembang, lebih tangguh, dan meraih semua target hebatmu ke depan. Semangat terus belajarnya!";
+                document.getElementById('ultah-kutipan').innerHTML = `"Keep moving forward!" 🚀`;
+                document.getElementById('ultah-gambar').src = "https://placehold.co/600x800/e0f2fe/0ea5e9.png?text=Selamat+Ulang+Tahun";
+            }
+            
+            // Tampilkan Modal dengan data cadangan
+            tampilkanModalUI();
         }
     }
 }
+
+// Fungsi pembantu untuk animasi modal
+function tampilkanModalUI() {
+    const modal = document.getElementById('modal-ultah');
+    const content = document.getElementById('modal-ultah-content');
+    
+    if(modal && content) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        
+        setTimeout(() => {
+            content.classList.remove('scale-95', 'opacity-0');
+            content.classList.add('scale-100', 'opacity-100');
+        }, 50);
+        
+        if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 200]);
+    }
+}
+
 
 function tutupModalUltah() {
     const modal = document.getElementById('modal-ultah');
